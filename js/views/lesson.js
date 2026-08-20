@@ -1,7 +1,7 @@
 import * as store from '../store.js';
 import * as srs from '../srs.js';
 import { el, speakerButton, progressRing, pronounChip, toast } from '../ui/components.js';
-import { getModule } from '../data/modules/index.js';
+import { getModule, isModuleSoftLocked, previousModule } from '../data/modules/index.js';
 import { VERBS, PRONOUN_LABELS } from '../data/verbs.js';
 import {
   pronounsFor, pronounLabel, TENSE_LABELS, answersMatch,
@@ -10,6 +10,12 @@ import {
 import { navigate } from '../router.js';
 
 const KEY_HELPERS = ['ä', 'ö', 'ü', 'ß'];
+
+function backToMapLink() {
+  const link = el('button', { class: 'btn', style: 'font-size:12.5px;padding:7px 12px;margin-bottom:14px;background:transparent;border-color:rgba(255,255,255,0.25)' }, '← Back to map');
+  link.addEventListener('click', () => navigate('/course-map'));
+  return link;
+}
 
 function randomPronoun(tense) {
   const list = pronounsFor(tense);
@@ -44,6 +50,7 @@ export async function renderLesson(container, { profileId, moduleId, setBreadcru
   const mod = getModule(moduleId);
   if (!mod) {
     container.innerHTML = '';
+    container.appendChild(backToMapLink());
     container.appendChild(el('div', { class: 'card' }, `Module "${moduleId}" not found.`));
     return;
   }
@@ -56,8 +63,21 @@ export async function renderLesson(container, { profileId, moduleId, setBreadcru
 
 function renderExplanationPhase(container, mod, profileId) {
   container.innerHTML = '';
+  container.appendChild(backToMapLink());
   container.appendChild(el('h1', {}, mod.title));
   container.appendChild(el('p', { style: 'color:var(--cream-dim)' }, `${mod.level} · ${mod.summary}`));
+
+  const progress = store.getProgress(profileId);
+  const alreadyPassed = !!progress[mod.id]?.checkpointPassed;
+  if (!alreadyPassed && isModuleSoftLocked(mod, progress)) {
+    const prev = previousModule(mod);
+    container.appendChild(
+      el('div', { class: 'banner', style: 'margin-bottom:16px' }, [
+        el('strong', {}, '💡 Heads up — '),
+        `this usually comes after "${prev.title}", which you haven't finished yet. Nothing's stopping you though — dive in whenever you like.`,
+      ])
+    );
+  }
 
   const card = el('div', { class: 'card explain' });
   container.appendChild(card);
@@ -132,6 +152,7 @@ function renderPracticePhase(container, mod, profileId) {
   const HARD_CAP = plan.length * 2; // requeues must never make a session run forever
 
   container.innerHTML = '';
+  container.appendChild(backToMapLink());
   container.appendChild(el('h1', {}, mod.title));
   const progressLine = el('p', { style: 'color:var(--cream-dim)' });
   container.appendChild(progressLine);
@@ -363,6 +384,7 @@ function renderCheckpointPhase(container, mod, profileId) {
   let correct = 0;
 
   container.innerHTML = '';
+  container.appendChild(backToMapLink());
   container.appendChild(el('h1', {}, `${mod.title} · Checkpoint`));
   const progressLine = el('p', { style: 'color:var(--cream-dim)' }, `Question 1 / ${plan.length}`);
   container.appendChild(progressLine);

@@ -152,6 +152,12 @@ a { color: var(--gold-bright); }
 }
 .card + .card { margin-top: 14px; }
 
+.banner {
+  background: rgba(232, 184, 75, 0.12); border: 1px solid rgba(232, 184, 75, 0.4);
+  border-radius: var(--radius-sm); padding: 12px 14px; font-size: 13.5px; color: var(--cream);
+}
+.banner strong { color: var(--gold-bright); }
+
 /* ---------------------------------------------------------------- pronoun & type chips */
 .chip {
   display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px;

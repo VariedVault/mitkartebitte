@@ -61,6 +61,21 @@ export function getModule(id) {
   return allModules().find((m) => m.id === id);
 }
 
+export function previousModule(mod) {
+  return allModules().find((m) => m.order === mod.order - 1) || null;
+}
+
+/**
+ * Soft lock only — never blocks navigation, just tells the UI whether to show a
+ * "usually comes after X" nudge. A module is locked if the immediately-preceding
+ * module (by course order) hasn't had its checkpoint passed yet for this profile.
+ */
+export function isModuleSoftLocked(mod, progress) {
+  const prev = previousModule(mod);
+  if (!prev) return false;
+  return !progress[prev.id]?.checkpointPassed;
+}
+
 export function modulesByTier(tier) {
   return allModules().filter((m) => m.tier === tier);
 }

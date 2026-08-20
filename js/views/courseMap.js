@@ -1,6 +1,6 @@
 import * as store from '../store.js';
 import { el, progressRing } from '../ui/components.js';
-import { allModules } from '../data/modules/index.js';
+import { allModules, isModuleSoftLocked, previousModule } from '../data/modules/index.js';
 import { factKeysForModule } from '../ui/drills.js';
 import { masteryForKeys } from '../srs.js';
 import { navigate } from '../router.js';
@@ -18,7 +18,7 @@ export async function renderCourseMap(container, { profileId }) {
   const profile = store.listProfiles().find((p) => p.id === profileId);
   container.appendChild(el('h1', {}, `Your line, ${profile ? profile.name : ''}`));
   container.appendChild(
-    el('p', { style: 'color:var(--cream-dim)' }, 'Sixteen stops, four tiers. Play any of them in any order — nothing is locked, this is just the recommended route.')
+    el('p', { style: 'color:var(--cream-dim)' }, 'Sixteen stops, four tiers. 🔒 just means "usually comes later" — every module is still one tap away whenever you want it.')
   );
 
   const deck = store.getSRSDeck(profileId);
@@ -43,12 +43,16 @@ export async function renderCourseMap(container, { profileId }) {
       const keys = factKeysForModule(mod.verbPool(VERBS), mod.tenses);
       const mastery = masteryForKeys(deck, keys);
       const modProgress = progress[mod.id];
+      const softLocked = !modProgress?.checkpointPassed && isModuleSoftLocked(mod, progress);
       const node = el('button', { class: `module-node${modProgress?.checkpointPassed ? ' mastered' : ''}`, style: `border-color:${modProgress?.checkpointPassed ? meta.color : 'transparent'}` });
-      node.appendChild(el('div', { class: 'num' }, `${mod.level} · ${String(mod.order).padStart(2, '0')}`));
-      node.appendChild(el('div', { class: 'title' }, mod.title));
-      node.appendChild(
-        el('div', { class: 'status', style: `color:${mastery > 0 ? meta.color : 'var(--ink-soft)'}` }, modProgress?.checkpointPassed ? '✓ Mastered' : mastery > 0 ? `${mastery}% mastery` : 'Not started')
-      );
+      node.appendChild(el('div', { class: 'num' }, `${mod.level} · ${String(mod.order).padStart(2, '0')}${softLocked ? ' · 🔒' : ''}`));
+      node.appendChild(el('div', { class: 'title', style: softLocked ? 'opacity:.75' : '' }, mod.title));
+      let statusText = modProgress?.checkpointPassed ? '✓ Mastered' : mastery > 0 ? `${mastery}% mastery` : 'Not started';
+      if (softLocked) {
+        const prev = previousModule(mod);
+        statusText = `Usually after "${prev.title}"`;
+      }
+      node.appendChild(el('div', { class: 'status', style: `color:${softLocked ? 'var(--ink-soft)' : mastery > 0 ? meta.color : 'var(--ink-soft)'}` }, statusText));
       const ring = progressRing(mastery, { size: 30, stroke: 4 });
       ring.classList.add('mini-ring');
       node.appendChild(ring);
