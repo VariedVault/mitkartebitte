@@ -1,10 +1,10 @@
 import * as store from '../store.js';
 import * as srs from '../srs.js';
-import { el, speakerButton, progressRing, pronounChip, toast } from '../ui/components.js';
+import { el, speakerButton, progressRing, pronounChip, toast, reviewList } from '../ui/components.js';
 import { getModule, isModuleSoftLocked, previousModule } from '../data/modules/index.js';
 import { VERBS, PRONOUN_LABELS } from '../data/verbs.js';
 import {
-  pronounsFor, pronounLabel, TENSE_LABELS, answersMatch,
+  pronounsFor, pronounLabel, TENSE_LABELS, answersMatch, factLabel,
   buildFillBlank, buildMultipleChoice, buildTableCompletion, factKeysForModule, getForm,
 } from '../ui/drills.js';
 import { navigate } from '../router.js';
@@ -149,18 +149,30 @@ function renderPracticePhase(container, mod, profileId) {
   let idx = 0;
   let correctCount = 0;
   const queue = plan;
+  const history = [];
   const HARD_CAP = plan.length * 2; // requeues must never make a session run forever
 
   container.innerHTML = '';
   container.appendChild(backToMapLink());
   container.appendChild(el('h1', {}, mod.title));
-  const progressLine = el('p', { style: 'color:var(--cream-dim)' });
-  container.appendChild(progressLine);
-  const stage = el('div');
+  const headerRow = el('div', { style: 'display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap' });
+  const progressLine = el('p', { style: 'color:var(--cream-dim);margin:0' });
+  const reviewBtn = el('button', { class: 'btn', style: 'font-size:11.5px;padding:6px 10px' }, '📋 Review answers');
+  reviewBtn.disabled = true;
+  reviewBtn.addEventListener('click', renderReview);
+  headerRow.appendChild(progressLine);
+  headerRow.appendChild(reviewBtn);
+  container.appendChild(headerRow);
+  const stage = el('div', { style: 'margin-top:12px' });
   container.appendChild(stage);
 
   function updateProgressLine() {
     progressLine.textContent = `Practice · ${Math.min(idx + 1, queue.length)} / ${queue.length}`;
+  }
+
+  function renderReview() {
+    stage.innerHTML = '';
+    stage.appendChild(reviewList(history, renderCurrent, 'Back to practice'));
   }
 
   function next() {
@@ -171,6 +183,7 @@ function renderPracticePhase(container, mod, profileId) {
 
   function finishPractice() {
     store.recordActivity(profileId);
+    reviewBtn.disabled = true;
     stage.innerHTML = '';
     stage.appendChild(
       el('div', { class: 'card celebrate' }, [
@@ -198,9 +211,11 @@ function renderPracticePhase(container, mod, profileId) {
     );
   }
 
-  function recordAndAdvance(factKey, correct) {
+  function recordAndAdvance(factKey, correct, entry) {
     srs.recordAnswer(deck, factKey, correct);
     store.saveSRSDeck(profileId, deck);
+    if (entry) history.push(entry);
+    reviewBtn.disabled = history.length === 0;
     if (correct) correctCount++;
     else queue.splice(Math.min(queue.length, idx + 3), 0, requeueExercise(queue[idx]));
   }
@@ -213,7 +228,9 @@ function renderPracticePhase(container, mod, profileId) {
   function renderCurrent() {
     updateProgressLine();
     stage.innerHTML = '';
-    stage.appendChild(renderExercise(queue[idx], { onAnswered: (correct, factKey) => { recordAndAdvance(factKey, correct); }, onNext: next }));
+    stage.appendChild(
+      renderExercise(queue[idx], { onAnswered: ({ correct, factKey, entry }) => recordAndAdvance(factKey, correct, entry), onNext: next })
+    );
   }
 
   renderCurrent();
@@ -289,7 +306,7 @@ function renderFillExercise(exercise, { onAnswered, onNext }) {
     feedback.textContent = correct ? '✓ Genau!' : `→ ${answer}`;
     input.disabled = true;
     submit.textContent = 'Next →';
-    onAnswered(correct, factKey);
+    onAnswered({ correct, factKey, entry: { prompt: factLabel(verb, tense, pronoun), userAnswer: input.value.trim() || '(blank)', correctAnswer: answer, correct } });
     submit.onclick = () => onNext();
   }
   submit.addEventListener('click', () => (answered ? onNext() : check()));
@@ -312,7 +329,7 @@ function renderChoiceExercise(exercise, { onAnswered, onNext }) {
       const correct = choice === answer;
       btn.classList.add(correct ? 'correct' : 'incorrect');
       if (!correct) [...options.children].find((c) => c.textContent === answer)?.classList.add('correct');
-      onAnswered(correct, factKey);
+      onAnswered({ correct, factKey, entry: { prompt: factLabel(verb, tense, pronoun), userAnswer: choice, correctAnswer: answer, correct } });
       setTimeout(onNext, 850);
     });
     options.appendChild(btn);
@@ -356,6 +373,7 @@ function renderTableExercise(exercise, { onAnswered, onNext }) {
     answered = true;
     let allCorrect = true;
     for (const { input, cell } of inputs) {
+      const typed = input.value.trim();
       const correct = answersMatch(input.value, cell.answer);
       input.classList.add('filled', correct ? '' : 'wrong');
       if (!correct) {
@@ -363,7 +381,11 @@ function renderTableExercise(exercise, { onAnswered, onNext }) {
         input.value = cell.answer;
       }
       input.disabled = true;
-      onAnswered(correct, cell.factKey);
+      onAnswered({
+        correct,
+        factKey: cell.factKey,
+        entry: { prompt: factLabel(verb, tense, cell.pronoun), userAnswer: typed || '(blank)', correctAnswer: cell.answer, correct },
+      });
     }
     submit.textContent = allCorrect ? '✓ Alles richtig - Next →' : 'Corrected - Next →';
     submit.style.background = allCorrect ? '' : '';
@@ -382,22 +404,36 @@ function renderCheckpointPhase(container, mod, profileId) {
 
   let idx = 0;
   let correct = 0;
+  const history = [];
 
   container.innerHTML = '';
   container.appendChild(backToMapLink());
   container.appendChild(el('h1', {}, `${mod.title} · Checkpoint`));
-  const progressLine = el('p', { style: 'color:var(--cream-dim)' }, `Question 1 / ${plan.length}`);
-  container.appendChild(progressLine);
-  const stage = el('div');
+  const headerRow = el('div', { style: 'display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap' });
+  const progressLine = el('p', { style: 'color:var(--cream-dim);margin:0' }, `Question 1 / ${plan.length}`);
+  const reviewBtn = el('button', { class: 'btn', style: 'font-size:11.5px;padding:6px 10px' }, '📋 Review answers');
+  reviewBtn.disabled = true;
+  reviewBtn.addEventListener('click', renderReview);
+  headerRow.appendChild(progressLine);
+  headerRow.appendChild(reviewBtn);
+  container.appendChild(headerRow);
+  const stage = el('div', { style: 'margin-top:12px' });
   container.appendChild(stage);
+
+  function renderReview() {
+    stage.innerHTML = '';
+    stage.appendChild(reviewList(history, renderCurrent, 'Back to checkpoint'));
+  }
 
   function renderCurrent() {
     progressLine.textContent = `Question ${idx + 1} / ${plan.length}`;
     stage.innerHTML = '';
     stage.appendChild(
       renderExercise(plan[idx], {
-        onAnswered: (isCorrect, factKey) => {
+        onAnswered: ({ correct: isCorrect, factKey, entry }) => {
           srs.recordAnswer(deck, factKey, isCorrect);
+          if (entry) history.push(entry);
+          reviewBtn.disabled = history.length === 0;
           if (isCorrect) correct++;
         },
         onNext: () => {
@@ -412,6 +448,7 @@ function renderCheckpointPhase(container, mod, profileId) {
   function finish() {
     store.saveSRSDeck(profileId, deck);
     store.recordActivity(profileId);
+    reviewBtn.disabled = true;
     const pct = Math.round((correct / plan.length) * 100);
     const threshold = Math.round((mod.checkpoint?.passThreshold ?? 0.8) * 100);
     const passed = pct >= threshold;

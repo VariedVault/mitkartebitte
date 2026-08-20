@@ -1,9 +1,9 @@
 import * as store from '../store.js';
 import * as srs from '../srs.js';
-import { el, speakerButton } from '../ui/components.js';
+import { el, speakerButton, reviewList } from '../ui/components.js';
 import { allModules } from '../data/modules/index.js';
 import { VERBS } from '../data/verbs.js';
-import { factKeysForModule, getForm, TENSE_LABELS, pronounLabel } from '../ui/drills.js';
+import { factKeysForModule, getForm, TENSE_LABELS, pronounLabel, factLabel } from '../ui/drills.js';
 import { navigate } from '../router.js';
 
 function startedModulePools(profileId, deck) {
@@ -51,6 +51,15 @@ export async function renderPractice(container, { profileId }) {
 
   let idx = 0;
   let flipped = false;
+  const history = [];
+
+  const reviewBtn = el('button', { class: 'btn', style: 'font-size:11.5px;padding:6px 10px' }, '📋 Review answers');
+  reviewBtn.disabled = true;
+  reviewBtn.addEventListener('click', () => {
+    stage.innerHTML = '';
+    stage.appendChild(reviewList(history, renderCard, 'Back to deck'));
+  });
+  modeRow.appendChild(reviewBtn);
 
   function currentFact() {
     const [infinitive, tense, pronoun] = queue[idx].split('|');
@@ -107,11 +116,15 @@ export async function renderPractice(container, { profileId }) {
 
   function grade(correct) {
     const key = queue[idx];
+    const { verb, tense, pronoun, answer } = currentFact();
     srs.recordAnswer(deck, key, correct);
     store.saveSRSDeck(profileId, deck);
     store.recordActivity(profileId);
+    history.push({ prompt: factLabel(verb, tense, pronoun), correctAnswer: answer, correct });
+    reviewBtn.disabled = false;
     idx++;
     if (idx >= queue.length) {
+      reviewBtn.disabled = true;
       stage.innerHTML = '';
       stage.appendChild(
         el('div', { class: 'card celebrate' }, [

@@ -53,6 +53,11 @@ export function pronounLabel(tense, pronoun) {
   return tense === 'imperativ' ? pronoun : PRONOUN_LABELS[pronoun];
 }
 
+/** Short human-readable label for a fact, used in review lists and headers. */
+export function factLabel(verb, tense, pronoun) {
+  return `${pronoun ? pronounLabel(tense, pronoun) + ' · ' : ''}${verb.infinitive} (${TENSE_LABELS[tense]})`;
+}
+
 export function factKeyFor(verb, tense, pronoun) {
   return `${verb.infinitive}|${tense}|${pronoun}`;
 }

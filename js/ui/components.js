@@ -51,6 +51,47 @@ export function typeLabel(type) {
   return el('span', { class: `chip type-${type}` }, type);
 }
 
+/**
+ * Read-only, reverse-chronological list of this session's answered questions.
+ * `history` entries: { prompt, userAnswer, correctAnswer, correct }. `userAnswer` may be
+ * omitted for self-graded (flip-card) sessions where there's nothing typed to show.
+ * Purely a viewer - never lets you re-submit or change a past answer.
+ */
+export function reviewList(history, onBack, backLabel = 'Back') {
+  const wrap = el('div', { class: 'card' });
+  wrap.appendChild(el('h3', {}, 'This session so far'));
+  if (!history.length) {
+    wrap.appendChild(el('p', { style: 'color:var(--ink-soft)' }, 'Nothing answered yet.'));
+  } else {
+    const list = el('div', { style: 'display:flex;flex-direction:column;gap:8px;margin-top:10px;max-height:55vh;overflow-y:auto' });
+    [...history].reverse().forEach((entry, i) => {
+      const num = history.length - i;
+      const good = entry.correct;
+      list.appendChild(
+        el(
+          'div',
+          {
+            style: `border-left:4px solid ${good ? 'var(--correct)' : 'var(--incorrect)'};padding:8px 12px;background:${good ? 'rgba(72,209,122,0.12)' : 'rgba(255,92,92,0.1)'};border-radius:8px`,
+          },
+          [
+            el('div', { style: 'font-size:11px;color:var(--ink-soft);font-family:var(--font-mono)' }, `#${num} · ${entry.prompt}`),
+            el('div', { style: 'font-family:var(--font-mono);font-size:14px;margin-top:3px' }, [
+              entry.userAnswer != null ? el('span', { style: `font-weight:700;color:${good ? '#1a7a44' : '#a1341f'}` }, entry.userAnswer) : null,
+              !good ? el('span', { style: 'color:var(--ink-soft)' }, entry.userAnswer != null ? `  →  ${entry.correctAnswer}` : entry.correctAnswer) : null,
+              good && entry.userAnswer == null ? el('span', { style: 'font-weight:700;color:#1a7a44' }, entry.correctAnswer) : null,
+            ]),
+          ]
+        )
+      );
+    });
+    wrap.appendChild(list);
+  }
+  const backBtn = el('button', { class: 'btn btn-primary btn-block', style: 'margin-top:14px' }, backLabel);
+  backBtn.addEventListener('click', onBack);
+  wrap.appendChild(backBtn);
+  return wrap;
+}
+
 export function toast(container, message) {
   let node = container.querySelector('.status-msg');
   if (!node) {
