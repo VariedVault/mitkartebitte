@@ -331,6 +331,7 @@ a { color: var(--gold-bright); }
   .breadcrumb { display: none; }
   .wordmark { font-size: 16px; gap: 6px; }
   .wordmark .bump { font-size: 19px; }
+  .profile-pill { padding: 7px; border-radius: 50%; }
   .profile-pill span:not(.profile-avatar) { display: none; }
   .view { padding-left: 12px; padding-right: 12px; }
 }
