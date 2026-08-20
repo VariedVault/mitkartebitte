@@ -32,6 +32,6 @@ export function speak(text) {
     utter.rate = 0.95;
     speechSynthesis.speak(utter);
   } catch {
-    /* speech synthesis failed silently — no German voice, blocked by browser, etc. */
+    /* speech synthesis failed silently - no German voice, blocked by browser, etc. */
   }
 }

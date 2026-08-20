@@ -1,4 +1,4 @@
-// Generates exercises from verb data. Shared by every module — this is what lets all
+// Generates exercises from verb data. Shared by every module - this is what lets all
 // 16 modules ship at uniform quality without 16 bespoke drill implementations.
 
 import { PRONOUNS, PRONOUN_LABELS } from '../data/verbs.js';

@@ -1,4 +1,4 @@
-/* mit Karte, bitte — design system.
+/* mit Karte, bitte - design system.
    Concept: a card table. Deep felt-green background, cream playing cards, gold foil
    accents. Each tier gets its own color identity; each pronoun gets a consistent
    accent color everywhere it appears (memory aid). */
@@ -77,14 +77,14 @@ a { color: var(--gold-bright); }
 
 .app-header {
   position: fixed; top: 0; left: 0; right: 0; height: var(--header-h);
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex; align-items: center; gap: 8px;
   padding: 0 14px; background: var(--felt-900);
   border-bottom: 1px solid rgba(232, 184, 75, 0.25); z-index: 100;
 }
 .wordmark {
   display: flex; align-items: center; gap: 8px; background: none; border: none;
   font-family: var(--font-display); font-size: 19px; font-weight: 700; color: var(--cream);
-  padding: 6px; border-radius: var(--radius-sm);
+  padding: 6px; border-radius: var(--radius-sm); flex-shrink: 0; white-space: nowrap;
 }
 .wordmark:hover { background: rgba(255,255,255,0.06); }
 .wordmark .bump { font-size: 23px; color: var(--gold-bright); display: inline-block; transform: translateY(-1px); }
@@ -96,15 +96,15 @@ a { color: var(--gold-bright); }
   content: ''; position: absolute; top: 5px; left: 3px; right: 3px; height: 2px; background: var(--felt-900);
 }
 .breadcrumb {
-  position: absolute; left: 50%; transform: translateX(-50%);
+  flex: 1 1 auto; min-width: 0; text-align: center;
   font-family: var(--font-mono); font-size: 12px; color: var(--cream-dim);
   letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap;
-  max-width: 40vw; overflow: hidden; text-overflow: ellipsis;
+  overflow: hidden; text-overflow: ellipsis;
 }
 .profile-pill {
   display: flex; align-items: center; gap: 7px; background: rgba(255,255,255,0.08);
   border: 1px solid rgba(232,184,75,0.3); border-radius: 999px; padding: 6px 12px;
-  font-size: 13px; font-weight: 600; color: var(--cream);
+  font-size: 13px; font-weight: 600; color: var(--cream); flex-shrink: 0;
 }
 .profile-pill:hover { background: rgba(255,255,255,0.14); }
 .profile-avatar {
@@ -139,6 +139,12 @@ a { color: var(--gold-bright); }
 }
 .btn:hover { background: rgba(255,255,255,0.16); }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+/* .btn defaults assume a dark page background. Any plain (non-primary) .btn placed
+   inside a light .card needs inverted contrast, or it renders nearly invisible. */
+.card .btn:not(.btn-primary) {
+  background: rgba(10, 40, 39, 0.06); color: var(--ink); border: 1px solid var(--cream-line);
+}
+.card .btn:not(.btn-primary):hover { background: rgba(10, 40, 39, 0.12); }
 .btn-primary { background: var(--gold); color: var(--felt-900); border: none; }
 .btn-primary:hover { background: var(--gold-bright); }
 .btn-block { width: 100%; }
@@ -319,6 +325,14 @@ a { color: var(--gold-bright); }
 
 @media (min-width: 640px) {
   .profile-card .avatar-lg { width: 60px; height: 60px; }
+}
+
+@media (max-width: 640px) {
+  .breadcrumb { display: none; }
+  .wordmark { font-size: 16px; gap: 6px; }
+  .wordmark .bump { font-size: 19px; }
+  .profile-pill span:not(.profile-avatar) { display: none; }
+  .view { padding-left: 12px; padding-right: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

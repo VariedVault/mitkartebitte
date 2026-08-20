@@ -11,15 +11,15 @@ export default {
   checkpoint: { count: 10, passThreshold: 0.8 },
   explanation: {
     intro:
-      'Präsens (present tense) is how you talk about now, habits, and — very often in German — the near future too ("Ich komme morgen" = "I\'m coming tomorrow" is perfectly normal). Most German verbs are "weak" (regular): you take the infinitive, drop the -en, and add one of six endings depending on who\'s doing the action.\n\nThat\'s the whole system for a regular verb. No vowel changes, no surprises — just the ending changes.',
+      'Präsens (present tense) is how you talk about now, habits, and - very often in German - the near future too ("Ich komme morgen" = "I\'m coming tomorrow" is perfectly normal). Most German verbs are "weak" (regular): you take the infinitive, drop the -en, and add one of six endings depending on who\'s doing the action.\n\nThat\'s the whole system for a regular verb. No vowel changes, no surprises - just the ending changes.',
     rules: [
       {
         heading: 'The six endings',
-        body: 'ich -e · du -st · er/sie/es -t · wir -en · ihr -t · sie/Sie -en. Notice wir and sie/Sie both just use the bare infinitive ending (-en) — that repetition is free, not something to memorize twice.',
+        body: 'ich -e · du -st · er/sie/es -t · wir -en · ihr -t · sie/Sie -en. Notice wir and sie/Sie both just use the bare infinitive ending (-en) - that repetition is free, not something to memorize twice.',
       },
       {
         heading: 'Stems ending in -t, -d, or -n+consonant',
-        body: 'A few verbs (arbeiten, warten, öffnen) would be unpronounceable with the raw ending — "er arbeitt" — so an -e- is inserted: er arbeitet, du wartest, du öffnest. You\'ll see this pattern again and again across every tense, so it\'s worth noticing now.',
+        body: 'A few verbs (arbeiten, warten, öffnen) would be unpronounceable with the raw ending - "er arbeitt" - so an -e- is inserted: er arbeitet, du wartest, du öffnest. You\'ll see this pattern again and again across every tense, so it\'s worth noticing now.',
       },
     ],
     tableDemo: { verb: 'lernen', tense: 'praesens' },

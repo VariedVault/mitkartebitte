@@ -73,8 +73,8 @@ function renderExplanationPhase(container, mod, profileId) {
     const prev = previousModule(mod);
     container.appendChild(
       el('div', { class: 'banner', style: 'margin-bottom:16px' }, [
-        el('strong', {}, '💡 Heads up — '),
-        `this usually comes after "${prev.title}", which you haven't finished yet. Nothing's stopping you though — dive in whenever you like.`,
+        el('strong', {}, '💡 Heads up - '),
+        `this usually comes after "${prev.title}", which you haven't finished yet. Nothing's stopping you though - dive in whenever you like.`,
       ])
     );
   }
@@ -176,7 +176,7 @@ function renderPracticePhase(container, mod, profileId) {
       el('div', { class: 'card celebrate' }, [
         el('span', { class: 'big-emoji' }, '🃏'),
         el('h2', {}, 'Practice round done.'),
-        el('p', { style: 'color:var(--ink-soft)' }, `${correctCount} / ${queue.length} correct this round — the deck remembers, so weak spots come back sooner.`),
+        el('p', { style: 'color:var(--ink-soft)' }, `${correctCount} / ${queue.length} correct this round - the deck remembers, so weak spots come back sooner.`),
         el('div', { class: 'toolbar', style: 'justify-content:center;margin-top:14px' }, [
           (() => {
             const b = el('button', { class: 'btn btn-primary' }, 'Take the checkpoint');
@@ -365,7 +365,7 @@ function renderTableExercise(exercise, { onAnswered, onNext }) {
       input.disabled = true;
       onAnswered(correct, cell.factKey);
     }
-    submit.textContent = allCorrect ? '✓ Alles richtig — Next →' : 'Corrected — Next →';
+    submit.textContent = allCorrect ? '✓ Alles richtig - Next →' : 'Corrected - Next →';
     submit.style.background = allCorrect ? '' : '';
   });
   return box;
@@ -427,12 +427,12 @@ function renderCheckpointPhase(container, mod, profileId) {
     const card = el('div', { class: 'card celebrate' });
     if (passed) {
       card.appendChild(el('span', { class: 'big-emoji' }, '✨'));
-      card.appendChild(el('div', { class: 'unlock-banner' }, `Checkpoint cleared — ${pct}%`));
-      card.appendChild(el('p', { style: 'margin-top:14px;color:var(--ink-soft)' }, 'This module is marked mastered. Jump anywhere on the map — nothing here was ever locked.'));
+      card.appendChild(el('div', { class: 'unlock-banner' }, `Checkpoint cleared - ${pct}%`));
+      card.appendChild(el('p', { style: 'margin-top:14px;color:var(--ink-soft)' }, 'This module is marked mastered. Jump anywhere on the map - nothing here was ever locked.'));
     } else {
       card.appendChild(el('span', { class: 'big-emoji' }, '🃏'));
       card.appendChild(el('h2', {}, `${pct}% this time`));
-      card.appendChild(el('p', { style: 'color:var(--ink-soft)' }, `Needed ${threshold}% to clear it — no rush, no streak to lose. Practice a bit more and retake it whenever you like.`));
+      card.appendChild(el('p', { style: 'color:var(--ink-soft)' }, `Needed ${threshold}% to clear it - no rush, no streak to lose. Practice a bit more and retake it whenever you like.`));
     }
     card.appendChild(
       el('div', { class: 'toolbar', style: 'justify-content:center;margin-top:14px' }, [

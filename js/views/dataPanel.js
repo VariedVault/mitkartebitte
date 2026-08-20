@@ -29,13 +29,35 @@ function heatmapGrid(activity) {
 export async function renderDataPanel(container, { profileId }) {
   container.innerHTML = '';
   const profile = store.listProfiles().find((p) => p.id === profileId);
-  container.appendChild(el('h1', {}, 'Backup, transfer & settings'));
+  container.appendChild(el('h1', {}, 'Settings'));
+
+  // Name card
+  const nameCard = el('div', { class: 'card' });
+  nameCard.appendChild(el('h3', {}, 'Your name'));
+  const nameRow = el('div', { style: 'display:flex;gap:8px;margin-top:8px' });
+  const nameInput = el('input', {
+    value: profile?.name || '',
+    style: 'flex:1;min-width:0;background:white;color:var(--ink);border:1px solid var(--cream-line);border-radius:8px;padding:9px 11px;font-size:14px',
+  });
+  const saveNameBtn = el('button', { class: 'btn btn-primary' }, 'Save');
+  saveNameBtn.addEventListener('click', () => {
+    const name = nameInput.value.trim();
+    if (name) {
+      store.renameProfile(profileId, name);
+      toast(nameCard, 'Saved.');
+    }
+  });
+  nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); saveNameBtn.click(); } });
+  nameRow.appendChild(nameInput);
+  nameRow.appendChild(saveNameBtn);
+  nameCard.appendChild(nameRow);
+  container.appendChild(nameCard);
 
   // Settings card
   const settingsCard = el('div', { class: 'card' });
   const settings = store.getSettings(profileId);
   settingsCard.appendChild(el('h3', {}, 'Activity heatmap'));
-  settingsCard.appendChild(el('p', {}, 'Purely optional, off by default. Shows when you practiced — never a streak to protect, never a guilt trip for a skipped day.'));
+  settingsCard.appendChild(el('p', {}, 'Purely optional, off by default. Shows when you practiced - never a streak to protect, never a guilt trip for a skipped day.'));
   const toggleRow = el('label', { style: 'display:flex;align-items:center;gap:10px;cursor:pointer;margin:10px 0' });
   const checkbox = el('input', { type: 'checkbox' });
   checkbox.checked = !!settings.heatmapEnabled;
@@ -61,39 +83,34 @@ export async function renderDataPanel(container, { profileId }) {
   backupCard.appendChild(el('h3', {}, 'Export / import'));
   backupCard.appendChild(el('p', {}, 'Everything lives only in this browser. Export a backup, or move your progress to another device by exporting here and importing there.'));
   const toolbar = el('div', { class: 'toolbar' });
-  const exportOneBtn = el('button', { class: 'btn' }, `Export "${profile?.name}"`);
-  exportOneBtn.addEventListener('click', () => {
-    downloadJSON(store.exportProfile(profileId), `mit-karte-bitte_${profile.name.toLowerCase().replace(/\s+/g, '-')}.json`);
+  const exportBtn = el('button', { class: 'btn' }, 'Export my progress');
+  exportBtn.addEventListener('click', () => {
+    downloadJSON(store.exportProfile(profileId), `mit-karte-bitte_${(profile?.name || 'progress').toLowerCase().replace(/\s+/g, '-')}.json`);
     toast(backupCard, 'Exported.');
   });
-  const exportAllBtn = el('button', { class: 'btn' }, 'Export ALL profiles');
-  exportAllBtn.addEventListener('click', () => {
-    downloadJSON(store.exportAllProfiles(), 'mit-karte-bitte_all-profiles.json');
-    toast(backupCard, 'Exported all profiles.');
-  });
-  const importBtn = el('button', { class: 'btn btn-primary' }, 'Import file');
+  const importBtn = el('button', { class: 'btn btn-primary' }, 'Import backup');
   const fileInput = el('input', { type: 'file', accept: 'application/json,.json', class: 'sr-only' });
   importBtn.addEventListener('click', () => fileInput.click());
   fileInput.addEventListener('change', async () => {
     const file = fileInput.files?.[0];
     if (!file) return;
+    if (!window.confirm('This replaces your current progress with the file you pick. Continue?')) {
+      fileInput.value = '';
+      return;
+    }
     try {
       const text = await file.text();
-      const count = store.importData(JSON.parse(text));
-      toast(backupCard, `Imported ${count} profile(s). Switch to them from the Profile tab.`);
+      store.importIntoProfile(profileId, JSON.parse(text));
+      toast(backupCard, 'Restored. Reloading...');
+      setTimeout(() => location.reload(), 900);
     } catch (e) {
-      toast(backupCard, 'Could not read that file — is it a mit Karte, bitte export?');
+      toast(backupCard, 'Could not read that file - is it a mit Karte, bitte export?');
     }
     fileInput.value = '';
   });
-  toolbar.appendChild(exportOneBtn);
-  toolbar.appendChild(exportAllBtn);
+  toolbar.appendChild(exportBtn);
   toolbar.appendChild(importBtn);
   toolbar.appendChild(fileInput);
   backupCard.appendChild(toolbar);
   container.appendChild(backupCard);
-
-  const switchBtn = el('button', { class: 'btn btn-block', style: 'margin-top:16px' }, 'Switch profile');
-  switchBtn.addEventListener('click', () => { location.hash = '/profiles'; });
-  container.appendChild(switchBtn);
 }

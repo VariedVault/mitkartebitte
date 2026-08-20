@@ -1,4 +1,4 @@
-// The course registry — the plug-in point. A future course (cases, prepositions,
+// The course registry - the plug-in point. A future course (cases, prepositions,
 // word order...) is just another array of module descriptors pushed onto COURSES.
 //
 // Module descriptor shape:
@@ -50,7 +50,7 @@ export const COURSES = [
     ],
   },
   // Future courses (cases, prepositions, adjective endings, word order) plug in here
-  // as sibling entries — no changes needed anywhere else in the app.
+  // as sibling entries - no changes needed anywhere else in the app.
 ];
 
 export function allModules() {
@@ -66,7 +66,7 @@ export function previousModule(mod) {
 }
 
 /**
- * Soft lock only — never blocks navigation, just tells the UI whether to show a
+ * Soft lock only - never blocks navigation, just tells the UI whether to show a
  * "usually comes after X" nudge. A module is locked if the immediately-preceding
  * module (by course order) hasn't had its checkpoint passed yet for this profile.
  */

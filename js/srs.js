@@ -1,5 +1,5 @@
 // Leitner-box spaced repetition. A "fact" is one memorizable unit: a verb in one tense,
-// for one pronoun — e.g. "fahren|praesens|du". Wrong answers re-queue; there are no
+// for one pronoun - e.g. "fahren|praesens|du". Wrong answers re-queue; there are no
 // lives/penalties, only a box demotion so the fact comes back sooner.
 
 const BOX_INTERVAL_DAYS = [0, 1, 3, 7, 16, 35]; // index = box number (1-5 used; 0 unused)
@@ -58,7 +58,7 @@ export function buildSessionQueue(deck, candidateKeys, count) {
   return ordered.slice(0, count);
 }
 
-/** Mastery % for a set of fact keys belonging to one module — used for the progress ring. */
+/** Mastery % for a set of fact keys belonging to one module - used for the progress ring. */
 export function masteryForKeys(deck, keys) {
   if (keys.length === 0) return 0;
   const total = keys.reduce((sum, key) => {

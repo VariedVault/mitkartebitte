@@ -16,9 +16,9 @@ const TIER_META = {
 export async function renderCourseMap(container, { profileId }) {
   container.innerHTML = '';
   const profile = store.listProfiles().find((p) => p.id === profileId);
-  container.appendChild(el('h1', {}, `Your line, ${profile ? profile.name : ''}`));
+  container.appendChild(el('h1', {}, 'Course Map'));
   container.appendChild(
-    el('p', { style: 'color:var(--cream-dim)' }, 'Sixteen stops, four tiers. 🔒 just means "usually comes later" — every module is still one tap away whenever you want it.')
+    el('p', { style: 'color:var(--cream-dim)' }, `Hi ${profile ? profile.name : 'there'}. Sixteen stops, four tiers. 🔒 just means "usually comes later" - every module is still one tap away whenever you want it.`)
   );
 
   const deck = store.getSRSDeck(profileId);

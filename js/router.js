@@ -1,4 +1,4 @@
-// Minimal hash router. No page reloads — the app shell renders once, views swap below it.
+// Minimal hash router. No page reloads - the app shell renders once, views swap below it.
 
 let currentHandler = null;
 

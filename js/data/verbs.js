@@ -1,10 +1,10 @@
-// Shared verb-data pool. Every course module FILTERS this pool — none owns its own verbs.
+// Shared verb-data pool. Every course module FILTERS this pool - none owns its own verbs.
 // Hand-authored and verified: praesens, praeteritum (strong/mixed/irregular), partizip2,
-// imperativ, and konjunktiv2 (only where a living synthetic form exists — see conjugate.js
+// imperativ, and konjunktiv2 (only where a living synthetic form exists - see conjugate.js
 // for why most verbs derive Konjunktiv II via würde + infinitive instead of a fabricated form).
 //
 // Pronoun key convention used everywhere in this app:
-//   ich | du | er (covers er/sie/es — identical verb form) | wir | ihr | sie (covers sie/Sie)
+//   ich | du | er (covers er/sie/es - identical verb form) | wir | ihr | sie (covers sie/Sie)
 // Imperativ only ever has three addressee forms: du | ihr | Sie.
 
 export const PRONOUNS = ['ich', 'du', 'er', 'wir', 'ihr', 'sie'];
@@ -221,7 +221,7 @@ export const VERBS = [
       imperativ: { du: 'Reise!', ihr: 'Reist!', Sie: 'Reisen Sie!' },
     },
     tags: ['movement'],
-    notes: 'A weak verb that still takes sein — it describes a change of location, not just an action.',
+    notes: 'A weak verb that still takes sein - it describes a change of location, not just an action.',
     example: { de: 'Wir sind nach Italien gereist.', en: 'We traveled to Italy.' },
   },
   {
@@ -377,7 +377,7 @@ export const VERBS = [
       imperativ: { du: 'Empfiehl!', ihr: 'Empfehlt!', Sie: 'Empfehlen Sie!' },
     },
     tags: ['communication', 'ablaut-e-ie'],
-    notes: 'emp- behaves as an inseparable prefix, so no ge- — and the partizip2 vowel shifts again to o: empfohlen.',
+    notes: 'emp- behaves as an inseparable prefix, so no ge- - and the partizip2 vowel shifts again to o: empfohlen.',
     example: { de: 'Was empfehlen Sie?', en: 'What do you recommend?' },
   },
 
@@ -464,7 +464,7 @@ export const VERBS = [
     example: { de: 'Der Film beginnt um acht.', en: 'The film starts at eight.' },
   },
 
-  // ---------------------------------------------------------------- STRONG — other high-frequency movement/misc
+  // ---------------------------------------------------------------- STRONG - other high-frequency movement/misc
   {
     infinitive: 'gehen', english: 'to go, to walk', type: 'strong', auxiliary: 'sein', level: 'A1',
     separable: false, reflexive: false, partizip2: 'gegangen',
@@ -558,7 +558,7 @@ export const VERBS = [
     },
     konjunktiv2: t('wüsste', 'wüsstest', 'wüsste', 'wüssten', 'wüsstet', 'wüssten'),
     tags: ['thinking'],
-    notes: 'Praesens ich/er share one irregular form (weiß) with no ending — same family as the modal verbs.',
+    notes: 'Praesens ich/er share one irregular form (weiß) with no ending - same family as the modal verbs.',
     example: { de: 'Ich weiß es nicht.', en: "I don't know." },
   },
 
@@ -675,7 +675,7 @@ export const VERBS = [
     },
     konjunktiv2: t('möchte', 'möchtest', 'möchte', 'möchten', 'möchtet', 'möchten'),
     tags: ['modal'],
-    notes: 'mögen’s own Konjunktiv II form is möchte — which is exactly the polite "would like" verb below.',
+    notes: 'mögen’s own Konjunktiv II form is möchte - which is exactly the polite "would like" verb below.',
     example: { de: 'Ich mag Kaffee.', en: 'I like coffee.' },
   },
   {
@@ -687,7 +687,7 @@ export const VERBS = [
       imperativ: null,
     },
     tags: ['modal', 'polite'],
-    notes: 'Not a separate verb — this is mögen’s Konjunktiv II, lexicalized as the everyday polite present tense. To talk about the past, use wollte or mochte instead.',
+    notes: 'Not a separate verb - this is mögen’s Konjunktiv II, lexicalized as the everyday polite present tense. To talk about the past, use wollte or mochte instead.',
     example: { de: 'Ich möchte einen Kaffee, bitte.', en: "I'd like a coffee, please." },
   },
 
@@ -857,6 +857,6 @@ export const VERBS = [
 
 // Verbs with a living synthetic Konjunktiv II already declared above via `konjunktiv2`
 // (sein, haben, werden, wissen, the 6 modals, denken, kommen). All other verbs derive
-// Konjunktiv II periphrastically (würde + infinitive) in conjugate.js — that mirrors how
+// Konjunktiv II periphrastically (würde + infinitive) in conjugate.js - that mirrors how
 // Konjunktiv II actually works in modern spoken German instead of resurrecting archaic
 // synthetic forms (e.g. "führe", "schriebe") nobody actually says.

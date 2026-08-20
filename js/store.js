@@ -23,7 +23,7 @@ function write(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch {
-    /* storage unavailable — app still works in-memory for this session */
+    /* storage unavailable - app still works in-memory for this session */
   }
 }
 
@@ -191,4 +191,15 @@ export function importData(bundle) {
   }
   write(PROFILES_KEY, profiles);
   return imported;
+}
+
+/** Restores a backup directly into an existing profile (overwriting its progress/deck), keeping its id and name. */
+export function importIntoProfile(profileId, bundle) {
+  if (!bundle || !Array.isArray(bundle.profiles) || !bundle.profiles[0]) throw new Error('Not a mit Karte, bitte export file.');
+  const entry = bundle.profiles[0];
+  if (entry.progress) write(keyFor(profileId, 'progress'), entry.progress);
+  if (entry.srs) write(keyFor(profileId, 'srs'), entry.srs);
+  if (entry.position) write(keyFor(profileId, 'position'), entry.position);
+  if (entry.activity) write(keyFor(profileId, 'activity'), entry.activity);
+  if (entry.settings) write(keyFor(profileId, 'settings'), { ...getSettings(profileId), ...entry.settings });
 }

@@ -1,11 +1,11 @@
 // Network-first, falling back to cache when offline. This is deliberately NOT cache-first:
 // during active development, a cache-first strategy means anyone who already loaded the
-// app once keeps seeing that exact snapshot forever, no matter what ships later — the
+// app once keeps seeing that exact snapshot forever, no matter what ships later - the
 // service worker update lag (new SW installs in the background, only takes over after a
 // second reload) compounds this. Network-first fixes that for anyone online, while still
 // falling back to the cache so the app keeps working offline.
 // Bump CACHE_NAME whenever the precache list itself changes (files added/removed).
-const CACHE_NAME = 'mitkartebitte-v2';
+const CACHE_NAME = 'mitkartebitte-v3';
 
 const PRECACHE_URLS = [
   './',
@@ -27,7 +27,6 @@ const PRECACHE_URLS = [
   './js/views/lesson.js',
   './js/views/onboarding.js',
   './js/views/practice.js',
-  './js/views/profiles.js',
   './js/data/verbs.js',
   './js/data/conjugate.js',
   './js/data/modules/index.js',

@@ -1,7 +1,6 @@
 import * as store from './store.js';
 import { route, startRouter, navigate, currentPath } from './router.js';
 import { initTTS } from './tts.js';
-import { renderProfiles } from './views/profiles.js';
 import { renderCourseMap } from './views/courseMap.js';
 import { renderOnboarding } from './views/onboarding.js';
 import { renderLesson } from './views/lesson.js';
@@ -23,9 +22,14 @@ export function activeProfileId() {
   return store.getActiveProfileId();
 }
 
+/** Single-user app: always resolves to a real profile, auto-activating the first one if none is set yet. */
 export function requireProfile() {
-  const id = store.getActiveProfileId();
-  if (!id || !store.listProfiles().some((p) => p.id === id)) return null;
+  let id = store.getActiveProfileId();
+  const profiles = store.listProfiles();
+  if (!id || !profiles.some((p) => p.id === id)) {
+    id = profiles[0]?.id || null;
+    if (id) store.setActiveProfileId(id);
+  }
   return id;
 }
 
@@ -63,7 +67,6 @@ export function goToCourseMap() {
 
 route('/', async () => {
   const id = requireProfile();
-  if (!id) return navigate('/profiles');
   const settings = store.getSettings(id);
   if (!settings.onboardingDone) return navigate('/onboarding');
   const pos = store.getPosition(id);
@@ -71,16 +74,8 @@ route('/', async () => {
   return navigate('/course-map');
 });
 
-route('/profiles', async () => {
-  setBreadcrumb('');
-  setActiveNav('');
-  refreshProfilePill();
-  await renderProfiles(els.view, { onSelected: (id) => afterProfileSelected(id) });
-});
-
 route('/onboarding', async () => {
   const id = requireProfile();
-  if (!id) return navigate('/profiles');
   setBreadcrumb('Module 0 · Get started');
   setActiveNav('map');
   refreshProfilePill();
@@ -88,6 +83,7 @@ route('/onboarding', async () => {
     profileId: id,
     onDone: () => {
       store.setSetting(id, 'onboardingDone', true);
+      refreshProfilePill();
       navigate('/course-map');
     },
   });
@@ -95,7 +91,6 @@ route('/onboarding', async () => {
 
 route('/course-map', async () => {
   const id = requireProfile();
-  if (!id) return navigate('/profiles');
   setBreadcrumb('');
   setActiveNav('map');
   refreshProfilePill();
@@ -105,7 +100,6 @@ route('/course-map', async () => {
 
 route('/module/:id', async ({ id: moduleId }) => {
   const profileId = requireProfile();
-  if (!profileId) return navigate('/profiles');
   setActiveNav('map');
   refreshProfilePill();
   store.setPosition(profileId, { path: `/module/${moduleId}` });
@@ -114,7 +108,6 @@ route('/module/:id', async ({ id: moduleId }) => {
 
 route('/practice', async () => {
   const profileId = requireProfile();
-  if (!profileId) return navigate('/profiles');
   setBreadcrumb('Practice · Ride the deck');
   setActiveNav('practice');
   refreshProfilePill();
@@ -123,24 +116,14 @@ route('/practice', async () => {
 
 route('/data', async () => {
   const profileId = requireProfile();
-  if (!profileId) return navigate('/profiles');
   setBreadcrumb('Backup & settings');
   setActiveNav('settings');
   refreshProfilePill();
   await renderDataPanel(els.view, { profileId });
 });
 
-function afterProfileSelected(id) {
-  store.setActiveProfileId(id);
-  const settings = store.getSettings(id);
-  refreshProfilePill();
-  if (!settings.onboardingDone) return navigate('/onboarding');
-  const pos = store.getPosition(id);
-  navigate(pos && pos.path && pos.path !== '/profiles' ? pos.path : '/course-map');
-}
-
 document.getElementById('wordmarkBtn').addEventListener('click', () => navigate('/course-map'));
-els.profilePill.addEventListener('click', () => navigate('/profiles'));
+els.profilePill.addEventListener('click', () => navigate('/data'));
 els.nav.querySelectorAll('button').forEach((btn) => {
   btn.addEventListener('click', () => navigate(btn.dataset.path));
 });

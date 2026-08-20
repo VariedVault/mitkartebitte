@@ -1,10 +1,10 @@
 // Derives compound tenses from the hand-authored primitives in verbs.js.
 //
 // Why derive instead of hand-author everything: perfekt/plusquamperfekt/futur/passiv are
-// pure SENTENCE ASSEMBLY (auxiliary + participle/infinitive in a fixed slot) — that rule
+// pure SENTENCE ASSEMBLY (auxiliary + participle/infinitive in a fixed slot) - that rule
 // never changes between weak and strong verbs. The irregularity always lives in the piece
 // being assembled (the partizip2, the auxiliary choice), and those come from verbs.js,
-// which IS hand-authored and verified. So deriving here never guesses a strong-verb stem —
+// which IS hand-authored and verified. So deriving here never guesses a strong-verb stem -
 // it only combines already-verified pieces. Konjunktiv I is genuinely regular for nearly
 // every German verb (sein is the sole hand-authored exception), so it's derived too.
 
@@ -22,7 +22,7 @@ function auxTable(auxiliary, tense) {
 
 /**
  * Reflexive verbs are only reflexive-pronoun-free in the single-word tenses (praesens,
- * praeteritum, konjunktiv1, synthetic konjunktiv2) — there the bare verb form is tested
+ * praeteritum, konjunktiv1, synthetic konjunktiv2) - there the bare verb form is tested
  * as its own atomic fact, with reflexivity communicated by the UI around it. Any
  * MULTI-WORD/compound tense assembled here would be grammatically incomplete without the
  * reflexive pronoun baked in ("hat gefreut" is wrong; "hat sich gefreut" is correct), so
@@ -32,12 +32,12 @@ function reflexivePrefix(verb, pronoun) {
   return verb.reflexive ? `${REFLEXIVE_PRONOUNS[pronoun]} ` : '';
 }
 
-/** infinitive is stored as "sich freuen" — strip the "sich " when reassembling with a different pronoun. */
+/** infinitive is stored as "sich freuen" - strip the "sich " when reassembling with a different pronoun. */
 function bareInfinitive(verb) {
   return verb.reflexive ? verb.infinitive.replace(/^sich\s+/, '') : verb.infinitive;
 }
 
-/** "hat gemacht" / "hat sich gefreut" / "ist gefahren" — perfekt/plusquamperfekt. */
+/** "hat gemacht" / "hat sich gefreut" / "ist gefahren" - perfekt/plusquamperfekt. */
 export function getPerfekt(verb, pronoun) {
   const aux = auxTable(verb.auxiliary, 'praesens')[pronoun];
   return `${aux} ${reflexivePrefix(verb, pronoun)}${verb.partizip2}`;
@@ -48,13 +48,13 @@ export function getPlusquamperfekt(verb, pronoun) {
   return `${aux} ${reflexivePrefix(verb, pronoun)}${verb.partizip2}`;
 }
 
-/** "wird fahren" / "wird sich freuen" — werden (praesens) + bare infinitive. */
+/** "wird fahren" / "wird sich freuen" - werden (praesens) + bare infinitive. */
 export function getFutur1(verb, pronoun) {
   const werde = WERDEN.tables.praesens[pronoun];
   return `${werde} ${reflexivePrefix(verb, pronoun)}${bareInfinitive(verb)}`;
 }
 
-/** "wird gefahren sein" — werden (praesens) + partizip2 + aux-infinitive. */
+/** "wird gefahren sein" - werden (praesens) + partizip2 + aux-infinitive. */
 export function getFutur2(verb, pronoun) {
   const werde = WERDEN.tables.praesens[pronoun];
   return `${werde} ${reflexivePrefix(verb, pronoun)}${verb.partizip2} ${verb.auxiliary}`;
@@ -62,7 +62,7 @@ export function getFutur2(verb, pronoun) {
 
 const KONJ1_ENDINGS = { ich: 'e', du: 'est', er: 'e', wir: 'en', ihr: 'et', sie: 'en' };
 
-/** Konjunktiv I — regular stem+ending rule for every verb except sein. */
+/** Konjunktiv I - regular stem+ending rule for every verb except sein. */
 export function getKonjunktiv1(verb, pronoun) {
   if (verb.infinitive === 'sein') {
     return { ich: 'sei', du: 'seist', er: 'sei', wir: 'seien', ihr: 'seiet', sie: 'seien' }[pronoun];
@@ -80,7 +80,7 @@ export function getKonjunktiv1Perfekt(verb, pronoun) {
 
 /**
  * Konjunktiv II. Uses the hand-authored synthetic form when the verb declares one
- * (sein, haben, werden, wissen, the modals, denken, kommen — forms still alive in
+ * (sein, haben, werden, wissen, the modals, denken, kommen - forms still alive in
  * everyday speech). Every other verb derives the würde + infinitive periphrasis,
  * which is how Konjunktiv II actually works for the vast majority of German verbs.
  */

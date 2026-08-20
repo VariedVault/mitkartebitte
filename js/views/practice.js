@@ -25,7 +25,7 @@ export async function renderPractice(container, { profileId }) {
 
   container.innerHTML = '';
   container.appendChild(el('h1', {}, 'Ride the deck'));
-  const sub = el('p', { style: 'color:var(--cream-dim)' }, 'Flip each card, grade yourself honestly — that’s what makes the schedule work.');
+  const sub = el('p', { style: 'color:var(--cream-dim)' }, 'Flip each card, grade yourself honestly - that’s what makes the schedule work.');
   container.appendChild(sub);
 
   const modeRow = el('div', { class: 'toolbar', style: 'margin-bottom:16px' });
@@ -40,7 +40,7 @@ export async function renderPractice(container, { profileId }) {
   container.appendChild(modeRow);
 
   if (queue.length === 0) {
-    container.appendChild(el('div', { class: 'card' }, 'Nothing due yet — play a module from the course map first.'));
+    container.appendChild(el('div', { class: 'card' }, 'Nothing due yet - play a module from the course map first.'));
     return;
   }
 
@@ -71,7 +71,7 @@ export async function renderPractice(container, { profileId }) {
     const front = el('div', { class: 'flip-card-face flip-card-front' });
     if (speakingMode) {
       front.appendChild(el('div', { style: 'font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft)' }, 'Say it in German:'));
-      front.appendChild(el('div', { style: 'font-size:19px;font-weight:700;margin-top:8px' }, `“${pronounHint(pronoun, tense)} ${verb.english}” — ${TENSE_LABELS[tense]}`));
+      front.appendChild(el('div', { style: 'font-size:19px;font-weight:700;margin-top:8px' }, `“${pronounHint(pronoun, tense)} ${verb.english}” - ${TENSE_LABELS[tense]}`));
       front.appendChild(el('div', { style: 'margin-top:6px;color:var(--ink-soft);font-size:13px' }, verb.example ? `Hint: ${verb.example.en}` : ''));
     } else {
       front.appendChild(el('div', { style: 'font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft)' }, TENSE_LABELS[tense]));
