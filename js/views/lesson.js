@@ -375,7 +375,8 @@ function renderTableExercise(exercise, { onAnswered, onNext }) {
     for (const { input, cell } of inputs) {
       const typed = input.value.trim();
       const correct = answersMatch(input.value, cell.answer);
-      input.classList.add('filled', correct ? '' : 'wrong');
+      input.classList.add('filled');
+      if (!correct) input.classList.add('wrong');
       if (!correct) {
         allCorrect = false;
         input.value = cell.answer;
@@ -388,7 +389,6 @@ function renderTableExercise(exercise, { onAnswered, onNext }) {
       });
     }
     submit.textContent = allCorrect ? '✓ Alles richtig - Next →' : 'Corrected - Next →';
-    submit.style.background = allCorrect ? '' : '';
   });
   return box;
 }
