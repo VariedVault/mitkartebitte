@@ -97,4 +97,4 @@ you explicitly export yourself.
 
 ## License
 
-MIT.
+MIT — see [LICENSE](./LICENSE). Copyright (c) 2026 Balaji Jayakumar (VariedVault).
