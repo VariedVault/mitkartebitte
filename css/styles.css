@@ -78,7 +78,7 @@ a { color: var(--gold-bright); }
 .app-header {
   position: fixed; top: 0; left: 0; right: 0; height: var(--header-h);
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 14px; background: rgba(10, 40, 39, 0.92); backdrop-filter: blur(8px);
+  padding: 0 14px; background: var(--felt-900);
   border-bottom: 1px solid rgba(232, 184, 75, 0.25); z-index: 100;
 }
 .wordmark {
@@ -120,7 +120,7 @@ a { color: var(--gold-bright); }
 
 .bottom-nav {
   position: fixed; bottom: 0; left: 0; right: 0; height: var(--nav-h);
-  display: flex; background: rgba(10,40,39,0.95); backdrop-filter: blur(8px);
+  display: flex; background: var(--felt-900);
   border-top: 1px solid rgba(232,184,75,0.25); z-index: 100;
 }
 .bottom-nav button {
