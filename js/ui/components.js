@@ -92,6 +92,13 @@ export function reviewList(history, onBack, backLabel = 'Back') {
   return wrap;
 }
 
+/** Small "← Back to X" link, styled for the dark page background (not inside a card). */
+export function backLink(label, onClick) {
+  const link = el('button', { class: 'btn', style: 'font-size:12.5px;padding:7px 12px;margin-bottom:14px;background:transparent;border-color:rgba(255,255,255,0.25)' }, `← ${label}`);
+  link.addEventListener('click', onClick);
+  return link;
+}
+
 export function toast(container, message) {
   let node = container.querySelector('.status-msg');
   if (!node) {

@@ -9,9 +9,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/fonts.css">
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -28,8 +26,31 @@
   <main class="view" id="view" role="main"></main>
 
   <footer class="app-footer" id="appFooter">
-    <span>Built by <a href="https://github.com/VariedVault" target="_blank" rel="noopener noreferrer">Balaji</a></span>
-    <a href="https://buymeacoffee.com/variedvault" target="_blank" rel="noopener noreferrer" class="coffee-link">Buy me a coffee ☕</a>
+    <div class="footer-inner">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <h3 class="footer-heading">Navigation</h3>
+          <a href="#/course-map">Map</a>
+          <a href="#/practice">Practice</a>
+          <a href="#/data">Settings</a>
+        </div>
+        <div class="footer-col">
+          <h3 class="footer-heading">About</h3>
+          <p class="footer-about">A free, open-source tool to learn German A1→B1. No signup, no ads, no tracking. Works offline.</p>
+          <a href="https://github.com/VariedVault" target="_blank" rel="noopener noreferrer">Part of VariedVault</a>
+        </div>
+        <div class="footer-col">
+          <h3 class="footer-heading">Legal</h3>
+          <a href="#/impressum">Impressum</a>
+          <a href="#/datenschutz">Datenschutz</a>
+          <a href="#/contact">Contact</a>
+        </div>
+      </div>
+      <div class="footer-bottombar">
+        <span>Built by <a href="https://github.com/VariedVault" target="_blank" rel="noopener noreferrer">Balaji</a></span>
+        <a href="https://buymeacoffee.com/variedvault" target="_blank" rel="noopener noreferrer" class="coffee-link">☕ Buy me a coffee</a>
+      </div>
+    </div>
   </footer>
 
   <nav class="bottom-nav" id="bottomNav" aria-label="Primary">

@@ -113,4 +113,42 @@ export async function renderDataPanel(container, { profileId }) {
   toolbar.appendChild(fileInput);
   backupCard.appendChild(toolbar);
   container.appendChild(backupCard);
+
+  // Clear this profile — everyday, safe reset
+  const clearCard = el('div', { class: 'card' });
+  clearCard.appendChild(el('h3', {}, 'Clear this profile'));
+  clearCard.appendChild(el('p', {}, `Resets ${profile ? `"${profile.name}"` : 'this profile'}'s course progress, checkpoint results, and SRS deck back to zero. Your name and settings stay as they are. Other profiles, if you have any, are not touched.`));
+  const clearBtn = el('button', { class: 'btn' }, 'Clear this profile');
+  clearBtn.addEventListener('click', () => {
+    const ok = window.confirm(
+      `Clear all progress for "${profile?.name || 'this profile'}"?\n\nThis permanently deletes this profile's course progress, checkpoint results, and SRS (spaced-repetition) deck. This cannot be undone. Your profile name and settings are kept.`
+    );
+    if (!ok) return;
+    store.clearProfileData(profileId);
+    toast(clearCard, 'Cleared. Reloading...');
+    setTimeout(() => location.reload(), 900);
+  });
+  clearCard.appendChild(clearBtn);
+  container.appendChild(clearCard);
+
+  // Reset all data — danger zone, full factory reset
+  const dangerCard = el('div', { class: 'card card-danger' });
+  dangerCard.appendChild(el('h3', {}, '⚠️ Reset all data'));
+  dangerCard.appendChild(
+    el('p', { style: 'color:#7a3a2f' }, 'Deletes every profile on this device — not just this one — along with all of their progress, decks, and settings. This is a full factory reset of the app in this browser. There is no undo.')
+  );
+  const resetBtn = el('button', { class: 'btn btn-danger' }, 'Reset all data');
+  resetBtn.addEventListener('click', () => {
+    const ok = window.confirm(
+      'Reset ALL data?\n\nThis permanently deletes EVERY profile on this device (not just this one) and all of their progress, decks, and settings. This cannot be undone.\n\nType-to-confirm is skipped here, so make sure you mean it — click OK only if you want a full factory reset.'
+    );
+    if (!ok) return;
+    store.resetAllData();
+    toast(dangerCard, 'All data cleared. Reloading...');
+    // location.reload() alone would keep the current #/data hash, skipping straight back to
+    // Settings instead of the fresh-profile onboarding gate. Drop the hash first.
+    setTimeout(() => location.replace(location.pathname + location.search), 900);
+  });
+  dangerCard.appendChild(resetBtn);
+  container.appendChild(dangerCard);
 }

@@ -77,6 +77,26 @@ export function deleteProfile(id) {
   if (getActiveProfileId() === id) write(ACTIVE_KEY, null);
 }
 
+/** Everyday reset: wipes ONE profile's progress/deck/position. Keeps the profile (name,
+ *  settings, activity heatmap) and every other profile untouched. */
+export function clearProfileData(id) {
+  for (const part of ['progress', 'srs', 'position']) {
+    try { localStorage.removeItem(keyFor(id, part)); } catch { /* ignore */ }
+  }
+}
+
+/** Factory reset: wipes every mitkartebitte:* key in localStorage — all profiles, all data. */
+export function resetAllData() {
+  try {
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(`${NS}:`)) keys.push(k);
+    }
+    keys.forEach((k) => localStorage.removeItem(k));
+  } catch { /* storage unavailable */ }
+}
+
 export function getActiveProfileId() {
   return read(ACTIVE_KEY, null);
 }

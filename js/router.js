@@ -40,6 +40,7 @@ async function dispatch() {
       r.paramNames.forEach((name, i) => (routeParams[name] = decodeURIComponent(m[i + 1])));
       currentHandler = r.handler;
       await r.handler({ ...routeParams, query: params });
+      window.scrollTo(0, 0); // every route starts at the top — footer links otherwise land mid-scroll
       return;
     }
   }

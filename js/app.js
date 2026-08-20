@@ -6,6 +6,7 @@ import { renderOnboarding } from './views/onboarding.js';
 import { renderLesson } from './views/lesson.js';
 import { renderPractice } from './views/practice.js';
 import { renderDataPanel } from './views/dataPanel.js';
+import { renderImpressum, renderDatenschutz, renderContact } from './views/legal.js';
 
 initTTS();
 store.ensureSeedProfiles();
@@ -120,6 +121,30 @@ route('/data', async () => {
   setActiveNav('settings');
   refreshProfilePill();
   await renderDataPanel(els.view, { profileId });
+});
+
+route('/impressum', async () => {
+  requireProfile();
+  setBreadcrumb('Impressum');
+  setActiveNav('');
+  refreshProfilePill();
+  await renderImpressum(els.view);
+});
+
+route('/datenschutz', async () => {
+  requireProfile();
+  setBreadcrumb('Datenschutzerklärung');
+  setActiveNav('');
+  refreshProfilePill();
+  await renderDatenschutz(els.view);
+});
+
+route('/contact', async () => {
+  requireProfile();
+  setBreadcrumb('Contact');
+  setActiveNav('');
+  refreshProfilePill();
+  await renderContact(els.view);
 });
 
 document.getElementById('wordmarkBtn').addEventListener('click', () => navigate('/course-map'));
