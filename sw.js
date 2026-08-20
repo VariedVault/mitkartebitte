@@ -1,6 +1,11 @@
-// Cache-first offline shell. Bump CACHE_NAME whenever any precached file changes so
-// clients pick up the new version instead of serving stale assets forever.
-const CACHE_NAME = 'mitkartebitte-v1';
+// Network-first, falling back to cache when offline. This is deliberately NOT cache-first:
+// during active development, a cache-first strategy means anyone who already loaded the
+// app once keeps seeing that exact snapshot forever, no matter what ships later — the
+// service worker update lag (new SW installs in the background, only takes over after a
+// second reload) compounds this. Network-first fixes that for anyone online, while still
+// falling back to the cache so the app keeps working offline.
+// Bump CACHE_NAME whenever the precache list itself changes (files added/removed).
+const CACHE_NAME = 'mitkartebitte-v2';
 
 const PRECACHE_URLS = [
   './',
@@ -60,18 +65,19 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  if (new URL(event.request.url).origin !== self.location.origin) return;
+
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request)
-        .then((response) => {
-          if (response.ok && response.type === 'basic') {
-            const copy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
-          }
-          return response;
-        })
-        .catch(() => (event.request.mode === 'navigate' ? caches.match('./index.html') : undefined));
-    })
+    fetch(event.request, { cache: 'no-store' })
+      .then((response) => {
+        if (response.ok && response.type === 'basic') {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        }
+        return response;
+      })
+      .catch(() =>
+        caches.match(event.request).then((cached) => cached || (event.request.mode === 'navigate' ? caches.match('./index.html') : undefined))
+      )
   );
 });
