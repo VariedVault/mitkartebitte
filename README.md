@@ -4,7 +4,18 @@ A German grammar course, A1 → B1, built around one idea: conjugation should fe
 learning to play a card game, not filling out a worksheet. No accounts, no backend, no
 tracking - everything runs in your browser and installs as an offline app.
 
-**Live app:** https://variedvault.github.io/mitkartebitte/
+**Live app:** https://mitkarte-bitte.de
+
+## Deployment
+
+Served via GitHub Pages on a custom domain. The repo root contains a `CNAME` file
+with exactly one line: `mitkarte-bitte.de`.
+
+**Never delete, overwrite, rename, or regenerate that file.** GitHub Pages reads it on
+every deploy to know which custom domain to serve; removing it (even temporarily, even
+by an automated "regenerate root files" step) breaks the custom domain until it's
+manually re-added and DNS re-verifies. If root files are ever bulk-regenerated for any
+reason, re-create `CNAME` immediately afterward with that single line.
 
 ## What it is
 

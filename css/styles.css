@@ -43,6 +43,7 @@
 
   --header-h: 60px;
   --nav-h: 64px;
+  --footer-h: 34px;
   --radius: 16px;
   --radius-sm: 10px;
   --shadow-card: 0 6px 20px rgba(10, 40, 39, 0.35);
@@ -114,12 +115,26 @@ a { color: var(--gold-bright); }
 }
 
 .view {
-  flex: 1; padding: calc(var(--header-h) + 16px) 16px calc(var(--nav-h) + 24px);
+  flex: 1;
+  padding: calc(var(--header-h) + 16px) 16px calc(var(--nav-h) + var(--footer-h) + env(safe-area-inset-bottom, 0px) + 20px);
   max-width: 880px; width: 100%; margin: 0 auto;
 }
 
+.app-footer {
+  position: fixed; left: 0; right: 0; bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
+  max-width: 880px; margin: 0 auto; height: var(--footer-h);
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+  gap: 4px 14px; padding: 0 16px;
+  font-size: 11px; color: var(--ink-soft); background: var(--felt-900); z-index: 99;
+}
+.app-footer a { color: var(--cream-dim); text-decoration: none; }
+.app-footer a:hover, .app-footer a:focus-visible { color: var(--gold-bright); text-decoration: underline; }
+.app-footer .coffee-link { color: var(--gold); font-weight: 600; }
+.app-footer .coffee-link:hover, .app-footer .coffee-link:focus-visible { color: var(--gold-bright); }
+
 .bottom-nav {
   position: fixed; bottom: 0; left: 0; right: 0; height: var(--nav-h);
+  padding-bottom: env(safe-area-inset-bottom, 0px); box-sizing: content-box;
   display: flex; background: var(--felt-900);
   border-top: 1px solid rgba(232,184,75,0.25); z-index: 100;
 }
