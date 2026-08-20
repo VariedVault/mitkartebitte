@@ -44,10 +44,7 @@ export function listProfiles() {
 export function ensureSeedProfiles() {
   let profiles = listProfiles();
   if (profiles.length === 0) {
-    profiles = [
-      { id: uid(), name: 'You', createdAt: Date.now() },
-      { id: uid(), name: 'Wife', createdAt: Date.now() },
-    ];
+    profiles = [{ id: uid(), name: 'You', createdAt: Date.now() }];
     write(PROFILES_KEY, profiles);
   }
   return profiles;
@@ -69,6 +66,15 @@ export function renameProfile(id, name) {
     write(PROFILES_KEY, profiles);
   }
   return p;
+}
+
+export function deleteProfile(id) {
+  const profiles = listProfiles().filter((p) => p.id !== id);
+  write(PROFILES_KEY, profiles);
+  for (const part of ['progress', 'srs', 'position', 'activity', 'settings']) {
+    try { localStorage.removeItem(keyFor(id, part)); } catch { /* ignore */ }
+  }
+  if (getActiveProfileId() === id) write(ACTIVE_KEY, null);
 }
 
 export function getActiveProfileId() {
