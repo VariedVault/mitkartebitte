@@ -47,8 +47,17 @@ async function dispatch() {
   console.warn('No route matched:', path);
 }
 
+/** path === '' navigates to the bare root (no hash at all) - used for "home". */
 export function navigate(path) {
-  if (location.hash === `#${path}`) {
+  const targetHash = path ? `#${path}` : '';
+  if (location.hash === targetHash) {
+    dispatch();
+    return;
+  }
+  if (path === '') {
+    // location.hash = '' leaves a dangling "#" in the address bar in Chrome once a
+    // hash has existed - pushState is the only way to get a genuinely bare URL back.
+    history.pushState(null, '', location.pathname + location.search);
     dispatch();
   } else {
     location.hash = path;

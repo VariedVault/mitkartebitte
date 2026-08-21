@@ -3,7 +3,7 @@ import { navigate } from '../router.js';
 
 function pageShell(title) {
   const container = el('div', {});
-  container.appendChild(backLink('Back to map', () => navigate('/course-map')));
+  container.appendChild(backLink('Back to map', () => navigate('')));
   container.appendChild(el('h1', {}, title));
   const card = el('div', { class: 'card', style: 'max-width:720px' });
   container.appendChild(card);

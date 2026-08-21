@@ -42,6 +42,13 @@ function t(ich, du, er, wir, ihr, sie) {
   return { ich, du, er, wir, ihr, sie };
 }
 
+// Per-pronoun Präsens example sentences for a curated subset of high-frequency verbs
+// (see js/views/practice.js). Each sentence's subject is always the canonical pronoun
+// word (Ich/Du/Er/Wir/Ihr/Sie) so it stays mechanically verifiable - see scripts/verify.mjs.
+function pe(ich, du, er, wir, ihr, sie) {
+  return { ich, du, er, wir, ihr, sie };
+}
+
 export const VERBS = [
   // ---------------------------------------------------------------- WEAK / haben (routine, transaction, communication)
   {
@@ -54,6 +61,14 @@ export const VERBS = [
     },
     tags: ['routine'],
     example: { de: 'Ich mache das Frühstück.', en: 'I make breakfast.' },
+    praesensExamples: pe(
+      { de: 'Ich mache das Frühstück.', en: "I'm making breakfast." },
+      { de: 'Du machst das sehr gut.', en: "You're doing that very well." },
+      { de: 'Er macht heute Sport.', en: "He's doing sports today." },
+      { de: 'Wir machen eine Pause.', en: "We're taking a break." },
+      { de: 'Ihr macht zu viel Lärm.', en: 'You all are making too much noise.' },
+      { de: 'Sie machen das jeden Tag.', en: 'They do that every day.' }
+    ),
   },
   {
     infinitive: 'sagen', english: 'to say', type: 'weak', auxiliary: 'haben', level: 'A1',
@@ -249,6 +264,14 @@ export const VERBS = [
     tags: ['movement', 'ablaut-a-ä'],
     notes: 'a→ä stem change only in du/er praesens. The imperative does NOT carry the umlaut: Fahr!, not Fähr!.',
     example: { de: 'Ich fahre mit dem Bus zur Arbeit.', en: 'I go to work by bus.' },
+    praesensExamples: pe(
+      { de: 'Ich fahre mit dem Bus zur Arbeit.', en: 'I go to work by bus.' },
+      { de: 'Du fährst viel zu schnell.', en: "You're driving way too fast." },
+      { de: 'Er fährt jedes Jahr nach Italien.', en: 'He drives to Italy every year.' },
+      { de: 'Wir fahren am Wochenende in die Berge.', en: "We're driving to the mountains this weekend." },
+      { de: 'Ihr fahrt in die falsche Richtung.', en: 'You all are driving in the wrong direction.' },
+      { de: 'Sie fahren mit dem Fahrrad zur Schule.', en: 'They ride their bikes to school.' }
+    ),
   },
   {
     infinitive: 'tragen', english: 'to carry, to wear', type: 'strong', auxiliary: 'haben', level: 'A2',
@@ -296,6 +319,14 @@ export const VERBS = [
     },
     tags: ['communication', 'ablaut-e-i'],
     example: { de: 'Ich spreche ein bisschen Deutsch.', en: 'I speak a little German.' },
+    praesensExamples: pe(
+      { de: 'Ich spreche ein bisschen Deutsch.', en: 'I speak a little German.' },
+      { de: 'Du sprichst sehr leise.', en: 'You speak very quietly.' },
+      { de: 'Er spricht drei Sprachen.', en: 'He speaks three languages.' },
+      { de: 'Wir sprechen später darüber.', en: "We'll talk about it later." },
+      { de: 'Ihr sprecht zu schnell für mich.', en: 'You all speak too fast for me.' },
+      { de: 'Sie sprechen kein Englisch.', en: "They don't speak English." }
+    ),
   },
   {
     infinitive: 'essen', english: 'to eat', type: 'strong', auxiliary: 'haben', level: 'A1',
@@ -308,6 +339,14 @@ export const VERBS = [
     tags: ['routine', 'ablaut-e-i'],
     notes: 'Stem ends in a sibilant (ß), so du/ihr praeteritum use a single -t with no linking -e-: du aßt.',
     example: { de: 'Wir essen um sieben Uhr.', en: 'We eat at seven o’clock.' },
+    praesensExamples: pe(
+      { de: 'Ich esse gerade zu Mittag.', en: "I'm having lunch right now." },
+      { de: 'Du isst zu schnell.', en: 'You eat too fast.' },
+      { de: 'Er isst nur Gemüse.', en: 'He only eats vegetables.' },
+      { de: 'Wir essen um sieben Uhr.', en: 'We eat at seven o’clock.' },
+      { de: 'Ihr esst schon wieder Pizza?', en: 'You all are eating pizza again?' },
+      { de: 'Sie essen gern zusammen.', en: 'They like eating together.' }
+    ),
   },
   {
     infinitive: 'geben', english: 'to give', type: 'strong', auxiliary: 'haben', level: 'A1',
@@ -319,6 +358,14 @@ export const VERBS = [
     },
     tags: ['transaction', 'ablaut-e-i'],
     example: { de: 'Ich gebe dir die Speisekarte.', en: 'I’ll give you the menu.' },
+    praesensExamples: pe(
+      { de: 'Ich gebe dir die Speisekarte.', en: "I'll give you the menu." },
+      { de: 'Du gibst mir keine Antwort.', en: "You're not giving me an answer." },
+      { de: 'Er gibt sein Bestes.', en: "He's giving his best." },
+      { de: 'Wir geben unser Bestes.', en: "We're giving our best." },
+      { de: 'Ihr gebt zu wenig Trinkgeld.', en: 'You all are giving too little of a tip.' },
+      { de: 'Sie geben ihm eine zweite Chance.', en: "They're giving him a second chance." }
+    ),
   },
   {
     infinitive: 'nehmen', english: 'to take', type: 'strong', auxiliary: 'haben', level: 'A1',
@@ -331,6 +378,14 @@ export const VERBS = [
     tags: ['transaction', 'ablaut-e-i'],
     notes: 'The stem consonant also changes (hm→mm) in du/er praesens and the imperative: nimmst, nimmt, Nimm!.',
     example: { de: 'Ich nehme den Bus.', en: 'I’ll take the bus.' },
+    praesensExamples: pe(
+      { de: 'Ich nehme den Bus.', en: "I'll take the bus." },
+      { de: 'Du nimmst immer den gleichen Weg.', en: 'You always take the same route.' },
+      { de: 'Er nimmt ein Taxi.', en: "He's taking a taxi." },
+      { de: 'Wir nehmen den Zug.', en: "We're taking the train." },
+      { de: 'Ihr nehmt zu viel Gepäck.', en: 'You all are taking too much luggage.' },
+      { de: 'Sie nehmen die Treppe.', en: 'They take the stairs.' }
+    ),
   },
   {
     infinitive: 'helfen', english: 'to help', type: 'strong', auxiliary: 'haben', level: 'A1',
@@ -355,6 +410,14 @@ export const VERBS = [
     },
     tags: ['thinking', 'ablaut-e-ie'],
     example: { de: 'Ich sehe den Zug.', en: 'I see the train.' },
+    praesensExamples: pe(
+      { de: 'Ich sehe den Zug.', en: 'I see the train.' },
+      { de: 'Du siehst das Problem nicht.', en: "You don't see the problem." },
+      { de: 'Er sieht seine Familie selten.', en: 'He rarely sees his family.' },
+      { de: 'Wir sehen uns morgen.', en: "We'll see each other tomorrow." },
+      { de: 'Ihr seht das ganz falsch.', en: 'You all are seeing this all wrong.' },
+      { de: 'Sie sehen den Unterschied nicht.', en: "They don't see the difference." }
+    ),
   },
   {
     infinitive: 'lesen', english: 'to read', type: 'strong', auxiliary: 'haben', level: 'A1',
@@ -438,6 +501,14 @@ export const VERBS = [
     },
     tags: ['routine', 'ablaut-i-a-u'],
     example: { de: 'Ich trinke einen Kaffee.', en: 'I am drinking a coffee.' },
+    praesensExamples: pe(
+      { de: 'Ich trinke einen Kaffee.', en: "I'm drinking a coffee." },
+      { de: 'Du trinkst zu wenig Wasser.', en: "You don't drink enough water." },
+      { de: 'Er trinkt keinen Alkohol.', en: "He doesn't drink alcohol." },
+      { de: 'Wir trinken auf dein Glück.', en: "We're drinking to your happiness." },
+      { de: 'Ihr trinkt viel zu schnell.', en: 'You all are drinking way too fast.' },
+      { de: 'Sie trinken jeden Morgen Tee.', en: 'They drink tea every morning.' }
+    ),
   },
   {
     infinitive: 'finden', english: 'to find', type: 'strong', auxiliary: 'haben', level: 'A1',
@@ -475,6 +546,14 @@ export const VERBS = [
     },
     tags: ['movement'],
     example: { de: 'Ich gehe jetzt nach Hause.', en: 'I am going home now.' },
+    praesensExamples: pe(
+      { de: 'Ich gehe jetzt nach Hause.', en: "I'm going home now." },
+      { de: 'Du gehst zu schnell.', en: "You're walking too fast." },
+      { de: 'Er geht jeden Tag joggen.', en: 'He goes jogging every day.' },
+      { de: 'Wir gehen heute spazieren.', en: "We're going for a walk today." },
+      { de: 'Ihr geht schon wieder?', en: 'You all are leaving already?' },
+      { de: 'Sie gehen zusammen ins Kino.', en: "They're going to the movies together." }
+    ),
   },
   {
     infinitive: 'kommen', english: 'to come', type: 'strong', auxiliary: 'sein', level: 'A1',
@@ -487,6 +566,14 @@ export const VERBS = [
     tags: ['movement'],
     konjunktiv2: t('käme', 'kämst', 'käme', 'kämen', 'kämt', 'kämen'),
     example: { de: 'Ich komme sofort.', en: "I'm coming right away." },
+    praesensExamples: pe(
+      { de: 'Ich komme sofort.', en: "I'm coming right away." },
+      { de: 'Du kommst immer zu spät.', en: 'You always come late.' },
+      { de: 'Er kommt aus Spanien.', en: 'He comes from Spain.' },
+      { de: 'Wir kommen zur Party.', en: 'We are coming to the party.' },
+      { de: 'Ihr kommt zur perfekten Zeit.', en: 'You all are coming at the perfect time.' },
+      { de: 'Sie kommen aus Italien.', en: 'They come from Italy.' }
+    ),
   },
   {
     infinitive: 'fliegen', english: 'to fly', type: 'strong', auxiliary: 'sein', level: 'A2',
@@ -574,6 +661,14 @@ export const VERBS = [
     konjunktiv2: t('wäre', 'wärst', 'wäre', 'wären', 'wärt', 'wären'),
     tags: ['core'],
     example: { de: 'Ich bin müde.', en: 'I am tired.' },
+    praesensExamples: pe(
+      { de: 'Ich bin müde.', en: 'I am tired.' },
+      { de: 'Du bist sehr nett.', en: 'You are very nice.' },
+      { de: 'Er ist mein Bruder.', en: 'He is my brother.' },
+      { de: 'Wir sind fast da.', en: 'We are almost there.' },
+      { de: 'Ihr seid spät dran.', en: 'You all are running late.' },
+      { de: 'Sie sind aus Berlin.', en: 'They are from Berlin.' }
+    ),
   },
   {
     infinitive: 'haben', english: 'to have', type: 'irregular', auxiliary: 'haben', level: 'A1',
@@ -586,6 +681,14 @@ export const VERBS = [
     konjunktiv2: t('hätte', 'hättest', 'hätte', 'hätten', 'hättet', 'hätten'),
     tags: ['core'],
     example: { de: 'Ich habe Hunger.', en: 'I am hungry.' },
+    praesensExamples: pe(
+      { de: 'Ich habe Hunger.', en: "I'm hungry." },
+      { de: 'Du hast recht.', en: "You're right." },
+      { de: 'Er hat keine Zeit.', en: 'He has no time.' },
+      { de: 'Wir haben ein Problem.', en: 'We have a problem.' },
+      { de: 'Ihr habt Glück.', en: 'You all are lucky.' },
+      { de: 'Sie haben zwei Kinder.', en: 'They have two children.' }
+    ),
   },
   {
     infinitive: 'werden', english: 'to become', type: 'irregular', auxiliary: 'sein', level: 'A1',
@@ -600,6 +703,14 @@ export const VERBS = [
     tags: ['core'],
     notes: 'As a full verb "to become" the partizip2 is geworden. As the Passiv auxiliary it drops to worden (no ge-).',
     example: { de: 'Es wird kalt.', en: "It's getting cold." },
+    praesensExamples: pe(
+      { de: 'Ich werde langsam müde.', en: "I'm slowly getting tired." },
+      { de: 'Du wirst jeden Tag besser.', en: "You're getting better every day." },
+      { de: 'Er wird bald dreißig.', en: "He's turning thirty soon." },
+      { de: 'Wir werden immer besser.', en: 'We keep getting better.' },
+      { de: 'Ihr werdet zu laut.', en: 'You all are getting too loud.' },
+      { de: 'Sie werden langsam ungeduldig.', en: "They're slowly getting impatient." }
+    ),
   },
 
   // ---------------------------------------------------------------- MODALS (6) + möchten
@@ -614,6 +725,14 @@ export const VERBS = [
     konjunktiv2: t('könnte', 'könntest', 'könnte', 'könnten', 'könntet', 'könnten'),
     tags: ['modal'],
     example: { de: 'Ich kann gut kochen.', en: 'I can cook well.' },
+    praesensExamples: pe(
+      { de: 'Ich kann gut kochen.', en: 'I can cook well.' },
+      { de: 'Du kannst das schaffen.', en: 'You can do this.' },
+      { de: 'Er kann sehr gut singen.', en: 'He can sing very well.' },
+      { de: 'Wir können später sprechen.', en: 'We can talk later.' },
+      { de: 'Ihr könnt mir vertrauen.', en: 'You all can trust me.' },
+      { de: 'Sie können gut zusammenarbeiten.', en: 'They work well together.' }
+    ),
   },
   {
     infinitive: 'müssen', english: 'must, to have to', type: 'modal', auxiliary: 'haben', level: 'A1',
@@ -626,6 +745,14 @@ export const VERBS = [
     konjunktiv2: t('müsste', 'müsstest', 'müsste', 'müssten', 'müsstet', 'müssten'),
     tags: ['modal'],
     example: { de: 'Ich muss jetzt gehen.', en: 'I have to go now.' },
+    praesensExamples: pe(
+      { de: 'Ich muss jetzt gehen.', en: 'I have to go now.' },
+      { de: 'Du musst das nicht tun.', en: "You don't have to do that." },
+      { de: 'Er muss früh aufstehen.', en: 'He has to get up early.' },
+      { de: 'Wir müssen uns beeilen.', en: 'We have to hurry.' },
+      { de: 'Ihr müsst leiser sein.', en: 'You all have to be quieter.' },
+      { de: 'Sie müssen noch warten.', en: 'They still have to wait.' }
+    ),
   },
   {
     infinitive: 'dürfen', english: 'may, to be allowed to', type: 'modal', auxiliary: 'haben', level: 'A1',
@@ -664,6 +791,14 @@ export const VERBS = [
     tags: ['modal'],
     notes: 'Like sollen, wollen has no umlaut, so its Konjunktiv II matches the praeteritum.',
     example: { de: 'Ich will das nicht.', en: "I don't want that." },
+    praesensExamples: pe(
+      { de: 'Ich will das nicht.', en: "I don't want that." },
+      { de: 'Du willst immer recht haben.', en: 'You always want to be right.' },
+      { de: 'Er will Arzt werden.', en: 'He wants to become a doctor.' },
+      { de: 'Wir wollen zusammen kochen.', en: 'We want to cook together.' },
+      { de: 'Ihr wollt schon gehen?', en: 'You all want to leave already?' },
+      { de: 'Sie wollen mehr Geld verdienen.', en: 'They want to earn more money.' }
+    ),
   },
   {
     infinitive: 'mögen', english: 'to like', type: 'modal', auxiliary: 'haben', level: 'A1',

@@ -13,7 +13,7 @@ const KEY_HELPERS = ['ä', 'ö', 'ü', 'ß'];
 
 function backToMapLink() {
   const link = el('button', { class: 'btn', style: 'font-size:12.5px;padding:7px 12px;margin-bottom:14px;background:transparent;border-color:rgba(255,255,255,0.25)' }, '← Back to map');
-  link.addEventListener('click', () => navigate('/course-map'));
+  link.addEventListener('click', () => navigate(''));
   return link;
 }
 
@@ -116,14 +116,14 @@ function renderExplanationPhase(container, mod, profileId) {
   container.appendChild(actions);
 }
 
-function demoTable(verb, tense) {
+export function demoTable(verb, tense, highlightPronoun) {
   const table = el('table', { class: 'conj-table' });
   const tbody = el('tbody');
   for (const p of pronounsFor(tense)) {
     const form = getForm(verb, tense, p);
     if (form == null) continue;
     tbody.appendChild(
-      el('tr', {}, [
+      el('tr', { style: p === highlightPronoun ? 'font-weight:800' : '' }, [
         el('td', { class: `pron-cell pron-${tense === 'imperativ' ? '' : p}`.trim() }, pronounLabel(tense, p)),
         el('td', { class: 'form-cell' }, [form, ' ', speakerButton(form)]),
       ])
@@ -203,7 +203,7 @@ function renderPracticePhase(container, mod, profileId) {
           })(),
           (() => {
             const b = el('button', { class: 'btn' }, 'Back to map');
-            b.addEventListener('click', () => navigate('/course-map'));
+            b.addEventListener('click', () => navigate(''));
             return b;
           })(),
         ]),
@@ -475,7 +475,7 @@ function renderCheckpointPhase(container, mod, profileId) {
       el('div', { class: 'toolbar', style: 'justify-content:center;margin-top:14px' }, [
         (() => { const b = el('button', { class: 'btn' }, 'Practice more'); b.addEventListener('click', () => renderPracticePhase(container, mod, profileId)); return b; })(),
         (() => { const b = el('button', { class: 'btn' }, 'Retake checkpoint'); b.addEventListener('click', () => renderCheckpointPhase(container, mod, profileId)); return b; })(),
-        (() => { const b = el('button', { class: 'btn btn-primary' }, 'Back to map'); b.addEventListener('click', () => navigate('/course-map')); return b; })(),
+        (() => { const b = el('button', { class: 'btn btn-primary' }, 'Back to map'); b.addEventListener('click', () => navigate('')); return b; })(),
       ])
     );
     stage.appendChild(card);

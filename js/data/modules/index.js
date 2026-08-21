@@ -79,3 +79,36 @@ export function isModuleSoftLocked(mod, progress) {
 export function modulesByTier(tier) {
   return allModules().filter((m) => m.tier === tier);
 }
+
+// ---------------------------------------------------------------- Practice-deck gating
+// Two independent gates, both driven by checkpoint-passed status (not merely visited):
+//   - TENSES: union of .tenses from every module whose checkpoint this profile has passed.
+//   - VERB LEVEL: a module's checkpoint passing unlocks its whole CEFR level's verbs,
+//     cumulatively (passing any B1 module also keeps A1/A2 unlocked).
+// Both fall back to module 1's tenses / level so a brand-new profile's Practice deck
+// is never empty on day one.
+
+const LEVEL_RANK = { A1: 1, A2: 2, B1: 3 };
+
+/** Set of tense keys unlocked for Practice, given a profile's progress map. */
+export function unlockedTenses(progress) {
+  const set = new Set();
+  for (const mod of allModules()) {
+    if (progress[mod.id]?.checkpointPassed) mod.tenses.forEach((t) => set.add(t));
+  }
+  if (set.size === 0) allModules()[0].tenses.forEach((t) => set.add(t));
+  return set;
+}
+
+/** Highest CEFR verb-level rank unlocked for Practice (1=A1, 2=A2, 3=B1). */
+export function unlockedVerbRank(progress) {
+  let rank = 0;
+  for (const mod of allModules()) {
+    if (progress[mod.id]?.checkpointPassed) rank = Math.max(rank, LEVEL_RANK[mod.level] || 0);
+  }
+  return rank || LEVEL_RANK[allModules()[0].level];
+}
+
+export function isVerbLevelUnlocked(verbLevel, rank) {
+  return (LEVEL_RANK[verbLevel] || 1) <= rank;
+}

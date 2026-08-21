@@ -60,50 +60,43 @@ function setActiveNav(name) {
   els.nav.querySelectorAll('button').forEach((b) => b.classList.toggle('active', b.dataset.nav === name));
 }
 
+/** "Home" is the map for a returning user, onboarding for a brand-new one. Always
+ *  rendered at the bare root (no hash) - see router.js's navigate('') support. */
 export function goToCourseMap() {
-  navigate('/course-map');
+  navigate('');
 }
 
 // ---------------------------------------------------------------- routes
 
-route('/', async () => {
+/** Shared by the bare-root route and the /course-map alias (kept for any stray deep link). */
+async function renderHome() {
   const id = requireProfile();
   const settings = store.getSettings(id);
-  if (!settings.onboardingDone) return navigate('/onboarding');
-  const pos = store.getPosition(id);
-  if (pos && pos.path && pos.path !== '/') return navigate(pos.path);
-  return navigate('/course-map');
-});
-
-route('/onboarding', async () => {
-  const id = requireProfile();
-  setBreadcrumb('Module 0 · Get started');
   setActiveNav('map');
   refreshProfilePill();
-  await renderOnboarding(els.view, {
-    profileId: id,
-    onDone: () => {
-      store.setSetting(id, 'onboardingDone', true);
-      refreshProfilePill();
-      navigate('/course-map');
-    },
-  });
-});
-
-route('/course-map', async () => {
-  const id = requireProfile();
+  if (!settings.onboardingDone) {
+    setBreadcrumb('Module 0 · Get started');
+    await renderOnboarding(els.view, {
+      profileId: id,
+      onDone: () => {
+        store.setSetting(id, 'onboardingDone', true);
+        refreshProfilePill();
+        navigate(''); // re-render the bare root, now as the map
+      },
+    });
+    return;
+  }
   setBreadcrumb('');
-  setActiveNav('map');
-  refreshProfilePill();
-  store.setPosition(id, { path: '/course-map' });
   await renderCourseMap(els.view, { profileId: id });
-});
+}
+
+route('/', renderHome);
+route('/course-map', renderHome); // alias - internal links always use the bare root instead
 
 route('/module/:id', async ({ id: moduleId }) => {
   const profileId = requireProfile();
   setActiveNav('map');
   refreshProfilePill();
-  store.setPosition(profileId, { path: `/module/${moduleId}` });
   await renderLesson(els.view, { profileId, moduleId, setBreadcrumb });
 });
 
@@ -147,7 +140,7 @@ route('/contact', async () => {
   await renderContact(els.view);
 });
 
-document.getElementById('wordmarkBtn').addEventListener('click', () => navigate('/course-map'));
+document.getElementById('wordmarkBtn').addEventListener('click', () => navigate(''));
 els.profilePill.addEventListener('click', () => navigate('/data'));
 els.nav.querySelectorAll('button').forEach((btn) => {
   btn.addEventListener('click', () => navigate(btn.dataset.path));
