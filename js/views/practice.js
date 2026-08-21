@@ -176,6 +176,19 @@ export async function renderPractice(container, { profileId }) {
     scene.appendChild(flipCard);
     stage.appendChild(scene);
 
+    // Both faces are absolutely positioned (so they overlay during the 3D flip), which
+    // means the card's own height never grows to fit taller content (e.g. the fallback
+    // conjugation table) - it just centers and overflows past the box's edges.
+    // scrollHeight on an inset:0 absolutely-positioned element isn't reliable here, so
+    // measure each face's true content height by briefly switching it to normal flow.
+    function naturalHeight(faceEl) {
+      faceEl.style.position = 'static';
+      const h = faceEl.offsetHeight;
+      faceEl.style.position = '';
+      return h;
+    }
+    flipCard.style.height = `${Math.max(naturalHeight(front), naturalHeight(back), 220)}px`;
+
     function flip() {
       flipCard.classList.add('flipped');
     }
