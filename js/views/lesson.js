@@ -1,6 +1,6 @@
 import * as store from '../store.js';
 import * as srs from '../srs.js';
-import { el, speakerButton, progressRing, pronounChip, toast, reviewList } from '../ui/components.js';
+import { el, speakerButton, progressRing, pronounChip, toast, reviewList, keyboardHelper } from '../ui/components.js';
 import { getModule, isModuleSoftLocked, previousModule } from '../data/modules/index.js';
 import { VERBS, PRONOUN_LABELS } from '../data/verbs.js';
 import {
@@ -8,8 +8,6 @@ import {
   buildFillBlank, buildMultipleChoice, buildTableCompletion, factKeysForModule, getForm,
 } from '../ui/drills.js';
 import { navigate } from '../router.js';
-
-const KEY_HELPERS = ['ä', 'ö', 'ü', 'ß'];
 
 function backToMapLink() {
   const link = el('button', { class: 'btn', style: 'font-size:12.5px;padding:7px 12px;margin-bottom:14px;background:transparent;border-color:rgba(255,255,255,0.25)' }, '← Back to map');
@@ -260,22 +258,6 @@ function exampleContext(verb) {
   ]);
 }
 
-function keyboardHelper(input) {
-  const bar = el('div', { class: 'keyboard-helper' });
-  for (const ch of KEY_HELPERS) {
-    const btn = el('button', { type: 'button' }, ch);
-    btn.addEventListener('click', () => {
-      const start = input.selectionStart ?? input.value.length;
-      const end = input.selectionEnd ?? input.value.length;
-      input.value = input.value.slice(0, start) + ch + input.value.slice(end);
-      input.focus();
-      input.selectionStart = input.selectionEnd = start + 1;
-    });
-    bar.appendChild(btn);
-  }
-  return bar;
-}
-
 function renderExercise(exercise, { onAnswered, onNext }) {
   if (exercise.type === 'table') return renderTableExercise(exercise, { onAnswered, onNext });
   if (exercise.type === 'mc') return renderChoiceExercise(exercise, { onAnswered, onNext });
@@ -360,7 +342,7 @@ function renderTableExercise(exercise, { onAnswered, onNext }) {
   }
   table.appendChild(tbody);
   box.appendChild(table);
-  box.appendChild(keyboardHelper(inputs[0].input));
+  box.appendChild(keyboardHelper(inputs.map((i) => i.input)));
   const submit = el('button', { class: 'btn btn-primary btn-block', style: 'margin-top:12px' }, 'Check table');
   box.appendChild(submit);
 
