@@ -39,13 +39,27 @@ export async function renderLevel(container, { profileId, level, setBreadcrumb }
   const summaryText = el('div', { style: 'flex:1' });
   summaryText.appendChild(el('p', { style: 'margin:0;font-weight:700;color:var(--ink)' }, `${levelVerbs.length} verbs · Präsens, Imperativ, Perfekt`));
   summaryText.appendChild(
-    el('p', { style: 'margin:4px 0 0;color:var(--ink-soft);font-size:13px' }, passed ? '✓ Practice unlocked - keep practicing to actually retain it.' : 'Pass the checkpoint to unlock this level for Practice.')
+    el(
+      'p',
+      { style: 'margin:4px 0 0;color:var(--ink-soft);font-size:13px' },
+      passed ? '✓ Practice unlocked - mastery only grows by practicing, not by retaking this checkpoint.' : 'Pass the checkpoint to unlock this level for Practice.'
+    )
   );
   summary.appendChild(summaryText);
   if (passed) summary.appendChild(el('span', { style: 'font-size:28px' }, '✓'));
   container.appendChild(summary);
 
-  const checkpointBtn = el('button', { class: `btn ${passed ? '' : 'btn-primary'} btn-block`, style: 'margin-top:12px' }, passed ? 'Retake the checkpoint' : 'Take the checkpoint');
+  if (passed) {
+    // Once unlocked, Practice - not the checkpoint - is the actual next step for
+    // building mastery. Make it the obvious primary action here instead of leaving
+    // "Retake the checkpoint" as the only button on the page (which is what made
+    // retaking it look like the intended way to make progress).
+    const practiceBtn = el('button', { class: 'btn btn-primary btn-block', style: 'margin-top:12px' }, 'Go practice these verbs →');
+    practiceBtn.addEventListener('click', () => navigate('/practice'));
+    container.appendChild(practiceBtn);
+  }
+  const checkpointBtn = el('button', { class: 'btn btn-block', style: 'margin-top:10px' }, passed ? 'Retake the checkpoint' : 'Take the checkpoint');
+  checkpointBtn.classList.toggle('btn-primary', !passed);
   checkpointBtn.addEventListener('click', () => navigate(`/checkpoint/${level}`));
   container.appendChild(checkpointBtn);
 

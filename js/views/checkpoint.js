@@ -128,10 +128,16 @@ export async function renderCheckpoint(container, { profileId, level, setBreadcr
       card.appendChild(el('p', { style: 'color:var(--ink-soft)' }, `Needed ${Math.round(PASS_THRESHOLD * 100)}% to unlock Practice - no rush, no streak to lose. Study a bit more and retake whenever you like.`));
     }
     card.appendChild(
-      el('div', { class: 'toolbar', style: 'justify-content:center;margin-top:14px' }, [
-        (() => { const b = el('button', { class: 'btn' }, 'Retake'); b.addEventListener('click', () => navigate(`/checkpoint/${level}`)); return b; })(),
-        (() => { const b = el('button', { class: 'btn btn-primary' }, 'Back to Learn'); b.addEventListener('click', () => navigate('')); return b; })(),
-      ])
+      el('div', { class: 'toolbar', style: 'justify-content:center;margin-top:14px' }, passed
+        ? [
+            (() => { const b = el('button', { class: 'btn btn-primary' }, 'Go practice these verbs →'); b.addEventListener('click', () => navigate('/practice')); return b; })(),
+            (() => { const b = el('button', { class: 'btn' }, 'Back to Learn'); b.addEventListener('click', () => navigate('')); return b; })(),
+          ]
+        : [
+            (() => { const b = el('button', { class: 'btn btn-primary' }, 'Retake'); b.addEventListener('click', () => navigate(`/checkpoint/${level}`)); return b; })(),
+            (() => { const b = el('button', { class: 'btn' }, 'Back to Learn'); b.addEventListener('click', () => navigate('')); return b; })(),
+          ]
+      )
     );
     stage.appendChild(card);
   }
