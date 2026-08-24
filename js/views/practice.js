@@ -2,7 +2,7 @@ import * as store from '../store.js';
 import * as srs from '../srs.js';
 import { el, speakerButton, reviewList } from '../ui/components.js';
 import { VERBS, PRONOUN_COLORS } from '../data/verbs-a1.js';
-import { factKeysFor, TENSE_LABELS, pronounLabel, factLabel, conjugationTable } from '../ui/verbUtils.js';
+import { factKeysFor, TENSE_LABELS, pronounLabel, factLabel } from '../ui/verbUtils.js';
 import { navigate } from '../router.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -56,15 +56,19 @@ function factFromKey(key) {
   return { verb, tense, pronoun, answer: verb.tables[tense]?.[pronoun] ?? null };
 }
 
-/** Always pronoun + form together, color-coded - never the bare, ambiguous form alone.
- *  Then either the matched per-pronoun example (Präsens only, since that's the only tense
- *  with per-pronoun sentences this phase) or the full conjugation table as a mismatch-proof
- *  fallback - the sentence and the drilled fact can never disagree. */
+/** Tense label first - so a Perfekt/Imperativ card is never mistaken for Präsens once
+ *  you're looking at the reveal face, not just the (already-flipped-away) front. Then
+ *  pronoun + form together, color-coded - never the bare, ambiguous form alone. Then the
+ *  matched per-pronoun example when one exists (Präsens only, this phase). No conjugation-
+ *  table fallback for tenses without one: the fixed-height card has no room for a 6-row
+ *  table without forcing a scroll just to reach the grading buttons, and the pronoun+form
+ *  line above is already the complete, correct answer on its own. */
 function buildReveal(verb, tense, pronoun, answer) {
   const wrap = el('div');
   const color = PRONOUN_COLORS[pronoun.toLowerCase()] || 'inherit';
+  wrap.appendChild(el('div', { style: 'font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--cream-dim)' }, TENSE_LABELS[tense]));
   wrap.appendChild(
-    el('div', { style: 'font-size:26px;font-weight:800;font-family:var(--font-mono)' }, [
+    el('div', { style: 'font-size:26px;font-weight:800;font-family:var(--font-mono);margin-top:4px' }, [
       el('span', { style: `color:${color}` }, `${pronounLabel(tense, pronoun)} `),
       answer,
       ' ',
@@ -78,8 +82,6 @@ function buildReveal(verb, tense, pronoun, answer) {
       el('div', { style: 'margin-top:10px;font-size:14px;color:var(--cream-dim)' }, [matchedExample.de, ' ', speakerButton(matchedExample.de)])
     );
     wrap.appendChild(el('div', { style: 'margin-top:2px;font-size:12.5px;color:var(--ink-soft)' }, matchedExample.en));
-  } else {
-    wrap.appendChild(el('div', { style: 'margin-top:12px' }, conjugationTable(verb, tense, pronoun)));
   }
   return wrap;
 }

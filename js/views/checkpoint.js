@@ -2,7 +2,7 @@ import * as store from '../store.js';
 import * as srs from '../srs.js';
 import { el, speakerButton, backLink } from '../ui/components.js';
 import { VERBS } from '../data/verbs-a1.js';
-import { pronounLabel, factKeysFor } from '../ui/verbUtils.js';
+import { pronounLabel, factKeysFor, TENSE_LABELS } from '../ui/verbUtils.js';
 import { navigate } from '../router.js';
 
 const QUESTION_COUNT = 8;
@@ -62,16 +62,21 @@ export async function renderCheckpoint(container, { profileId, level, setBreadcr
     const inner = el('div', { class: 'flip-card-inner' });
 
     const front = el('div', { class: 'flip-card-face flip-card-front' });
-    front.appendChild(el('div', { style: 'font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft)' }, tense === 'praesens' ? 'Präsens' : 'Perfekt'));
+    front.appendChild(el('div', { style: 'font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft)' }, TENSE_LABELS[tense]));
     front.appendChild(el('div', { style: 'font-size:26px;font-weight:800;font-family:var(--font-mono);margin-top:8px' }, `${pronounLabel(tense, pronoun)} · ${verb.infinitive}`));
     front.appendChild(el('div', { style: 'margin-top:6px;color:var(--ink-soft)' }, verb.english));
     const revealBtn = el('button', { class: 'btn btn-primary', style: 'margin-top:16px' }, 'Reveal ↻');
     revealBtn.addEventListener('click', () => flipCard.classList.add('flipped'));
     front.appendChild(revealBtn);
 
+    // Tense label repeated here too - the back face is where you actually grade
+    // yourself, and by then the front (the only place that said "Perfekt") is gone.
+    // Without this, a Perfekt answer like "sind gefahren" reads as an unexplained past
+    // tense showing up in what looks like a present-tense quiz.
     const back = el('div', { class: 'flip-card-face flip-card-back' });
+    back.appendChild(el('div', { style: 'font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--cream-dim)' }, TENSE_LABELS[tense]));
     back.appendChild(
-      el('div', { style: 'font-size:26px;font-weight:800;font-family:var(--font-mono)' }, [
+      el('div', { style: 'font-size:26px;font-weight:800;font-family:var(--font-mono);margin-top:4px' }, [
         el('span', {}, `${pronounLabel(tense, pronoun)} `),
         answer,
         ' ',

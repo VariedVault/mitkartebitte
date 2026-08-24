@@ -29,14 +29,19 @@ export async function renderLevel(container, { profileId, level, setBreadcrumb }
   const mastery = srs.masteryForKeys(deck, keys);
   const passed = store.isCheckpointPassed(profileId, level);
 
+  // "Certified" and the mastery ring are two different axes (did you pass an 8-question
+  // checkpoint, vs. how much long-term SRS retention you've built through Practice) - once
+  // certified, a low ring % next to it reads as a contradiction ("certified" but "2%"?),
+  // so the ring only shows pre-certification, as a plain "you've started" indicator.
   const summary = el('div', { class: 'card', style: 'display:flex;align-items:center;gap:16px' });
-  summary.appendChild(progressRing(mastery, { size: 52, stroke: 5 }));
+  if (!passed) summary.appendChild(progressRing(mastery, { size: 52, stroke: 5 }));
   const summaryText = el('div', { style: 'flex:1' });
   summaryText.appendChild(el('p', { style: 'margin:0;font-weight:700;color:var(--ink)' }, `${levelVerbs.length} verbs · Präsens, Imperativ, Perfekt`));
   summaryText.appendChild(
     el('p', { style: 'margin:4px 0 0;color:var(--ink-soft);font-size:13px' }, passed ? '✓ Certified - unlocked for cumulative Practice.' : 'Pass the checkpoint to unlock this level for Practice.')
   );
   summary.appendChild(summaryText);
+  if (passed) summary.appendChild(el('span', { style: 'font-size:28px' }, '✓'));
   container.appendChild(summary);
 
   const checkpointBtn = el('button', { class: `btn ${passed ? '' : 'btn-primary'} btn-block`, style: 'margin-top:12px' }, passed ? 'Retake the checkpoint' : 'Take the checkpoint');
