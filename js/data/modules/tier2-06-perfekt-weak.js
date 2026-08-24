@@ -7,7 +7,6 @@ export default {
   summary: 'The everyday spoken past: haben + a ge-...-t participle.',
   verbPool: (verbs) => verbs.filter((v) => v.type === 'weak' && v.auxiliary === 'haben'),
   tenses: ['perfekt'],
-  exerciseTypes: ['fill', 'mc'],
   explanation: {
     intro:
       'Perfekt is how Germans actually talk about the past in conversation - far more than Präteritum (Module 8), which mostly lives in writing. It\'s a two-piece tense: a conjugated auxiliary (haben or sein) in second position, plus a participle (partizip2) pushed to the very end of the sentence.',

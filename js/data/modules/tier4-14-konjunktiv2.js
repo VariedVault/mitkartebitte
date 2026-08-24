@@ -7,7 +7,6 @@ export default {
   summary: 'würde, hätte, wäre, könnte - the mood of hypotheticals, wishes, and polite requests.',
   verbPool: (verbs) => verbs.filter((v) => v.infinitive !== 'möchten' && !v.reflexive),
   tenses: ['konjunktiv2'],
-  exerciseTypes: ['fill', 'mc'],
   explanation: {
     intro:
       'Konjunktiv II is the "unreal" mood: wishes, hypotheticals, polite requests, and if-then statements that aren\'t (or might not be) true. You\'ve secretly already used it - "möchte" (Module 4) is Konjunktiv II of mögen, and that\'s the key to this whole module: it works differently depending on the verb.',

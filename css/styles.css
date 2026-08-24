@@ -215,12 +215,6 @@ a { color: var(--gold-bright); }
 .pron-ihr { background: color-mix(in srgb, var(--pron-ihr) 25%, white); color: #5a1f99; }
 .pron-sie { background: color-mix(in srgb, var(--pron-sie) 25%, white); color: #196b3d; }
 
-.type-weak { color: var(--type-weak); }
-.type-strong { color: var(--type-strong); }
-.type-mixed { color: var(--type-mixed); }
-.type-modal { color: var(--type-modal); }
-.type-irregular { color: var(--type-irregular); }
-
 /* ---------------------------------------------------------------- conjugation tables */
 .conj-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); margin: 14px 0; }
 .conj-table th, .conj-table td { padding: 10px 12px; text-align: left; font-size: 14.5px; }
@@ -234,14 +228,6 @@ a { color: var(--gold-bright); }
 .conj-table .pron-cell.pron-wir { color: #3350c4; }
 .conj-table .pron-cell.pron-ihr { color: #7b30c4; }
 .conj-table .pron-cell.pron-sie { color: #22874c; }
-
-/* fillable table-completion drill */
-.conj-cell-input {
-  width: 100%; border: 2px solid var(--cream-line); border-radius: 8px; padding: 8px 10px;
-  font-family: var(--font-mono); font-size: 15px; background: white; color: var(--ink);
-}
-.conj-cell-input.filled { border-color: var(--type-weak); background: #eafbf9; }
-.conj-cell-input.wrong { border-color: var(--incorrect); background: #ffecec; animation: shake 0.3s; }
 
 /* ---------------------------------------------------------------- SRS flip card */
 .flip-scene { perspective: 1200px; max-width: 420px; margin: 0 auto; }
@@ -290,36 +276,6 @@ a { color: var(--gold-bright); }
 /* ---------------------------------------------------------------- legend */
 .legend-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0; }
 
-/* ---------------------------------------------------------------- feedback flashes */
-.drill-box { background: var(--cream); color: var(--ink); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow-card); }
-.drill-input {
-  width: 100%; border: 2px solid var(--cream-line); border-radius: var(--radius-sm);
-  padding: 12px 14px; font-size: 18px; font-family: var(--font-mono); background: white; color: var(--ink);
-}
-.drill-input.flash-correct { animation: flashGreen 0.6s; border-color: var(--correct); }
-.drill-input.flash-incorrect { animation: flashRed 0.5s; border-color: var(--incorrect); }
-@keyframes flashGreen { 0% { background: #d3f7df; } 100% { background: white; } }
-@keyframes flashRed { 0%, 40% { background: #ffd7d7; } 100% { background: white; } }
-@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
-
-.mc-options { display: grid; gap: 10px; margin-top: 14px; }
-.mc-option {
-  text-align: left; padding: 13px 16px; border-radius: var(--radius-sm); border: 2px solid var(--cream-line);
-  background: white; color: var(--ink); font-size: 15px; font-family: var(--font-mono); font-weight: 600;
-}
-.mc-option:hover { border-color: var(--gold); }
-.mc-option.correct { background: #d3f7df; border-color: var(--correct); }
-.mc-option.incorrect { background: #ffd7d7; border-color: var(--incorrect); }
-
-.keyboard-helper { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-.keyboard-helper button {
-  background: var(--cream-dim); border: 1px solid var(--cream-line); border-radius: 8px;
-  padding: 7px 13px; font-family: var(--font-mono); font-size: 15px; color: var(--ink); font-weight: 700;
-}
-
-/* ---------------------------------------------------------------- checkpoint / celebration */
-.celebrate { text-align: center; padding: 30px 16px; }
-.celebrate .big-emoji { font-size: 52px; display: block; margin-bottom: 10px; animation: pop 0.5s cubic-bezier(.3,1.6,.5,1); }
 @keyframes pop { 0% { transform: scale(0.3); opacity: 0; } 70% { transform: scale(1.15); } 100% { transform: scale(1); opacity: 1; } }
 .unlock-banner {
   background: linear-gradient(135deg, var(--gold), var(--gold-bright)); color: var(--felt-900);
@@ -364,6 +320,12 @@ a { color: var(--gold-bright); }
 .explain p { color: var(--ink-soft); }
 .explain .rule-box { background: var(--cream-dim); border-left: 4px solid var(--gold); border-radius: 8px; padding: 12px 14px; margin: 12px 0; color: var(--ink); }
 .explain .example-line { font-family: var(--font-mono); background: white; border-radius: 8px; padding: 10px 12px; margin: 8px 0; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.verb-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.verb-chip {
+  display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 999px;
+  background: var(--cream-dim); border: 1px solid var(--cream-line); font-size: 13px; color: var(--ink-soft);
+}
+.verb-chip strong { color: var(--ink); font-family: var(--font-mono); font-weight: 700; }
 .speaker-btn { background: none; border: none; font-size: 17px; color: inherit; opacity: 0.7; padding: 2px 6px; }
 .speaker-btn:hover { opacity: 1; }
 
@@ -381,5 +343,5 @@ a { color: var(--gold-bright); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .flip-card-inner, .ring-fill, .activity-day, .big-emoji, .unlock-banner { transition: none !important; animation: none !important; }
+  .flip-card-inner, .ring-fill, .activity-day, .unlock-banner { transition: none !important; animation: none !important; }
 }

@@ -1,9 +1,8 @@
-// Generates exercises from verb data. Shared by every module - this is what lets all
-// 16 modules ship at uniform quality without 16 bespoke drill implementations.
+// Verb-form lookup + fact-key helpers shared across the study pages, the course map, and
+// the cumulative Practice tab.
 
 import { PRONOUNS, PRONOUN_LABELS } from '../data/verbs.js';
 import * as C from '../data/conjugate.js';
-import { VERBS } from '../data/verbs.js';
 
 export const TENSE_LABELS = {
   praesens: 'Präsens',
@@ -53,91 +52,13 @@ export function pronounLabel(tense, pronoun) {
   return tense === 'imperativ' ? pronoun : PRONOUN_LABELS[pronoun];
 }
 
-/** Short human-readable label for a fact, used in review lists and headers. */
+/** Short human-readable label for a fact, used in Practice's review lists and headers. */
 export function factLabel(verb, tense, pronoun) {
   return `${pronoun ? pronounLabel(tense, pronoun) + ' · ' : ''}${verb.infinitive} (${TENSE_LABELS[tense]})`;
 }
 
 export function factKeyFor(verb, tense, pronoun) {
   return `${verb.infinitive}|${tense}|${pronoun}`;
-}
-
-// ---------------------------------------------------------------- answer checking
-
-function normalize(s) {
-  return String(s || '').trim().toLowerCase().replace(/ß/g, 'ss').replace(/\s+/g, ' ');
-}
-function asciiFallback(s) {
-  return s.replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue');
-}
-export function answersMatch(input, target) {
-  if (target == null) return false;
-  const ni = normalize(input);
-  const nt = normalize(target);
-  return ni === nt || asciiFallback(ni) === asciiFallback(nt);
-}
-
-// ---------------------------------------------------------------- exercise builders
-
-function randomPick(arr, n, exclude = new Set()) {
-  const pool = arr.filter((x) => !exclude.has(x));
-  const picked = [];
-  const copy = [...pool];
-  while (picked.length < n && copy.length) {
-    const i = Math.floor(Math.random() * copy.length);
-    picked.push(copy.splice(i, 1)[0]);
-  }
-  return picked;
-}
-
-/** { type:'fill', verb, tense, pronoun, answer, factKey } */
-export function buildFillBlank(verb, tense, pronoun) {
-  const answer = getForm(verb, tense, pronoun);
-  if (answer == null) return null;
-  return { type: 'fill', verb, tense, pronoun, answer, factKey: factKeyFor(verb, tense, pronoun) };
-}
-
-/** { type:'mc', verb, tense, pronoun, answer, choices:[...], factKey } */
-export function buildMultipleChoice(verb, tense, pronoun, pool) {
-  const answer = getForm(verb, tense, pronoun);
-  if (answer == null) return null;
-  const candidatePool = (pool && pool.length >= 6 ? pool : VERBS).filter((v) => v.infinitive !== verb.infinitive);
-  const seen = new Set([answer]);
-  const distractors = [];
-  const shuffled = [...candidatePool].sort(() => Math.random() - 0.5);
-  for (const other of shuffled) {
-    const form = getForm(other, tense, pronoun);
-    if (form && !seen.has(form)) {
-      seen.add(form);
-      distractors.push(form);
-    }
-    if (distractors.length === 3) break;
-  }
-  // Pad with other-pronoun forms of the same verb if the pool couldn't fill 3 (tiny pools).
-  if (distractors.length < 3) {
-    for (const p of pronounsFor(tense)) {
-      if (distractors.length === 3) break;
-      const form = getForm(verb, tense, p);
-      if (form && !seen.has(form)) {
-        seen.add(form);
-        distractors.push(form);
-      }
-    }
-  }
-  const choices = [...distractors, answer].sort(() => Math.random() - 0.5);
-  return { type: 'mc', verb, tense, pronoun, answer, choices, factKey: factKeyFor(verb, tense, pronoun) };
-}
-
-/**
- * Builds one exercise for a fact key using the requested type, choosing pool for MC
- * distractors. Falls back to 'fill' if the requested type can't be built for this fact.
- */
-export function buildExerciseForFact(factKey, type, pool) {
-  const [infinitive, tense, pronoun] = factKey.split('|');
-  const verb = VERBS.find((v) => v.infinitive === infinitive);
-  if (!verb) return null;
-  if (type === 'mc') return buildMultipleChoice(verb, tense, pronoun, pool) || buildFillBlank(verb, tense, pronoun);
-  return buildFillBlank(verb, tense, pronoun);
 }
 
 /** All fact keys a module could drill, given its verb pool + tense list. */
@@ -151,21 +72,4 @@ export function factKeysForModule(verbPool, tenses) {
     }
   }
   return keys;
-}
-
-/**
- * How many of a module's verb+tense pairs have never come up in a session yet, vs. how
- * many exist in total. A pair counts as "started" the moment any of its pronoun forms
- * has been answered at least once - a plain countdown that drops every session (unlike
- * the SRS mastery %, which can take weeks to move), for surfacing "N left to try".
- */
-export function unstartedVerbTenseCount(deck, verbPool, tenses) {
-  const byVt = new Map();
-  for (const key of factKeysForModule(verbPool, tenses)) {
-    const vt = key.split('|').slice(0, 2).join('|');
-    byVt.set(vt, (byVt.get(vt) || false) || !!deck.facts[key]);
-  }
-  const total = byVt.size;
-  const started = [...byVt.values()].filter(Boolean).length;
-  return { total, started, remaining: total - started };
 }

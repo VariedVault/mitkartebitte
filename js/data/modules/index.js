@@ -9,9 +9,8 @@
 //   title: 'Präsens: Regular Verbs',
 //   level: 'A1',
 //   summary: 'One-line course-map card description.',
-//   verbPool: (verbs) => verbs.filter(...),   // subset of VERBS this module drills
+//   verbPool: (verbs) => verbs.filter(...),   // subset of VERBS this module covers
 //   tenses: ['praesens'],           // tense keys drills.js understands
-//   exerciseTypes: ['fill', 'mc'],
 //   explanation: {
 //     intro: 'string',
 //     rules: [{ heading, body }],
@@ -67,34 +66,41 @@ export function previousModule(mod) {
 /**
  * Soft lock only - never blocks navigation, just tells the UI whether to show a
  * "usually comes after X" nudge. A module is locked if the immediately-preceding
- * module (by course order) hasn't been practiced at all yet for this profile.
+ * module (by course order) hasn't been studied at all yet for this profile.
  */
 export function isModuleSoftLocked(mod, progress) {
   const prev = previousModule(mod);
   if (!prev) return false;
-  return !progress[prev.id]?.practiced;
+  return !progress[prev.id]?.studied;
 }
 
 export function modulesByTier(tier) {
   return allModules().filter((m) => m.tier === tier);
 }
 
+const LEVEL_RANK = { A1: 1, A2: 2, B1: 3 };
+
+/** True once every module at this CEFR level has been studied - the trigger for
+ *  surfacing that level's "Practice" call-to-action on the course map. */
+export function isLevelStudied(level, progress) {
+  const levelModules = allModules().filter((m) => m.level === level);
+  return levelModules.length > 0 && levelModules.every((m) => progress[m.id]?.studied);
+}
+
 // ---------------------------------------------------------------- Practice-deck gating
-// Two independent gates, both driven by "practiced" status (has this profile finished at
-// least one practice round for the module - no score, no test, just "you showed up"):
-//   - TENSES: union of .tenses from every module this profile has practiced.
-//   - VERB LEVEL: practicing a module unlocks its whole CEFR level's verbs, cumulatively
-//     (practicing any B1 module also keeps A1/A2 unlocked).
+// Two independent gates, both driven by "studied" status (has this profile read the
+// category and tapped "Got it" - no score, no test):
+//   - TENSES: union of .tenses from every module this profile has studied.
+//   - VERB LEVEL: studying a module unlocks its whole CEFR level's verbs, cumulatively
+//     (studying any B1 module also keeps A1/A2 unlocked).
 // Both fall back to module 1's tenses / level so a brand-new profile's Practice deck
 // is never empty on day one.
-
-const LEVEL_RANK = { A1: 1, A2: 2, B1: 3 };
 
 /** Set of tense keys unlocked for Practice, given a profile's progress map. */
 export function unlockedTenses(progress) {
   const set = new Set();
   for (const mod of allModules()) {
-    if (progress[mod.id]?.practiced) mod.tenses.forEach((t) => set.add(t));
+    if (progress[mod.id]?.studied) mod.tenses.forEach((t) => set.add(t));
   }
   if (set.size === 0) allModules()[0].tenses.forEach((t) => set.add(t));
   return set;
@@ -104,7 +110,7 @@ export function unlockedTenses(progress) {
 export function unlockedVerbRank(progress) {
   let rank = 0;
   for (const mod of allModules()) {
-    if (progress[mod.id]?.practiced) rank = Math.max(rank, LEVEL_RANK[mod.level] || 0);
+    if (progress[mod.id]?.studied) rank = Math.max(rank, LEVEL_RANK[mod.level] || 0);
   }
   return rank || LEVEL_RANK[allModules()[0].level];
 }

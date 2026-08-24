@@ -117,7 +117,7 @@ for (const verb of subsetVerbs) {
 }
 ok(`praesensExamples verification: ${sentenceCount} sentences across ${subsetVerbs.length} verbs`);
 
-// ---------------------------------------------------------------- 4. Practice-deck pool: cumulative, practiced-gated
+// ---------------------------------------------------------------- 4. Practice-deck pool: cumulative, studied-gated
 // Mirrors js/views/practice.js's unlockedFactKeys() exactly (same gating functions from
 // modules/index.js, same factKeysForModule builder from drills.js), so a passing check here
 // is a real guarantee about what Practice actually draws from - not a parallel reimplementation.
@@ -128,9 +128,9 @@ function poolForProgress(progress) {
   return { tenses, rank, verbs, keys: factKeysForModule(verbs, tenses) };
 }
 
-function practicedModules(...moduleIds) {
+function studiedModules(...moduleIds) {
   const progress = {};
-  for (const id of moduleIds) progress[id] = { practiced: true };
+  for (const id of moduleIds) progress[id] = { studied: true };
   return progress;
 }
 
@@ -148,8 +148,8 @@ for (const key of emptyPool.keys) {
 }
 ok(`Practice pool (a) empty profile: ${emptyPool.keys.length} cards, module-1 fallback (praesens/A1), no dead cards`);
 
-// (b) mid-progress: practiced through A1.03 (tier1-01..03) - should NOT yet include tier1-04/05 material
-const midPool = poolForProgress(practicedModules('tier1-01-praesens', 'tier1-02-stem-changing', 'tier1-03-sein-haben-werden'));
+// (b) mid-progress: studied through A1.03 (tier1-01..03) - should NOT yet include tier1-04/05 material
+const midPool = poolForProgress(studiedModules('tier1-01-praesens', 'tier1-02-stem-changing', 'tier1-03-sein-haben-werden'));
 for (const key of midPool.keys) {
   const [inf, tense, pronoun] = key.split('|');
   const verb = VERBS.find((v) => v.infinitive === inf);
@@ -160,10 +160,10 @@ const midKeySet = new Set(midPool.keys);
 if (![...emptyKeySet].every((k) => midKeySet.has(k))) {
   fail('mid-progress pool dropped material that was already unlocked - cumulative pool must never shrink');
 }
-ok(`Practice pool (b) mid-progress (A1.01-A1.03 practiced): ${midPool.keys.length} cards, superset of empty-profile pool`);
+ok(`Practice pool (b) mid-progress (A1.01-A1.03 studied): ${midPool.keys.length} cards, superset of empty-profile pool`);
 
-// (c) fully-completed: every module practiced
-const fullPool = poolForProgress(practicedModules(...allModules().map((m) => m.id)));
+// (c) fully-completed: every module studied
+const fullPool = poolForProgress(studiedModules(...allModules().map((m) => m.id)));
 if (fullPool.verbs.length !== VERBS.length) {
   fail(`fully-completed pool has ${fullPool.verbs.length} verbs unlocked, expected all ${VERBS.length}`);
 }
@@ -185,7 +185,7 @@ ok(`Practice pool (c) fully-completed: ${fullPool.keys.length} cards across all 
 // Monotonic-growth spot check: practicing one more module (tier2-06, unlocks A2 + perfekt) must
 // strictly grow the pool while every previously-unlocked card is still present - this is the
 // "old material keeps appearing" guarantee spaced repetition depends on.
-const growthPool = poolForProgress(practicedModules('tier1-01-praesens', 'tier1-02-stem-changing', 'tier1-03-sein-haben-werden', 'tier2-06-perfekt-weak'));
+const growthPool = poolForProgress(studiedModules('tier1-01-praesens', 'tier1-02-stem-changing', 'tier1-03-sein-haben-werden', 'tier2-06-perfekt-weak'));
 const growthKeySet = new Set(growthPool.keys);
 if (growthPool.keys.length <= midPool.keys.length) {
   fail(`practicing an additional module did not grow the pool (${midPool.keys.length} -> ${growthPool.keys.length})`);

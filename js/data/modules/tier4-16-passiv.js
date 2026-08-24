@@ -9,7 +9,6 @@ export default {
   summary: 'When the thing being done to matters more than who\'s doing it.',
   verbPool: (verbs) => verbs.filter((v) => PASSIV_VERBS.includes(v.infinitive)),
   tenses: ['passivVorgang'],
-  exerciseTypes: ['fill', 'mc'],
   explanation: {
     intro:
       'Active voice: "Der Kellner bringt die Rechnung" (the waiter brings the bill) - the doer is the subject. Passive voice: "Die Rechnung wird gebracht" (the bill is brought/being brought) - the thing being acted on becomes the subject, and the doer either disappears entirely or gets demoted to a "von + dative" phrase. German reaches for this constantly in instructions, news, and anywhere the ACTION matters more than who did it.',

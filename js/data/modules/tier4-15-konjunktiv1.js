@@ -7,7 +7,6 @@ export default {
   summary: 'Er sagt, er sei müde. Signaling "this is what someone else said," without endorsing it.',
   verbPool: (verbs) => verbs.filter((v) => v.infinitive !== 'möchten' && !v.reflexive),
   tenses: ['konjunktiv1'],
-  exerciseTypes: ['fill', 'mc'],
   explanation: {
     intro:
       'Konjunktiv I\'s one real job in modern German is reported speech - newspapers and news broadcasts use it constantly to mark "this is a claim someone made," without the writer taking a position on whether it\'s true. "Der Minister sagte, er sei zurückgetreten" (The minister said he had resigned) - that "sei" signals distance from the claim.',

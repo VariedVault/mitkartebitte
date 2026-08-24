@@ -92,55 +92,6 @@ export function reviewList(history, onBack, backLabel = 'Back') {
   return wrap;
 }
 
-const UMLAUT_KEYS = ['ä', 'ö', 'ü', 'ß'];
-
-/**
- * Virtual-keyboard bar for the umlaut/ß characters most on-screen keyboards hide behind a
- * long-press. Takes one input or an array of inputs (e.g. every cell of a conjugation
- * table) sharing a single bar, and always inserts into whichever of them the user last
- * focused - never a hardcoded/first one. This is the ONE shared implementation; every
- * view with a typed-answer input should call this instead of rolling its own bar.
- */
-export function keyboardHelper(inputs) {
-  const list = [].concat(inputs);
-  const bar = el('div', { class: 'keyboard-helper' });
-  let active = list[0] || null;
-  for (const input of list) {
-    input.addEventListener('focus', () => { active = input; });
-  }
-  function insert(ch) {
-    const input = active;
-    if (!input) return;
-    const start = input.selectionStart ?? input.value.length;
-    const end = input.selectionEnd ?? input.value.length;
-    input.value = input.value.slice(0, start) + ch + input.value.slice(end);
-    const caret = start + ch.length;
-    input.focus();
-    input.setSelectionRange(caret, caret);
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-  }
-  for (const ch of UMLAUT_KEYS) {
-    const btn = el('button', { type: 'button' }, ch);
-    // Tapping a button would otherwise blur the input first (losing both
-    // document.activeElement and, on some browsers, the caret/selection) before any handler
-    // runs - preventDefault on mousedown/touchstart keeps the input focused throughout.
-    // Touch is handled on touchend rather than relying on click: preventDefault-ing
-    // touchstart also suppresses the browser's synthetic post-touch click entirely (spec
-    // behavior), so a touch-only flow that waited for click would silently do nothing.
-    let touchHandled = false;
-    btn.addEventListener('touchstart', (e) => { e.preventDefault(); touchHandled = true; }, { passive: false });
-    btn.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      if (touchHandled) { touchHandled = false; insert(ch); }
-    });
-    btn.addEventListener('touchcancel', () => { touchHandled = false; });
-    btn.addEventListener('mousedown', (e) => e.preventDefault());
-    btn.addEventListener('click', () => insert(ch)); // mouse clicks + keyboard (Enter/Space) activation
-    bar.appendChild(btn);
-  }
-  return bar;
-}
-
 /** Small "← Back to X" link, styled for the dark page background (not inside a card). */
 export function backLink(label, onClick) {
   const link = el('button', { class: 'btn', style: 'font-size:12.5px;padding:7px 12px;margin-bottom:14px;background:transparent;border-color:rgba(255,255,255,0.25)' }, `← ${label}`);

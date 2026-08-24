@@ -7,7 +7,6 @@ export default {
   summary: 'Prefixes that fly to the end of the sentence - and the ones that never do.',
   verbPool: (verbs) => verbs.filter((v) => v.separable || ['bezahlen', 'verstehen', 'empfehlen', 'beginnen', 'passieren'].includes(v.infinitive)),
   tenses: ['praesens', 'perfekt'],
-  exerciseTypes: ['fill', 'mc'],
   explanation: {
     intro:
       'German verb prefixes come in two personalities. Separable prefixes (auf-, an-, ein-, mit-, fern-, and many more) are stressed, carry real meaning, and physically detach from the verb in a main clause, flying to the very end. Inseparable prefixes (be-, ver-, emp-, ent-, er-, ge-, zer-) are unstressed, never separate, and - as you already noticed in Perfekt - block ge-.',

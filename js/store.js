@@ -107,14 +107,16 @@ export function setActiveProfileId(id) {
 
 // ---------------------------------------------------------------- progress
 
-/** { [moduleId]: { practiced, mastery, attempts } } */
+/** { [moduleId]: { studied } } - true once the user has read the category and tapped
+ *  "Got it". Live mastery/retention is computed straight from the SRS deck (see srs.js's
+ *  masteryForKeys), not stored here, since it changes with every practice answer. */
 export function getProgress(profileId) {
   return read(keyFor(profileId, 'progress'), {});
 }
 
 export function setModuleProgress(profileId, moduleId, patch) {
   const progress = getProgress(profileId);
-  progress[moduleId] = { ...(progress[moduleId] || { practiced: false, mastery: 0, attempts: 0 }), ...patch };
+  progress[moduleId] = { ...(progress[moduleId] || { studied: false }), ...patch };
   write(keyFor(profileId, 'progress'), progress);
   return progress[moduleId];
 }

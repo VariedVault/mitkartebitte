@@ -9,7 +9,7 @@ import { navigate } from '../router.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/** { unlocked verbs by level } x { pronouns } x { unlocked tenses by practiced modules }.
+/** { unlocked verbs by level } x { pronouns } x { unlocked tenses by studied modules }.
  *  Both gates fall back to module 1's tenses/level, so a brand-new profile always has
  *  a non-empty deck (see js/data/modules/index.js). */
 function unlockedFactKeys(profileId) {

@@ -7,7 +7,6 @@ export default {
   summary: 'Commands and requests - du, ihr, and the polite Sie form.',
   verbPool: (verbs) => verbs.filter((v) => v.tables.imperativ != null),
   tenses: ['imperativ'],
-  exerciseTypes: ['fill', 'mc'],
   explanation: {
     intro:
       'The imperative gives commands, instructions, and casual requests. German has three imperative forms depending on who you\'re talking to - and unlike English, you have to pick.',
