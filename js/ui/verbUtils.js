@@ -28,6 +28,13 @@ export function pronounLabel(tense, pronoun) {
   return tense === 'imperativ' ? pronoun : PRONOUN_LABELS[pronoun];
 }
 
+/** One natural pronoun word for TTS - pronounLabel's "er/sie/es"/"sie/Sie" display
+ *  form is correct to show (both share the same verb form, worth clarifying visually),
+ *  but speech synthesis would otherwise try to read the literal slash character aloud. */
+export function spokenPronoun(tense, pronoun) {
+  return pronounLabel(tense, pronoun).split('/')[0];
+}
+
 /** Direct table lookup - the new schema stores every tense as a plain per-pronoun object
  *  (or null if that tense isn't populated yet for this course phase), so there's nothing
  *  to derive at read time anymore. */

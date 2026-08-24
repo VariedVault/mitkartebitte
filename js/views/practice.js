@@ -2,7 +2,7 @@ import * as store from '../store.js';
 import * as srs from '../srs.js';
 import { el, speakerButton, reviewList } from '../ui/components.js';
 import { VERBS, PRONOUN_COLORS } from '../data/verbs-a1.js';
-import { factKeysFor, TENSE_LABELS, pronounLabel, factLabel } from '../ui/verbUtils.js';
+import { factKeysFor, TENSE_LABELS, pronounLabel, spokenPronoun, factLabel } from '../ui/verbUtils.js';
 import { navigate } from '../router.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -72,7 +72,7 @@ function buildReveal(verb, tense, pronoun, answer) {
       el('span', { style: `color:${color}` }, `${pronounLabel(tense, pronoun)} `),
       answer,
       ' ',
-      speakerButton(`${pronounLabel(tense, pronoun)} ${answer}`),
+      speakerButton(`${spokenPronoun(tense, pronoun)} ${answer}`),
     ])
   );
 

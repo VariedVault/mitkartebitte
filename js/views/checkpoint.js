@@ -2,7 +2,7 @@ import * as store from '../store.js';
 import * as srs from '../srs.js';
 import { el, speakerButton, backLink } from '../ui/components.js';
 import { VERBS } from '../data/verbs-a1.js';
-import { pronounLabel, factKeysFor, TENSE_LABELS } from '../ui/verbUtils.js';
+import { pronounLabel, spokenPronoun, factKeysFor, TENSE_LABELS } from '../ui/verbUtils.js';
 import { navigate } from '../router.js';
 
 const QUESTION_COUNT = 8;
@@ -80,7 +80,7 @@ export async function renderCheckpoint(container, { profileId, level, setBreadcr
         el('span', {}, `${pronounLabel(tense, pronoun)} `),
         answer,
         ' ',
-        speakerButton(`${pronounLabel(tense, pronoun)} ${answer}`),
+        speakerButton(`${spokenPronoun(tense, pronoun)} ${answer}`),
       ])
     );
     const gradeRow = el('div', { class: 'toolbar', style: 'justify-content:center;margin-top:18px' });

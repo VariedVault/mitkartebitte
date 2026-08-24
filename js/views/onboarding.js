@@ -54,7 +54,7 @@ export async function renderOnboarding(container, { profileId, onDone }) {
     tbody.appendChild(
       el('tr', {}, [
         el('td', { class: `pron-cell pron-${p}` }, PRONOUN_LABELS[p]),
-        el('td', { class: 'form-cell' }, [machen.tables.praesens[p], ' ', speakerButton(`ich ${machen.tables.praesens.ich} machen`.replace('ich', PRONOUN_LABELS[p].split('/')[0]))]),
+        el('td', { class: 'form-cell' }, [machen.tables.praesens[p], ' ', speakerButton(`${PRONOUN_LABELS[p].split('/')[0]} ${machen.tables.praesens[p]}`)]),
       ])
     );
   }
