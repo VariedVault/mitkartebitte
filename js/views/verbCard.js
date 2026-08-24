@@ -2,8 +2,34 @@ import * as store from '../store.js';
 import * as srs from '../srs.js';
 import { el, speakerButton, progressRing, backLink } from '../ui/components.js';
 import { VERBS } from '../data/verbs-a1.js';
-import { TENSE_LABELS, factKeysFor, conjugationTable } from '../ui/verbUtils.js';
+import { TENSE_LABELS, factKeysFor, pronounsFor, pronounLabel, getForm } from '../ui/verbUtils.js';
 import { navigate } from '../router.js';
+
+/** Präsens/Imperativ/Perfekt side by side instead of three stacked tables - the whole
+ *  point of the fixed-size card is to avoid a tall scroll, and three 6-7 row tables
+ *  stacked defeated that. Wraps to fewer columns on narrow screens (flex-wrap), so it
+ *  degrades gracefully instead of clipping - the card's own internal scroll is still
+ *  there as a safety net either way. */
+function tenseColumns(verb, tenses) {
+  const wrap = el('div', { class: 'tense-columns' });
+  for (const tense of tenses) {
+    if (verb.tables[tense] == null) continue;
+    const col = el('div', { class: 'tense-col' });
+    col.appendChild(el('div', { class: 'tense-col-title' }, TENSE_LABELS[tense]));
+    for (const p of pronounsFor(tense)) {
+      const form = getForm(verb, tense, p);
+      if (form == null) continue;
+      col.appendChild(
+        el('div', { class: 'tense-col-row' }, [
+          el('span', { class: `chip tense-col-pron pron-${tense === 'imperativ' ? '' : p}`.trim() }, pronounLabel(tense, p)),
+          el('span', { class: 'tense-col-form' }, [form, speakerButton(form)]),
+        ])
+      );
+    }
+    wrap.appendChild(col);
+  }
+  return wrap;
+}
 
 /** Fixed-size, vertically-centered, internal-scroll-if-tall - the whole point being that
  *  navigating card to card (Learn's verb list, or later a "next verb" flow) never causes
@@ -63,11 +89,7 @@ export async function renderVerbCard(container, { profileId, infinitive, setBrea
   });
   scroll.appendChild(pinBtn);
 
-  for (const tense of ['praesens', 'imperativ', 'perfekt']) {
-    if (verb.tables[tense] == null) continue;
-    scroll.appendChild(el('h3', { style: 'margin-top:20px' }, TENSE_LABELS[tense]));
-    scroll.appendChild(conjugationTable(verb, tense));
-  }
+  scroll.appendChild(tenseColumns(verb, ['praesens', 'imperativ', 'perfekt']));
 
   card.appendChild(scroll);
   scene.appendChild(card);

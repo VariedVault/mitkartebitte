@@ -3,7 +3,6 @@
 // system is gone) - Practice is flashcard-style flip cards, built in views/practice.js.
 
 import { PRONOUNS } from '../data/verbs-a1.js';
-import { el, speakerButton } from './components.js';
 
 export const TENSE_LABELS = {
   praesens: 'Präsens',
@@ -70,22 +69,3 @@ export function factKeysFor(verbs, tenses) {
   return keys;
 }
 
-/** Full conjugation table for one verb/tense, pronoun-color-coded - shared by the verb
- *  card page, the grammar reference pages, and Practice's flip-card reveal fallback, so
- *  the visual language (and color-per-pronoun memory aid) stays identical everywhere. */
-export function conjugationTable(verb, tense, highlightPronoun) {
-  const table = el('table', { class: 'conj-table' });
-  const tbody = el('tbody');
-  for (const p of pronounsFor(tense)) {
-    const form = getForm(verb, tense, p);
-    if (form == null) continue;
-    tbody.appendChild(
-      el('tr', { style: p === highlightPronoun ? 'font-weight:800' : '' }, [
-        el('td', { class: `pron-cell pron-${tense === 'imperativ' ? '' : p}`.trim() }, pronounLabel(tense, p)),
-        el('td', { class: 'form-cell' }, [form, ' ', speakerButton(form)]),
-      ])
-    );
-  }
-  table.appendChild(tbody);
-  return table;
-}
