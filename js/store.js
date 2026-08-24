@@ -1,14 +1,21 @@
 // Local persistence. Namespaced localStorage keys, per spec:
-//   mitkartebitte:profiles                      -> index of all profiles
-//   mitkartebitte:profile:<id>:progress          -> per-module completion/mastery
-//   mitkartebitte:profile:<id>:srs                -> Leitner deck state
-//   mitkartebitte:profile:<id>:position           -> resume-where-you-left-off
-//   mitkartebitte:profile:<id>:activity           -> heatmap dates (opt-in, off by default)
-//   mitkartebitte:profile:<id>:settings           -> per-profile preferences
+//   mitkartebitte:schemaVersion                   -> global course-structure version (migration gate)
+//   mitkartebitte:profiles                        -> index of all profiles
+//   mitkartebitte:profile:<id>:progress           -> per-level checkpoint status + pinned verbs
+//   mitkartebitte:profile:<id>:srs                -> Leitner deck state (verb|tense|pronoun facts)
+//   mitkartebitte:profile:<id>:position            -> resume-where-you-left-off
+//   mitkartebitte:profile:<id>:activity            -> heatmap dates (opt-in, off by default)
+//   mitkartebitte:profile:<id>:settings            -> per-profile preferences
 
 const NS = 'mitkartebitte';
 const PROFILES_KEY = `${NS}:profiles`;
 const ACTIVE_KEY = `${NS}:activeProfile`;
+const SCHEMA_VERSION_KEY = `${NS}:schemaVersion`;
+
+// Bump whenever the course structure changes shape enough that old progress/srs data
+// would be meaningless or crash the new views (e.g. this revamp: 16 modules -> A1 verb
+// core + level checkpoints). See migrateIfNeeded() below.
+const CURRENT_SCHEMA_VERSION = 2;
 
 function read(key, fallback) {
   try {
@@ -33,6 +40,35 @@ function uid() {
 
 function keyFor(profileId, part) {
   return `${NS}:profile:${profileId}:${part}`;
+}
+
+// ---------------------------------------------------------------- migration
+
+/**
+ * Runs once at startup, before anything else touches storage. If this is a fresh
+ * install (no schemaVersion key at all AND no profiles yet), just stamps the current
+ * version - nothing to migrate. If an OLDER version is found (or profiles exist with no
+ * version stamped at all, i.e. pre-dates this concept), wipes every profile's
+ * course-shaped state (progress/srs/position - NOT name/settings/activity, which stay
+ * meaningful across a course restructure) and sets a flag so the UI shows a one-time
+ * calm notice instead of just silently resetting. Never throws on a corrupt/unexpected
+ * old shape - clearing is the correct response either way, not a crash.
+ */
+export function migrateIfNeeded() {
+  const stored = read(SCHEMA_VERSION_KEY, null);
+  const hadProfilesAlready = listProfiles().length > 0;
+  if (stored === CURRENT_SCHEMA_VERSION) return false;
+
+  if (hadProfilesAlready) {
+    for (const profile of listProfiles()) {
+      for (const part of ['progress', 'srs', 'position']) {
+        try { localStorage.removeItem(keyFor(profile.id, part)); } catch { /* ignore */ }
+      }
+      setSetting(profile.id, 'restructureNoticePending', true);
+    }
+  }
+  write(SCHEMA_VERSION_KEY, CURRENT_SCHEMA_VERSION);
+  return hadProfilesAlready;
 }
 
 // ---------------------------------------------------------------- profiles
@@ -105,25 +141,61 @@ export function setActiveProfileId(id) {
   write(ACTIVE_KEY, id);
 }
 
-// ---------------------------------------------------------------- progress
+// ---------------------------------------------------------------- course progress (per level + pinned verbs)
 
-/** { [moduleId]: { studied } } - true once the user has read the category and tapped
- *  "Got it". Live mastery/retention is computed straight from the SRS deck (see srs.js's
- *  masteryForKeys), not stored here, since it changes with every practice answer. */
-export function getProgress(profileId) {
-  return read(keyFor(profileId, 'progress'), {});
+const LEVELS = ['A1', 'A2', 'B1'];
+
+function defaultProgress() {
+  return { levels: Object.fromEntries(LEVELS.map((l) => [l, { checkpointPassed: false }])), pinnedVerbs: [] };
 }
 
-export function setModuleProgress(profileId, moduleId, patch) {
-  const progress = getProgress(profileId);
-  progress[moduleId] = { ...(progress[moduleId] || { studied: false }), ...patch };
+/** { levels: { A1: { checkpointPassed }, A2: {...}, B1: {...} }, pinnedVerbs: [infinitive] }
+ *  Per-verb mastery/retention is computed live from the SRS deck, never stored here.
+ *  Defensively shape-checked, not just presence-checked: migrateIfNeeded() should always
+ *  clear a pre-restructure profile's progress before this is ever read, but a shape this
+ *  central is worth a second line of defense - an unexpected/old-shaped value here falls
+ *  back to a fresh default instead of crashing every view that reads `.levels`. */
+export function getProgress(profileId) {
+  const raw = read(keyFor(profileId, 'progress'), null);
+  if (!raw || typeof raw !== 'object' || !raw.levels || !Array.isArray(raw.pinnedVerbs)) return defaultProgress();
+  return raw;
+}
+
+function writeProgress(profileId, progress) {
   write(keyFor(profileId, 'progress'), progress);
-  return progress[moduleId];
+  return progress;
+}
+
+export function setCheckpointPassed(profileId, level, passed) {
+  const progress = getProgress(profileId);
+  progress.levels[level] = { ...(progress.levels[level] || {}), checkpointPassed: passed };
+  return writeProgress(profileId, progress);
+}
+
+export function isCheckpointPassed(profileId, level) {
+  return !!getProgress(profileId).levels[level]?.checkpointPassed;
+}
+
+/** Verbs the user has explicitly added to Practice via a verb card's "Add to practice",
+ *  independent of whether their level's checkpoint is passed yet - gives early, targeted
+ *  practice access without waiting for (or bypassing the intent of) the level gate. */
+export function togglePinnedVerb(profileId, infinitive) {
+  const progress = getProgress(profileId);
+  const set = new Set(progress.pinnedVerbs);
+  if (set.has(infinitive)) set.delete(infinitive);
+  else set.add(infinitive);
+  progress.pinnedVerbs = [...set];
+  writeProgress(profileId, progress);
+  return set.has(infinitive);
+}
+
+export function isPinnedVerb(profileId, infinitive) {
+  return getProgress(profileId).pinnedVerbs.includes(infinitive);
 }
 
 // ---------------------------------------------------------------- SRS deck
 
-/** { facts: { [factKey]: { box, dueAt, correctStreak, lastSeen } } } */
+/** { facts: { [factKey]: { box, dueAt, correctStreak, lastSeen, timesSeen } } } */
 export function getSRSDeck(profileId) {
   return read(keyFor(profileId, 'srs'), { facts: {} });
 }
@@ -174,6 +246,7 @@ export function getSettings(profileId) {
     heatmapEnabled: false,
     speed: 1,
     onboardingDone: false,
+    restructureNoticePending: false,
   });
 }
 
@@ -198,11 +271,11 @@ function collectProfileData(id) {
 }
 
 export function exportProfile(id) {
-  return { version: 1, exportedAt: new Date().toISOString(), profiles: [collectProfileData(id)] };
+  return { version: 2, exportedAt: new Date().toISOString(), profiles: [collectProfileData(id)] };
 }
 
 export function exportAllProfiles() {
-  return { version: 1, exportedAt: new Date().toISOString(), profiles: listProfiles().map((p) => collectProfileData(p.id)) };
+  return { version: 2, exportedAt: new Date().toISOString(), profiles: listProfiles().map((p) => collectProfileData(p.id)) };
 }
 
 /** Imports a previously-exported bundle. New ids are minted so importing never clobbers an existing profile. */

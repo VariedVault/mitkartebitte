@@ -230,20 +230,28 @@ a { color: var(--gold-bright); }
 .conj-table .pron-cell.pron-sie { color: #22874c; }
 
 /* ---------------------------------------------------------------- SRS flip card */
+/* Fixed height (not min-height/offsetHeight-computed) - card-to-card navigation never
+   shifts the page. Faces scroll internally (overflow-y) if their content is tall (e.g.
+   the fallback conjugation table), instead of growing the box. */
 .flip-scene { perspective: 1200px; max-width: 420px; margin: 0 auto; }
-.flip-card { position: relative; width: 100%; min-height: 220px; }
+.flip-card { position: relative; width: 100%; height: 300px; }
 .flip-card-inner {
-  position: relative; width: 100%; height: 100%; min-height: 220px;
+  position: relative; width: 100%; height: 100%;
   transition: transform 0.5s cubic-bezier(.4,.2,.2,1); transform-style: preserve-3d;
 }
 .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
 .flip-card-face {
   position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--radius);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  padding: 22px; text-align: center; box-shadow: var(--shadow-card);
+  padding: 22px; text-align: center; box-shadow: var(--shadow-card); overflow-y: auto;
 }
 .flip-card-front { background: var(--cream); color: var(--ink); }
 .flip-card-back { background: var(--felt-700); color: var(--cream); transform: rotateY(180deg); border: 2px solid var(--gold); }
+
+/* ---------------------------------------------------------------- verb card (fixed size) */
+.verb-card-scene { max-width: 480px; margin: 0 auto; }
+.verb-card { height: 540px; overflow-y: auto; padding: 0; }
+.verb-card-scroll { min-height: 100%; display: flex; flex-direction: column; justify-content: center; padding: 24px; box-sizing: border-box; }
 
 /* ---------------------------------------------------------------- progress ring */
 .ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
@@ -252,26 +260,19 @@ a { color: var(--gold-bright); }
 .ring-fill { fill: none; stroke: var(--gold-bright); stroke-linecap: round; transition: stroke-dashoffset 0.8s cubic-bezier(.3,.8,.3,1); }
 .ring-label { position: absolute; font-family: var(--font-display); font-weight: 700; }
 
-/* ---------------------------------------------------------------- course map */
-.tier-section { margin-bottom: 30px; }
-.tier-heading {
-  display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding: 4px 0;
+/* ---------------------------------------------------------------- Learn home track/level cards */
+/* .card is also used as a <button> here (track/level cards, grammar/verb list rows) -
+   reset the button-specific defaults so it reads identically to a non-interactive .card. */
+button.card { border: none; width: 100%; text-align: left; font-size: inherit; display: block; }
+.track-card-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-weight: 700; color: var(--ink); font-size: 15.5px; }
+.track-card-tag {
+  font-size: 10.5px; font-weight: 700; padding: 3px 9px; border-radius: 999px;
+  background: var(--cream-dim); color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.03em;
 }
-.tier-dot { width: 12px; height: 12px; border-radius: 50%; }
-.tier-heading h2 { font-size: 15px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--cream-dim); }
-.module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
-.module-node {
-  background: var(--cream); border-radius: var(--radius); padding: 14px; text-align: left;
-  border: 3px solid transparent; position: relative; min-height: 108px;
-  display: flex; flex-direction: column; justify-content: space-between;
-  box-shadow: var(--shadow-card);
-}
-.module-node .num { font-family: var(--font-mono); font-size: 11px; color: var(--ink-soft); font-weight: 700; }
-.module-node .title { font-family: var(--font-display); font-size: 14.5px; color: var(--ink); font-weight: 700; margin-top: 2px; }
-.module-node .status { font-size: 11px; margin-top: 8px; font-weight: 700; }
-.module-node.mastered { border-color: var(--gold); }
-.module-node.locked { opacity: 0.55; }
-.module-node .mini-ring { position: absolute; top: 10px; right: 10px; }
+.track-card-tag--done { background: var(--gold); color: var(--felt-900); }
+.track-card--locked { opacity: 0.6; cursor: default; }
+.level-card { cursor: pointer; }
+.level-card:disabled { cursor: default; }
 
 /* ---------------------------------------------------------------- legend */
 .legend-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0; }

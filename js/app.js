@@ -1,13 +1,17 @@
 import * as store from './store.js';
 import { route, startRouter, navigate, currentPath } from './router.js';
 import { initTTS } from './tts.js';
-import { renderCourseMap } from './views/courseMap.js';
+import { renderLearnHome } from './views/learnHome.js';
 import { renderOnboarding } from './views/onboarding.js';
-import { renderLesson } from './views/lesson.js';
+import { renderLevel } from './views/level.js';
+import { renderVerbCard } from './views/verbCard.js';
+import { renderGrammarRules } from './views/grammarRules.js';
+import { renderCheckpoint } from './views/checkpoint.js';
 import { renderPractice } from './views/practice.js';
 import { renderDataPanel } from './views/dataPanel.js';
 import { renderImpressum, renderDatenschutz, renderContact } from './views/legal.js';
 
+store.migrateIfNeeded(); // must run before anything else reads profile-scoped storage
 initTTS();
 store.ensureSeedProfiles();
 
@@ -60,49 +64,70 @@ function setActiveNav(name) {
   els.nav.querySelectorAll('button').forEach((b) => b.classList.toggle('active', b.dataset.nav === name));
 }
 
-/** "Home" is the map for a returning user, onboarding for a brand-new one. Always
- *  rendered at the bare root (no hash) - see router.js's navigate('') support. */
-export function goToCourseMap() {
+/** "Home" is Learn for a returning user, onboarding for a brand-new one. Always rendered
+ *  at the bare root (no hash) - see router.js's navigate('') support. */
+export function goToLearnHome() {
   navigate('');
 }
 
 // ---------------------------------------------------------------- routes
 
-/** Shared by the bare-root route and the /course-map alias (kept for any stray deep link). */
+/** Shared by the bare-root route and the /learn alias (kept for any stray deep link). */
 async function renderHome() {
   const id = requireProfile();
   const settings = store.getSettings(id);
-  setActiveNav('map');
+  setActiveNav('learn');
   refreshProfilePill();
   if (!settings.onboardingDone) {
-    setBreadcrumb('Module 0 · Get started');
+    setBreadcrumb('Get started');
     await renderOnboarding(els.view, {
       profileId: id,
       onDone: () => {
         store.setSetting(id, 'onboardingDone', true);
         refreshProfilePill();
-        navigate(''); // re-render the bare root, now as the map
+        navigate(''); // re-render the bare root, now as Learn home
       },
     });
     return;
   }
   setBreadcrumb('');
-  await renderCourseMap(els.view, { profileId: id });
+  await renderLearnHome(els.view, { profileId: id });
 }
 
 route('/', renderHome);
-route('/course-map', renderHome); // alias - internal links always use the bare root instead
+route('/learn', renderHome); // alias - internal links always use the bare root instead
 
-route('/module/:id', async ({ id: moduleId }) => {
+route('/level/:level', async ({ level }) => {
   const profileId = requireProfile();
-  setActiveNav('map');
+  setActiveNav('learn');
   refreshProfilePill();
-  await renderLesson(els.view, { profileId, moduleId, setBreadcrumb });
+  await renderLevel(els.view, { profileId, level, setBreadcrumb });
+});
+
+route('/verb/:infinitive', async ({ infinitive }) => {
+  const profileId = requireProfile();
+  setActiveNav('learn');
+  refreshProfilePill();
+  await renderVerbCard(els.view, { profileId, infinitive, setBreadcrumb });
+});
+
+route('/grammar/:tense', async ({ tense }) => {
+  requireProfile();
+  setActiveNav('learn');
+  refreshProfilePill();
+  await renderGrammarRules(els.view, { tense, setBreadcrumb });
+});
+
+route('/checkpoint/:level', async ({ level }) => {
+  const profileId = requireProfile();
+  setActiveNav('learn');
+  refreshProfilePill();
+  await renderCheckpoint(els.view, { profileId, level, setBreadcrumb });
 });
 
 route('/practice', async () => {
   const profileId = requireProfile();
-  setBreadcrumb('Practice · Ride the deck');
+  setBreadcrumb('Practice');
   setActiveNav('practice');
   refreshProfilePill();
   await renderPractice(els.view, { profileId });

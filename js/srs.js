@@ -45,4 +45,15 @@ export function masteryForKeys(deck, keys) {
   return Math.round((total / (keys.length * MAX_BOX)) * 100);
 }
 
+/** How many already-seen facts (among `keys`) are due for review right now - the
+ *  Learn-home return-hook's "X cards due today" count. Never-seen facts aren't "due" in
+ *  this sense (that's new material, not a lapsing review), so they're excluded here. */
+export function dueCount(deck, keys) {
+  const now = Date.now();
+  return keys.filter((key) => {
+    const f = deck.facts[key];
+    return f && f.dueAt <= now;
+  }).length;
+}
+
 export { MAX_BOX, BOX_INTERVAL_DAYS };

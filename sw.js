@@ -5,7 +5,7 @@
 // second reload) compounds this. Network-first fixes that for anyone online, while still
 // falling back to the cache so the app keeps working offline.
 // Bump CACHE_NAME whenever the precache list itself changes (files added/removed).
-const CACHE_NAME = 'mitkartebitte-v5';
+const CACHE_NAME = 'mitkartebitte-v6';
 
 const PRECACHE_URLS = [
   './',
@@ -28,32 +28,18 @@ const PRECACHE_URLS = [
   './js/store.js',
   './js/tts.js',
   './js/ui/components.js',
-  './js/ui/drills.js',
-  './js/views/courseMap.js',
+  './js/ui/verbUtils.js',
+  './js/views/checkpoint.js',
   './js/views/dataPanel.js',
+  './js/views/grammarRules.js',
+  './js/views/learnHome.js',
   './js/views/legal.js',
-  './js/views/lesson.js',
+  './js/views/level.js',
   './js/views/onboarding.js',
   './js/views/practice.js',
-  './js/data/verbs.js',
-  './js/data/conjugate.js',
-  './js/data/modules/index.js',
-  './js/data/modules/tier1-01-praesens.js',
-  './js/data/modules/tier1-02-stem-changing.js',
-  './js/data/modules/tier1-03-sein-haben-werden.js',
-  './js/data/modules/tier1-04-modalverben.js',
-  './js/data/modules/tier1-05-imperativ.js',
-  './js/data/modules/tier2-06-perfekt-weak.js',
-  './js/data/modules/tier2-07-perfekt-strong-sein.js',
-  './js/data/modules/tier2-08-praeteritum-weak.js',
-  './js/data/modules/tier2-09-praeteritum-strong-modals.js',
-  './js/data/modules/tier3-10-separable-prefixes.js',
-  './js/data/modules/tier3-11-reflexive.js',
-  './js/data/modules/tier4-12-plusquamperfekt.js',
-  './js/data/modules/tier4-13-futur.js',
-  './js/data/modules/tier4-14-konjunktiv2.js',
-  './js/data/modules/tier4-15-konjunktiv1.js',
-  './js/data/modules/tier4-16-passiv.js',
+  './js/views/verbCard.js',
+  './js/data/verbs-a1.js',
+  './js/data/rules.js',
 ];
 
 self.addEventListener('install', (event) => {

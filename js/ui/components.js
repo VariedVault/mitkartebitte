@@ -1,5 +1,5 @@
 import { speak } from '../tts.js';
-import { PRONOUN_LABELS } from '../data/verbs.js';
+import { PRONOUN_LABELS } from '../data/verbs-a1.js';
 
 export function el(tag, attrs = {}, children = []) {
   const node = document.createElement(tag);

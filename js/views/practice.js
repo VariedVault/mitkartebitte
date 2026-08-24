@@ -1,31 +1,30 @@
 import * as store from '../store.js';
 import * as srs from '../srs.js';
 import { el, speakerButton, reviewList } from '../ui/components.js';
-import { unlockedTenses, unlockedVerbRank, isVerbLevelUnlocked } from '../data/modules/index.js';
-import { demoTable } from './lesson.js';
-import { VERBS, PRONOUN_COLORS } from '../data/verbs.js';
-import { factKeyFor, getForm, TENSE_LABELS, pronounLabel, pronounsFor, factLabel } from '../ui/drills.js';
+import { VERBS, PRONOUN_COLORS } from '../data/verbs-a1.js';
+import { factKeysFor, TENSE_LABELS, pronounLabel, factLabel, conjugationTable } from '../ui/verbUtils.js';
 import { navigate } from '../router.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+const LEVELS = ['A1', 'A2', 'B1'];
+// A brand-new profile (no checkpoint passed yet, nothing pinned) still gets a non-empty,
+// varied deck instead of "nothing to practice" - a small hand-picked spread of common
+// verbs, not the whole A1 set (that stays behind the A1 checkpoint, same as every level).
+const STARTER_INFINITIVES = ['sein', 'haben', 'machen', 'gehen', 'kommen', 'essen', 'trinken', 'wohnen', 'arbeiten', 'kaufen'];
+const PRACTICE_TENSES = ['praesens', 'imperativ', 'perfekt'];
 
-/** { unlocked verbs by level } x { pronouns } x { unlocked tenses by studied modules }.
- *  Both gates fall back to module 1's tenses/level, so a brand-new profile always has
- *  a non-empty deck (see js/data/modules/index.js). */
-function unlockedFactKeys(profileId) {
+/** Cumulative pool = every verb from a checkpoint-passed level, PLUS anything explicitly
+ *  pinned via a verb card's "Add to practice" (regardless of level/checkpoint status) -
+ *  falling back to the starter set when neither applies, so Practice is never blank. */
+function practicePool(profileId) {
   const progress = store.getProgress(profileId);
-  const tenses = unlockedTenses(progress);
-  const rank = unlockedVerbRank(progress);
-  const verbs = VERBS.filter((v) => isVerbLevelUnlocked(v.level, rank));
-  const keys = [];
-  for (const verb of verbs) {
-    for (const tense of tenses) {
-      for (const pronoun of pronounsFor(tense)) {
-        if (getForm(verb, tense, pronoun) != null) keys.push(factKeyFor(verb, tense, pronoun));
-      }
-    }
-  }
-  return keys;
+  const unlockedLevels = LEVELS.filter((l) => progress.levels[l]?.checkpointPassed);
+  const pinnedSet = new Set(progress.pinnedVerbs);
+
+  const unlockedVerbs = unlockedLevels.length > 0 ? VERBS.filter((v) => unlockedLevels.includes(v.level)) : VERBS.filter((v) => STARTER_INFINITIVES.includes(v.infinitive));
+  const pinnedVerbs = VERBS.filter((v) => pinnedSet.has(v.infinitive));
+  const verbs = [...new Set([...unlockedVerbs, ...pinnedVerbs])];
+  return factKeysFor(verbs, PRACTICE_TENSES);
 }
 
 /** SRS-weighted random pick: overdue/new facts draw far more often than well-known ones,
@@ -54,13 +53,13 @@ function weightedDraw(deck, keys, excludeKey) {
 function factFromKey(key) {
   const { infinitive, tense, pronoun } = srs.parseFactKey(key);
   const verb = VERBS.find((v) => v.infinitive === infinitive);
-  return { verb, tense, pronoun, answer: getForm(verb, tense, pronoun) };
+  return { verb, tense, pronoun, answer: verb.tables[tense]?.[pronoun] ?? null };
 }
 
 /** Always pronoun + form together, color-coded - never the bare, ambiguous form alone.
- *  Then either the matched per-pronoun example (curated subset, Präsens only) or the
- *  full conjugation table for the drilled tense as a mismatch-proof fallback. Shared by
- *  quick-review and speaking mode so both fix the same reveal bug identically. */
+ *  Then either the matched per-pronoun example (Präsens only, since that's the only tense
+ *  with per-pronoun sentences this phase) or the full conjugation table as a mismatch-proof
+ *  fallback - the sentence and the drilled fact can never disagree. */
 function buildReveal(verb, tense, pronoun, answer) {
   const wrap = el('div');
   const color = PRONOUN_COLORS[pronoun.toLowerCase()] || 'inherit';
@@ -73,24 +72,24 @@ function buildReveal(verb, tense, pronoun, answer) {
     ])
   );
 
-  const matchedExample = tense === 'praesens' ? verb.praesensExamples?.[pronoun] : null;
+  const matchedExample = tense === 'praesens' ? verb.examplesByPronoun.praesens?.[pronoun] : null;
   if (matchedExample) {
     wrap.appendChild(
       el('div', { style: 'margin-top:10px;font-size:14px;color:var(--cream-dim)' }, [matchedExample.de, ' ', speakerButton(matchedExample.de)])
     );
     wrap.appendChild(el('div', { style: 'margin-top:2px;font-size:12.5px;color:var(--ink-soft)' }, matchedExample.en));
   } else {
-    wrap.appendChild(el('div', { style: 'margin-top:12px' }, demoTable(verb, tense, pronoun)));
+    wrap.appendChild(el('div', { style: 'margin-top:12px' }, conjugationTable(verb, tense, pronoun)));
   }
   return wrap;
 }
 
 export async function renderPractice(container, { profileId }) {
   const deck = store.getSRSDeck(profileId);
-  const keys = unlockedFactKeys(profileId);
+  const keys = practicePool(profileId);
 
   container.innerHTML = '';
-  container.appendChild(el('h1', {}, 'Ride the deck'));
+  container.appendChild(el('h1', {}, 'Practice'));
   container.appendChild(el('p', { style: 'color:var(--cream-dim)' }, 'Flip each card, grade yourself honestly - that’s what makes the schedule work.'));
 
   const modeRow = el('div', { class: 'toolbar', style: 'margin-bottom:16px' });
@@ -105,7 +104,7 @@ export async function renderPractice(container, { profileId }) {
   container.appendChild(modeRow);
 
   if (keys.length === 0) {
-    container.appendChild(el('div', { class: 'card' }, 'Nothing unlocked yet - play a module from the map first.'));
+    container.appendChild(el('div', { class: 'card' }, 'Nothing to practice yet - visit a verb from Learn first.'));
     return;
   }
 
@@ -126,7 +125,7 @@ export async function renderPractice(container, { profileId }) {
   });
   modeRow.appendChild(reviewBtn);
 
-  const doneBtn = el('button', { class: 'btn', style: 'font-size:11.5px;padding:6px 10px' }, "Done for now");
+  const doneBtn = el('button', { class: 'btn', style: 'font-size:11.5px;padding:6px 10px' }, 'Done for now');
   doneBtn.addEventListener('click', () => navigate(''));
   modeRow.appendChild(doneBtn);
 
@@ -141,13 +140,16 @@ export async function renderPractice(container, { profileId }) {
     progressLine.textContent = `Card ${cardNumber}`;
     const { verb, tense, pronoun, answer } = factFromKey(currentKey);
 
+    // Fixed-size scene - .flip-card has a fixed CSS height (not computed per card), and
+    // each face scrolls internally if its content is tall. Card-to-card navigation never
+    // shifts the page, unlike the old per-card offsetHeight resize.
     const scene = el('div', { class: 'flip-scene' });
     const flipCard = el('div', { class: 'flip-card' });
     const inner = el('div', { class: 'flip-card-inner' });
 
     const front = el('div', { class: 'flip-card-face flip-card-front' });
     if (speakingMode) {
-      const hint = tense === 'praesens' && verb.praesensExamples?.[pronoun] ? verb.praesensExamples[pronoun].en : verb.example?.en;
+      const hint = tense === 'praesens' ? verb.examplesByPronoun.praesens?.[pronoun]?.en : null;
       front.appendChild(el('div', { style: 'font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft)' }, 'Say it in German:'));
       front.appendChild(el('div', { style: 'font-size:19px;font-weight:700;margin-top:8px' }, `“${pronoun} ${verb.english}” - ${TENSE_LABELS[tense]}`));
       front.appendChild(el('div', { style: 'margin-top:6px;color:var(--ink-soft);font-size:13px' }, hint ? `Hint: ${hint}` : ''));
@@ -175,19 +177,6 @@ export async function renderPractice(container, { profileId }) {
     flipCard.appendChild(inner);
     scene.appendChild(flipCard);
     stage.appendChild(scene);
-
-    // Both faces are absolutely positioned (so they overlay during the 3D flip), which
-    // means the card's own height never grows to fit taller content (e.g. the fallback
-    // conjugation table) - it just centers and overflows past the box's edges.
-    // scrollHeight on an inset:0 absolutely-positioned element isn't reliable here, so
-    // measure each face's true content height by briefly switching it to normal flow.
-    function naturalHeight(faceEl) {
-      faceEl.style.position = 'static';
-      const h = faceEl.offsetHeight;
-      faceEl.style.position = '';
-      return h;
-    }
-    flipCard.style.height = `${Math.max(naturalHeight(front), naturalHeight(back), 220)}px`;
 
     function flip() {
       flipCard.classList.add('flipped');

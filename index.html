@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>mit Karte, bitte - Learn German A1→B1</title>
-<meta name="description" content="A card-table-themed German grammar course, A1 to B1. Spaced-repetition flashcards, 16 fully worked modules, no accounts, works offline.">
+<meta name="description" content="A card-table-themed German grammar course, A1 to B1. Spaced-repetition flashcards, no accounts, works offline.">
 <meta name="theme-color" content="#0a2827">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
@@ -15,7 +15,7 @@
 <body>
 <div class="app-shell">
   <header class="app-header" id="appHeader">
-    <button class="wordmark" id="wordmarkBtn" aria-label="Go to course map">
+    <button class="wordmark" id="wordmarkBtn" aria-label="Go to Learn home">
       <span class="card-glyph" aria-hidden="true"></span>
       mit <span class="bump">Karte</span>, bitte
     </button>
@@ -30,7 +30,7 @@
       <div class="footer-grid">
         <div class="footer-col">
           <h3 class="footer-heading">Navigation</h3>
-          <a href="#/course-map">Map</a>
+          <a href="#/learn">Learn</a>
           <a href="#/practice">Practice</a>
           <a href="#/data">Settings</a>
         </div>
@@ -54,8 +54,8 @@
   </footer>
 
   <nav class="bottom-nav" id="bottomNav" aria-label="Primary">
-    <button data-nav="map" data-path="" aria-label="Course map">
-      <span class="icon" aria-hidden="true">🗺️</span>Map
+    <button data-nav="learn" data-path="" aria-label="Learn">
+      <span class="icon" aria-hidden="true">📖</span>Learn
     </button>
     <button data-nav="practice" data-path="/practice" aria-label="Practice deck">
       <span class="icon" aria-hidden="true">🃏</span>Practice
@@ -72,7 +72,5 @@
     window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
   }
 </script>
-  <script data-goatcounter="https://mitkarte-bitte.goatcounter.com/count"
-        async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>

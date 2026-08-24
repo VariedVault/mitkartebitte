@@ -1,13 +1,19 @@
 #!/usr/bin/env node
-// Regression / verification harness for mit Karte, bitte's grammar data.
-// Reused across every content change: conjugation derivation sweeps, per-module
-// null-form sweeps, and (below) the praesensExamples sentence-correctness checks.
-// Run: node scripts/verify.mjs
+// Verification harness for the A1 verb core. Run: node scripts/verify.mjs
+//
+// Three jobs, per the revamp spec's §VERIFICATION:
+//  1. Regression-guard every REGULAR form against the rule engine - any verb not in
+//     IRREGULAR_PRAESENS must match rules.js exactly, so a future typo in what should be
+//     100% mechanical fails the build instead of shipping quietly.
+//  2. Verify every examplesByPronoun sentence actually contains the correct conjugated
+//     form for its pronoun, starts with the matching subject word, and (for separable
+//     verbs) correctly ends with the verb's own prefix.
+//  3. Print a full per-verb form table for manual review - including the hand-typed
+//     irregular forms, which this script cannot independently verify against reality,
+//     only against internal consistency (e.g. perfekt = aux + partizip2 correctly).
 
-import { VERBS, PRONOUNS } from '../js/data/verbs.js';
-import { allModules, unlockedTenses, unlockedVerbRank, isVerbLevelUnlocked } from '../js/data/modules/index.js';
-import { getForm, factKeysForModule } from '../js/ui/drills.js';
-import * as C from '../js/data/conjugate.js';
+import { VERBS, PRONOUNS } from '../js/data/verbs-a1.js';
+import { regularPraesens, regularPartizip2, stemOf } from '../js/data/rules.js';
 
 let failures = 0;
 function fail(msg) {
@@ -18,61 +24,83 @@ function ok(msg) {
   console.log(`ok - ${msg}`);
 }
 
-// ---------------------------------------------------------------- 1. conjugate.js regression
-// Known-correct forms, spot-checking every derivation path in conjugate.js.
-const REGRESSION = [
-  ['machen', 'perfekt', 'ich', 'habe gemacht'],
-  ['gehen', 'perfekt', 'er', 'ist gegangen'],
-  ['machen', 'plusquamperfekt', 'du', 'hattest gemacht'],
-  ['gehen', 'plusquamperfekt', 'wir', 'waren gegangen'],
-  ['machen', 'futur1', 'ich', 'werde machen'],
-  ['machen', 'futur2', 'er', 'wird gemacht haben'],
-  ['sein', 'konjunktiv2', 'ich', 'wäre'],
-  ['machen', 'konjunktiv2', 'ich', 'würde machen'],
-  ['machen', 'konjunktiv2perfekt', 'ich', 'hätte gemacht'],
-  ['machen', 'konjunktiv1', 'er', 'mache'],
-  ['machen', 'konjunktiv1perfekt', 'er', 'habe gemacht'],
-  ['machen', 'passivVorgang', 'er', 'wird gemacht'],
-  ['machen', 'passivVorgangPraeteritum', 'er', 'wurde gemacht'],
-  ['machen', 'passivZustand', 'er', 'ist gemacht'],
-];
-for (const [inf, tense, pronoun, expected] of REGRESSION) {
-  const verb = VERBS.find((v) => v.infinitive === inf);
-  const got = getForm(verb, tense, pronoun);
-  if (got !== expected) fail(`conjugate regression: ${inf}|${tense}|${pronoun} = "${got}", expected "${expected}"`);
-}
-ok(`conjugate.js regression: ${REGRESSION.length} checks`);
+// Verbs whose du/er praesens is a genuine grammatical irregularity (stem-changers) or
+// which are fully hand-typed (modals, sein/haben/werden, wissen) - praesens disagreement
+// with the plain rule is EXPECTED here and reviewed manually via the table, not auto-failed.
+const IRREGULAR_PRAESENS = new Set([
+  'sein', 'haben', 'werden', 'können', 'müssen', 'wollen', 'dürfen', 'sollen', 'mögen', 'wissen',
+  'fahren', 'essen', 'geben', 'nehmen', 'sehen', 'lesen', 'sprechen', 'schlafen', 'laufen', 'helfen', 'treffen',
+]);
 
-// ---------------------------------------------------------------- 2. module fact-key sweep
-// Every fact key a module can produce must resolve to a non-null form.
-let moduleFacts = 0;
-for (const mod of allModules()) {
-  const pool = mod.verbPool(VERBS);
-  const keys = factKeysForModule(pool, mod.tenses);
-  moduleFacts += keys.length;
-  for (const key of keys) {
-    const [inf, tense, pronoun] = key.split('|');
-    const verb = VERBS.find((v) => v.infinitive === inf);
-    if (getForm(verb, tense, pronoun) == null) fail(`module ${mod.id}: null form for ${key}`);
+function basePraesensInfinitive(verb) {
+  return verb.separable ? verb.infinitive.slice(verb.prefix.length) : verb.infinitive;
+}
+
+// ---------------------------------------------------------------- 1. regular-praesens regression guard
+let regularChecked = 0;
+for (const verb of VERBS) {
+  if (IRREGULAR_PRAESENS.has(verb.infinitive)) continue;
+  const expected = regularPraesens(basePraesensInfinitive(verb));
+  for (const p of PRONOUNS) {
+    regularChecked++;
+    if (verb.tables.praesens[p] !== expected[p]) {
+      fail(`${verb.infinitive}.praesens.${p} = "${verb.tables.praesens[p]}", rule engine expected "${expected[p]}"`);
+    }
   }
 }
-ok(`module fact-key sweep: ${moduleFacts} facts across ${allModules().length} modules`);
+ok(`regular-praesens regression guard: ${regularChecked} forms checked across ${VERBS.length - IRREGULAR_PRAESENS.size} regular verbs`);
 
-// ---------------------------------------------------------------- 3. praesensExamples sentence verification
-// Convention (see js/data/verbs.js): every sentence's first word is the canonical
-// subject pronoun (Ich/Du/Er/Wir/Ihr/Sie), and the drilled Präsens form must appear
-// in the sentence as a whole word. Separable-verb-prefix words are flagged as a
-// heuristic guard against accidentally testing a different verb (e.g. "ausgehen"
-// instead of "gehen").
+// ---------------------------------------------------------------- 2. perfekt assembly guard
+// Every perfekt form must be exactly "<aux praesens for that pronoun> <partizip2>" - this
+// re-derives it independently rather than trusting the buildPerfekt() call site.
+const AUX_PRAESENS = {
+  haben: VERBS.find((v) => v.infinitive === 'haben').tables.praesens,
+  sein: VERBS.find((v) => v.infinitive === 'sein').tables.praesens,
+};
+let perfektChecked = 0;
+for (const verb of VERBS) {
+  const auxTable = AUX_PRAESENS[verb.auxiliary];
+  for (const p of PRONOUNS) {
+    perfektChecked++;
+    const expected = `${auxTable[p]} ${verb.partizip2}`;
+    if (verb.tables.perfekt[p] !== expected) {
+      fail(`${verb.infinitive}.perfekt.${p} = "${verb.tables.perfekt[p]}", expected "${expected}" (aux=${verb.auxiliary} + partizip2)`);
+    }
+  }
+}
+ok(`perfekt assembly guard: ${perfektChecked} forms checked across ${VERBS.length} verbs`);
+
+// ---------------------------------------------------------------- 3. partizip2 regression guard (weak, non-separable-irregular verbs only)
+const REGULAR_PARTIZIP2 = new Set(['machen', 'kaufen', 'wohnen', 'arbeiten']);
+for (const verb of VERBS) {
+  if (!REGULAR_PARTIZIP2.has(verb.infinitive)) continue;
+  const expected = regularPartizip2(verb.infinitive);
+  if (verb.partizip2 !== expected) fail(`${verb.infinitive}.partizip2 = "${verb.partizip2}", rule engine expected "${expected}"`);
+}
+const expectedEinkaufen = regularPartizip2('kaufen', 'ein');
+if (VERBS.find((v) => v.infinitive === 'einkaufen').partizip2 !== expectedEinkaufen) {
+  fail(`einkaufen.partizip2 does not match rule-generated "${expectedEinkaufen}"`);
+}
+ok(`partizip2 regression guard: ${REGULAR_PARTIZIP2.size + 1} rule-generated verbs checked`);
+
+// ---------------------------------------------------------------- 4. schema completeness
+const TABLE_KEYS = ['praesens', 'imperativ', 'perfekt', 'praeteritum', 'konjunktiv2', 'futur1', 'plusquamperfekt', 'passiv'];
+const A1_FILLED = new Set(['praesens', 'perfekt']); // imperativ is null for the 8 no-imperative verbs, checked separately
+for (const verb of VERBS) {
+  for (const key of TABLE_KEYS) {
+    if (!(key in verb.tables)) fail(`${verb.infinitive}.tables.${key} is missing entirely - schema must hold all 8 tense slots`);
+  }
+  for (const key of ['praeteritum', 'konjunktiv2', 'futur1', 'plusquamperfekt', 'passiv']) {
+    if (verb.tables[key] !== null) fail(`${verb.infinitive}.tables.${key} should be null this phase (A2/B1), got ${JSON.stringify(verb.tables[key])}`);
+  }
+  for (const key of A1_FILLED) {
+    if (verb.tables[key] == null) fail(`${verb.infinitive}.tables.${key} should be filled this phase (A1), got null`);
+  }
+}
+ok(`schema completeness: all ${VERBS.length} verbs carry all 8 tense slots, A2/B1 slots explicitly null`);
+
+// ---------------------------------------------------------------- 5. example-sentence verification
 const SUBJECT_WORD = { ich: 'Ich', du: 'Du', er: 'Er', wir: 'Wir', ihr: 'Ihr', sie: 'Sie' };
-// Prefixes drawn straight from the tracked separable verbs, e.g. aufstehen -> "auf".
-const TRACKED_SEPARABLE_PREFIXES = new Set(
-  VERBS.filter((v) => v.separable).map((v) => {
-    const m = v.infinitive.match(/^(auf|an|ein|mit|fern|zu|aus|vor|weg|zurück)/);
-    return m ? m[1] : null;
-  }).filter(Boolean)
-);
-
 function firstWord(sentence) {
   return sentence.split(/\s+/)[0].replace(/[.,!?]$/, '');
 }
@@ -80,120 +108,50 @@ function containsWholeWord(sentence, word) {
   const words = sentence.split(/\s+/).map((w) => w.replace(/[.,!?"„“]/g, ''));
   return words.some((w) => w === word);
 }
-function endsWithTrackedPrefix(sentence, verbInfinitive) {
-  const words = sentence.split(/\s+/).map((w) => w.replace(/[.,!?]$/, ''));
-  const last = words[words.length - 1];
-  for (const prefix of TRACKED_SEPARABLE_PREFIXES) {
-    if (last === prefix && `${prefix}${verbInfinitive}` !== verbInfinitive) return prefix;
-  }
-  return null;
-}
-
 let sentenceCount = 0;
-const subsetVerbs = VERBS.filter((v) => v.praesensExamples);
-for (const verb of subsetVerbs) {
-  for (const pronoun of PRONOUNS) {
-    const entry = verb.praesensExamples[pronoun];
-    if (!entry) { fail(`${verb.infinitive}: missing praesensExamples.${pronoun}`); continue; }
+for (const verb of VERBS) {
+  const examples = verb.examplesByPronoun.praesens;
+  if (!examples) { fail(`${verb.infinitive}: missing examplesByPronoun.praesens entirely`); continue; }
+  for (const p of PRONOUNS) {
+    const entry = examples[p];
+    if (!entry) { fail(`${verb.infinitive}: missing examplesByPronoun.praesens.${p}`); continue; }
     sentenceCount++;
-    const expectedForm = getForm(verb, 'praesens', pronoun);
-    if (expectedForm == null) { fail(`${verb.infinitive}: no praesens form for ${pronoun}`); continue; }
+    const conjugated = verb.tables.praesens[p];
 
     const gotSubject = firstWord(entry.de);
-    if (gotSubject !== SUBJECT_WORD[pronoun]) {
-      fail(`${verb.infinitive}.${pronoun}: sentence starts with "${gotSubject}", expected "${SUBJECT_WORD[pronoun]}" — "${entry.de}"`);
+    if (gotSubject !== SUBJECT_WORD[p]) {
+      fail(`${verb.infinitive}.${p}: sentence starts with "${gotSubject}", expected "${SUBJECT_WORD[p]}" — "${entry.de}"`);
     }
-    if (!containsWholeWord(entry.de, expectedForm)) {
-      fail(`${verb.infinitive}.${pronoun}: sentence does not contain conjugated form "${expectedForm}" — "${entry.de}"`);
+    if (!containsWholeWord(entry.de, conjugated)) {
+      fail(`${verb.infinitive}.${p}: sentence does not contain conjugated form "${conjugated}" as a whole word — "${entry.de}"`);
     }
-    const danglingPrefix = endsWithTrackedPrefix(entry.de, verb.infinitive);
-    if (danglingPrefix) {
-      fail(`${verb.infinitive}.${pronoun}: sentence ends with "${danglingPrefix}", which looks like a separable-verb prefix collision — "${entry.de}"`);
+    if (verb.separable) {
+      const words = entry.de.replace(/[.,!?]$/, '').split(/\s+/);
+      const lastWord = words[words.length - 1];
+      if (lastWord !== verb.prefix) {
+        fail(`${verb.infinitive}.${p}: separable verb sentence should end with prefix "${verb.prefix}", ends with "${lastWord}" — "${entry.de}"`);
+      }
     }
-    if (!entry.en || !entry.en.trim()) {
-      fail(`${verb.infinitive}.${pronoun}: missing English gloss`);
-    }
+    if (!entry.en || !entry.en.trim()) fail(`${verb.infinitive}.${p}: missing English gloss`);
   }
 }
-ok(`praesensExamples verification: ${sentenceCount} sentences across ${subsetVerbs.length} verbs`);
+ok(`example-sentence verification: ${sentenceCount} sentences across ${VERBS.length} verbs`);
 
-// ---------------------------------------------------------------- 4. Practice-deck pool: cumulative, studied-gated
-// Mirrors js/views/practice.js's unlockedFactKeys() exactly (same gating functions from
-// modules/index.js, same factKeysForModule builder from drills.js), so a passing check here
-// is a real guarantee about what Practice actually draws from - not a parallel reimplementation.
-function poolForProgress(progress) {
-  const tenses = [...unlockedTenses(progress)];
-  const rank = unlockedVerbRank(progress);
-  const verbs = VERBS.filter((v) => isVerbLevelUnlocked(v.level, rank));
-  return { tenses, rank, verbs, keys: factKeysForModule(verbs, tenses) };
+// ---------------------------------------------------------------- 6. per-verb form table (manual review)
+console.log('\n=== A1 verb form table (for manual review) ===\n');
+const col = (s, w) => String(s ?? '—').padEnd(w);
+console.log(col('infinitive', 14) + col('type', 10) + col('aux', 7) + col('ich', 10) + col('du', 12) + col('er', 10) + col('wir', 10) + col('ihr', 10) + col('sie', 10) + col('partizip2', 16) + 'imperativ(du)');
+console.log('-'.repeat(150));
+for (const verb of VERBS) {
+  const t = verb.tables.praesens;
+  const flag = IRREGULAR_PRAESENS.has(verb.infinitive) ? '*' : '';
+  console.log(
+    col(verb.infinitive + flag, 14) + col(verb.type, 10) + col(verb.auxiliary, 7) +
+    col(t.ich, 10) + col(t.du, 12) + col(t.er, 10) + col(t.wir, 10) + col(t.ihr, 10) + col(t.sie, 10) +
+    col(verb.partizip2, 16) + (verb.tables.imperativ ? verb.tables.imperativ.du : '(none)')
+  );
 }
-
-function studiedModules(...moduleIds) {
-  const progress = {};
-  for (const id of moduleIds) progress[id] = { studied: true };
-  return progress;
-}
-
-// (a) brand-new/empty profile
-const emptyPool = poolForProgress({});
-if (emptyPool.keys.length === 0) fail('empty-profile Practice pool is blank - should fall back to module 1');
-if (!(emptyPool.tenses.length === 1 && emptyPool.tenses[0] === 'praesens')) {
-  fail(`empty-profile pool tenses = [${emptyPool.tenses}], expected fallback ['praesens']`);
-}
-if (emptyPool.rank !== 1) fail(`empty-profile pool rank = ${emptyPool.rank}, expected 1 (A1 fallback)`);
-for (const key of emptyPool.keys) {
-  const [inf, tense, pronoun] = key.split('|');
-  const verb = VERBS.find((v) => v.infinitive === inf);
-  if (getForm(verb, tense, pronoun) == null) fail(`empty-profile pool: null form for drawn card ${key}`);
-}
-ok(`Practice pool (a) empty profile: ${emptyPool.keys.length} cards, module-1 fallback (praesens/A1), no dead cards`);
-
-// (b) mid-progress: studied through A1.03 (tier1-01..03) - should NOT yet include tier1-04/05 material
-const midPool = poolForProgress(studiedModules('tier1-01-praesens', 'tier1-02-stem-changing', 'tier1-03-sein-haben-werden'));
-for (const key of midPool.keys) {
-  const [inf, tense, pronoun] = key.split('|');
-  const verb = VERBS.find((v) => v.infinitive === inf);
-  if (getForm(verb, tense, pronoun) == null) fail(`mid-progress pool: null form for drawn card ${key}`);
-}
-const emptyKeySet = new Set(emptyPool.keys);
-const midKeySet = new Set(midPool.keys);
-if (![...emptyKeySet].every((k) => midKeySet.has(k))) {
-  fail('mid-progress pool dropped material that was already unlocked - cumulative pool must never shrink');
-}
-ok(`Practice pool (b) mid-progress (A1.01-A1.03 studied): ${midPool.keys.length} cards, superset of empty-profile pool`);
-
-// (c) fully-completed: every module studied
-const fullPool = poolForProgress(studiedModules(...allModules().map((m) => m.id)));
-if (fullPool.verbs.length !== VERBS.length) {
-  fail(`fully-completed pool has ${fullPool.verbs.length} verbs unlocked, expected all ${VERBS.length}`);
-}
-const allModuleTenses = new Set(allModules().flatMap((m) => m.tenses));
-if (fullPool.tenses.length !== allModuleTenses.size) {
-  fail(`fully-completed pool tenses = ${fullPool.tenses.length}, expected union of all module tenses = ${allModuleTenses.size}`);
-}
-for (const key of fullPool.keys) {
-  const [inf, tense, pronoun] = key.split('|');
-  const verb = VERBS.find((v) => v.infinitive === inf);
-  if (getForm(verb, tense, pronoun) == null) fail(`fully-completed pool: null form for drawn card ${key}`);
-}
-const fullKeySet = new Set(fullPool.keys);
-if (![...midKeySet].every((k) => fullKeySet.has(k))) {
-  fail('fully-completed pool dropped material from an earlier-unlocked module - cumulative pool must never shrink');
-}
-ok(`Practice pool (c) fully-completed: ${fullPool.keys.length} cards across all ${VERBS.length} verbs, superset of mid-progress pool`);
-
-// Monotonic-growth spot check: practicing one more module (tier2-06, unlocks A2 + perfekt) must
-// strictly grow the pool while every previously-unlocked card is still present - this is the
-// "old material keeps appearing" guarantee spaced repetition depends on.
-const growthPool = poolForProgress(studiedModules('tier1-01-praesens', 'tier1-02-stem-changing', 'tier1-03-sein-haben-werden', 'tier2-06-perfekt-weak'));
-const growthKeySet = new Set(growthPool.keys);
-if (growthPool.keys.length <= midPool.keys.length) {
-  fail(`practicing an additional module did not grow the pool (${midPool.keys.length} -> ${growthPool.keys.length})`);
-}
-if (![...midKeySet].every((k) => growthKeySet.has(k))) {
-  fail('practicing an additional module dropped previously-unlocked cards instead of adding to them');
-}
-ok(`Practice pool cumulative growth: +1 module grew pool ${midPool.keys.length} -> ${growthPool.keys.length} cards, no regressions`);
+console.log('\n* = hand-typed/irregular praesens (stem-changer, modal, or foundational verb) - not rule-regenerated, verify manually.\n');
 
 // ---------------------------------------------------------------- summary
 console.log('---');
@@ -201,5 +159,5 @@ if (failures) {
   console.error(`${failures} FAILURE(S)`);
   process.exit(1);
 } else {
-  console.log('All checks passed.');
+  console.log(`All checks passed. ${VERBS.length} A1 verbs verified.`);
 }

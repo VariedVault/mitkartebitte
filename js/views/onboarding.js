@@ -1,7 +1,6 @@
 import * as store from '../store.js';
 import { el, speakerButton, pronounChip } from '../ui/components.js';
-import { getVerb } from '../data/conjugate.js';
-import { PRONOUNS, PRONOUN_LABELS } from '../data/verbs.js';
+import { VERBS, PRONOUNS, PRONOUN_LABELS } from '../data/verbs-a1.js';
 
 const PRONOUN_ENGLISH = { ich: 'I', du: 'you (informal, one person)', er: 'he / she / it', wir: 'we', ihr: 'you all (informal, group)', sie: 'they / you (formal)' };
 
@@ -48,7 +47,7 @@ export async function renderOnboarding(container, { profileId, onDone }) {
     el('p', {}, 'In English, verbs barely change: I make, you make, she makes. In German, the verb ENDING changes for almost every pronoun - that changing pattern is called conjugation. Here’s the verb machen ("to make/do") fully conjugated:')
   );
 
-  const machen = getVerb('machen');
+  const machen = VERBS.find((v) => v.infinitive === 'machen');
   const table = el('table', { class: 'conj-table' });
   const tbody = el('tbody');
   for (const p of PRONOUNS) {
