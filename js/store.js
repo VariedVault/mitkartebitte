@@ -107,14 +107,14 @@ export function setActiveProfileId(id) {
 
 // ---------------------------------------------------------------- progress
 
-/** { [moduleId]: { percent, checkpointPassed, mastery, attempts } } */
+/** { [moduleId]: { practiced, mastery, attempts } } */
 export function getProgress(profileId) {
   return read(keyFor(profileId, 'progress'), {});
 }
 
 export function setModuleProgress(profileId, moduleId, patch) {
   const progress = getProgress(profileId);
-  progress[moduleId] = { ...(progress[moduleId] || { percent: 0, checkpointPassed: false, mastery: 0, attempts: 0 }), ...patch };
+  progress[moduleId] = { ...(progress[moduleId] || { practiced: false, mastery: 0, attempts: 0 }), ...patch };
   write(keyFor(profileId, 'progress'), progress);
   return progress[moduleId];
 }

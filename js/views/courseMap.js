@@ -43,22 +43,23 @@ export async function renderCourseMap(container, { profileId }) {
       const pool = mod.verbPool(VERBS);
       const keys = factKeysForModule(pool, mod.tenses);
       const mastery = masteryForKeys(deck, keys);
-      const { remaining } = unstartedVerbTenseCount(deck, pool, mod.tenses);
+      const { total, remaining } = unstartedVerbTenseCount(deck, pool, mod.tenses);
       const modProgress = progress[mod.id];
-      const softLocked = !modProgress?.checkpointPassed && isModuleSoftLocked(mod, progress);
-      const node = el('button', { class: `module-node${modProgress?.checkpointPassed ? ' mastered' : ''}`, style: `border-color:${modProgress?.checkpointPassed ? meta.color : 'transparent'}` });
+      const mastered = mastery >= 100;
+      const softLocked = !modProgress?.practiced && isModuleSoftLocked(mod, progress);
+      const node = el('button', { class: `module-node${mastered ? ' mastered' : ''}`, style: `border-color:${mastered ? meta.color : 'transparent'}` });
       node.appendChild(el('div', { class: 'num' }, `${mod.level} · ${String(mod.order).padStart(2, '0')}${softLocked ? ' · 🔒' : ''}`));
       node.appendChild(el('div', { class: 'title', style: softLocked ? 'opacity:.75' : '' }, mod.title));
-      // While any verb+tense hasn't come up even once, lead with that plain countdown -
-      // it drops every session, unlike the SRS mastery %% below, which can sit unmoved for
-      // days between spaced reviews and reads as "stuck" to someone just starting out.
-      let statusText = modProgress?.checkpointPassed
+      // Status text stays in one vocabulary throughout - verb counts, never a percentage -
+      // so it reads as one consistent progression instead of switching mental models
+      // partway through: not started -> N left to try -> all practiced -> mastered.
+      let statusText = mastered
         ? '✓ Mastered'
-        : remaining > 0 && mastery > 0
-          ? `${remaining} verb${remaining === 1 ? '' : 's'} left to try`
-          : mastery > 0
-            ? `${mastery}% mastery`
-            : 'Not started';
+        : remaining === total
+          ? 'Not started'
+          : remaining === 0
+            ? 'All verbs practiced'
+            : `${remaining} verb${remaining === 1 ? '' : 's'} left to try`;
       if (softLocked) {
         const prev = previousModule(mod);
         statusText = `Usually after "${prev.title}"`;

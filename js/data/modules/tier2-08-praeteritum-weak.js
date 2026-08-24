@@ -8,7 +8,6 @@ export default {
   verbPool: (verbs) => verbs.filter((v) => v.type === 'weak'),
   tenses: ['praeteritum'],
   exerciseTypes: ['fill', 'mc'],
-  checkpoint: { count: 8, passThreshold: 0.8 },
   explanation: {
     intro:
       'Präteritum is the simple past - one word instead of Perfekt\'s two. In speech, Germans reach for it mostly with sein, haben, the modals, and a handful of very common verbs; everywhere else, Perfekt (Module 6–7) is what you\'ll actually hear. But Präteritum shows up constantly in writing - books, news, stories - so it\'s essential reading knowledge, and it\'s also the base every other past-based tense in this course builds on.',

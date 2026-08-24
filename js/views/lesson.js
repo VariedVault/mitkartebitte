@@ -70,8 +70,8 @@ function renderExplanationPhase(container, mod, profileId) {
   container.appendChild(el('p', { style: 'color:var(--cream-dim)' }, `${mod.level} · ${mod.summary}`));
 
   const progress = store.getProgress(profileId);
-  const alreadyPassed = !!progress[mod.id]?.checkpointPassed;
-  if (!alreadyPassed && isModuleSoftLocked(mod, progress)) {
+  const alreadyPracticed = !!progress[mod.id]?.practiced;
+  if (!alreadyPracticed && isModuleSoftLocked(mod, progress)) {
     const prev = previousModule(mod);
     container.appendChild(
       el('div', { class: 'banner', style: 'margin-bottom:16px' }, [
@@ -111,10 +111,7 @@ function renderExplanationPhase(container, mod, profileId) {
   const actions = el('div', { class: 'toolbar', style: 'margin-top:18px' });
   const startBtn = el('button', { class: 'btn btn-primary btn-lg' }, 'Start practice');
   startBtn.addEventListener('click', () => renderPracticePhase(container, mod, profileId));
-  const skipBtn = el('button', { class: 'btn' }, 'Skip to checkpoint (test out)');
-  skipBtn.addEventListener('click', () => renderCheckpointPhase(container, mod, profileId));
   actions.appendChild(startBtn);
-  actions.appendChild(skipBtn);
   container.appendChild(actions);
 }
 
@@ -185,6 +182,12 @@ function renderPracticePhase(container, mod, profileId) {
 
   function finishPractice() {
     store.recordActivity(profileId);
+    const priorProgress = store.getProgress(profileId)[mod.id];
+    store.setModuleProgress(profileId, mod.id, {
+      practiced: true,
+      mastery: srs.masteryForKeys(deck, factKeysForModule(pool, mod.tenses)),
+      attempts: (priorProgress?.attempts || 0) + 1,
+    });
     reviewBtn.disabled = true;
     stage.innerHTML = '';
     stage.appendChild(
@@ -194,12 +197,7 @@ function renderPracticePhase(container, mod, profileId) {
         el('p', { style: 'color:var(--ink-soft)' }, `${correctCount} / ${queue.length} correct this round - the deck remembers, so weak spots come back sooner.`),
         el('div', { class: 'toolbar', style: 'justify-content:center;margin-top:14px' }, [
           (() => {
-            const b = el('button', { class: 'btn btn-primary' }, 'Take the checkpoint');
-            b.addEventListener('click', () => renderCheckpointPhase(container, mod, profileId));
-            return b;
-          })(),
-          (() => {
-            const b = el('button', { class: 'btn' }, 'Practice again');
+            const b = el('button', { class: 'btn btn-primary' }, 'Practice again');
             b.addEventListener('click', () => renderPracticePhase(container, mod, profileId));
             return b;
           })(),
@@ -323,94 +321,4 @@ function renderChoiceExercise(exercise, { onAnswered, onNext }) {
   const ctx = exampleContext(verb);
   if (ctx) box.appendChild(ctx);
   return box;
-}
-
-// ---------------------------------------------------------------- checkpoint phase
-
-function renderCheckpointPhase(container, mod, profileId) {
-  const deck = store.getSRSDeck(profileId);
-  const pool = mod.verbPool(VERBS);
-  const count = mod.checkpoint?.count || 8;
-  const plan = buildSessionPlan(pool, mod.tenses, deck, count, mod.exerciseTypes);
-
-  let idx = 0;
-  let correct = 0;
-  const history = [];
-
-  container.innerHTML = '';
-  container.appendChild(backToMapLink());
-  container.appendChild(el('h1', {}, `${mod.title} · Checkpoint`));
-  const headerRow = el('div', { style: 'display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap' });
-  const progressLine = el('p', { style: 'color:var(--cream-dim);margin:0' }, `Question 1 / ${plan.length}`);
-  const reviewBtn = el('button', { class: 'btn', style: 'font-size:11.5px;padding:6px 10px' }, '📋 Review answers');
-  reviewBtn.disabled = true;
-  reviewBtn.addEventListener('click', renderReview);
-  headerRow.appendChild(progressLine);
-  headerRow.appendChild(reviewBtn);
-  container.appendChild(headerRow);
-  const stage = el('div', { style: 'margin-top:12px' });
-  container.appendChild(stage);
-
-  function renderReview() {
-    stage.innerHTML = '';
-    stage.appendChild(reviewList(history, renderCurrent, 'Back to checkpoint'));
-  }
-
-  function renderCurrent() {
-    progressLine.textContent = `Question ${idx + 1} / ${plan.length}`;
-    stage.innerHTML = '';
-    stage.appendChild(
-      renderExercise(plan[idx], {
-        onAnswered: ({ correct: isCorrect, factKey, entry }) => {
-          srs.recordAnswer(deck, factKey, isCorrect);
-          if (entry) history.push(entry);
-          reviewBtn.disabled = history.length === 0;
-          if (isCorrect) correct++;
-        },
-        onNext: () => {
-          idx++;
-          if (idx >= plan.length) finish();
-          else renderCurrent();
-        },
-      })
-    );
-  }
-
-  function finish() {
-    store.saveSRSDeck(profileId, deck);
-    store.recordActivity(profileId);
-    reviewBtn.disabled = true;
-    const pct = Math.round((correct / plan.length) * 100);
-    const threshold = Math.round((mod.checkpoint?.passThreshold ?? 0.8) * 100);
-    const passed = pct >= threshold;
-    const priorProgress = store.getProgress(profileId)[mod.id];
-    store.setModuleProgress(profileId, mod.id, {
-      percent: pct,
-      checkpointPassed: passed || !!priorProgress?.checkpointPassed,
-      mastery: srs.masteryForKeys(deck, factKeysForModule(pool, mod.tenses)),
-      attempts: (priorProgress?.attempts || 0) + 1,
-    });
-
-    stage.innerHTML = '';
-    const card = el('div', { class: 'card celebrate' });
-    if (passed) {
-      card.appendChild(el('span', { class: 'big-emoji' }, '✨'));
-      card.appendChild(el('div', { class: 'unlock-banner' }, `Checkpoint cleared - ${pct}%`));
-      card.appendChild(el('p', { style: 'margin-top:14px;color:var(--ink-soft)' }, 'This module is marked mastered. Jump anywhere on the map - nothing here was ever locked.'));
-    } else {
-      card.appendChild(el('span', { class: 'big-emoji' }, '🃏'));
-      card.appendChild(el('h2', {}, `${pct}% this time`));
-      card.appendChild(el('p', { style: 'color:var(--ink-soft)' }, `Needed ${threshold}% to clear it - no rush, no streak to lose. Practice a bit more and retake it whenever you like.`));
-    }
-    card.appendChild(
-      el('div', { class: 'toolbar', style: 'justify-content:center;margin-top:14px' }, [
-        (() => { const b = el('button', { class: 'btn' }, 'Practice more'); b.addEventListener('click', () => renderPracticePhase(container, mod, profileId)); return b; })(),
-        (() => { const b = el('button', { class: 'btn' }, 'Retake checkpoint'); b.addEventListener('click', () => renderCheckpointPhase(container, mod, profileId)); return b; })(),
-        (() => { const b = el('button', { class: 'btn btn-primary' }, 'Back to map'); b.addEventListener('click', () => navigate('')); return b; })(),
-      ])
-    );
-    stage.appendChild(card);
-  }
-
-  renderCurrent();
 }

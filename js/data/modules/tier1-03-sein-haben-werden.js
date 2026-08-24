@@ -8,7 +8,6 @@ export default {
   verbPool: (verbs) => verbs.filter((v) => ['sein', 'haben', 'werden'].includes(v.infinitive)),
   tenses: ['praesens'],
   exerciseTypes: ['fill', 'mc'],
-  checkpoint: { count: 8, passThreshold: 0.8 },
   explanation: {
     intro:
       'sein (to be), haben (to have), and werden (to become) are the three most-used verbs in German, full stop. They\'re also completely irregular - no ending pattern will save you here, they just have to be memorized. The good news: once you know them, you already have a head start on Perfekt, Plusquamperfekt, Futur, and Passiv (Tiers 2–4), because every one of those tenses is built out of one of these three verbs.',

@@ -8,7 +8,6 @@ export default {
   verbPool: (verbs) => verbs.filter((v) => (v.type === 'strong' || v.type === 'irregular') && v.auxiliary === 'sein'),
   tenses: ['perfekt'],
   exerciseTypes: ['fill', 'mc'],
-  checkpoint: { count: 8, passThreshold: 0.8 },
   explanation: {
     intro:
       'Most verbs use haben in the Perfekt - but a specific group uses sein instead. The rule isn\'t random: sein-verbs describe MOVEMENT from one place to another (gehen, fahren, kommen) or a CHANGE OF STATE (werden, sterben) - plus the two odd-ones-out sein and bleiben, which describe a state rather than an action at all.',

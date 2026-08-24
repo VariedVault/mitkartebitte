@@ -8,7 +8,6 @@ export default {
   verbPool: (verbs) => verbs.filter((v) => v.tables.imperativ != null),
   tenses: ['imperativ'],
   exerciseTypes: ['fill', 'mc'],
-  checkpoint: { count: 8, passThreshold: 0.8 },
   explanation: {
     intro:
       'The imperative gives commands, instructions, and casual requests. German has three imperative forms depending on who you\'re talking to - and unlike English, you have to pick.',

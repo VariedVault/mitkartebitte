@@ -171,11 +171,11 @@ export async function renderDataPanel(container, { profileId }) {
   // Clear this profile — everyday, safe reset
   const clearCard = el('div', { class: 'card' });
   clearCard.appendChild(el('h3', {}, 'Clear this profile'));
-  clearCard.appendChild(el('p', {}, `Resets ${profile ? `"${profile.name}"` : 'this profile'}'s course progress, checkpoint results, and SRS deck back to zero. Your name and settings stay as they are. Other profiles, if you have any, are not touched.`));
+  clearCard.appendChild(el('p', {}, `Resets ${profile ? `"${profile.name}"` : 'this profile'}'s course progress and SRS deck back to zero. Your name and settings stay as they are. Other profiles, if you have any, are not touched.`));
   const clearBtn = el('button', { class: 'btn' }, 'Clear this profile');
   clearBtn.addEventListener('click', () => {
     const ok = window.confirm(
-      `Clear all progress for "${profile?.name || 'this profile'}"?\n\nThis permanently deletes this profile's course progress, checkpoint results, and SRS (spaced-repetition) deck. This cannot be undone. Your profile name and settings are kept.`
+      `Clear all progress for "${profile?.name || 'this profile'}"?\n\nThis permanently deletes this profile's course progress and SRS (spaced-repetition) deck. This cannot be undone. Your profile name and settings are kept.`
     );
     if (!ok) return;
     store.clearProfileData(profileId);

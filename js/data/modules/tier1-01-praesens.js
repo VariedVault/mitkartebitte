@@ -8,7 +8,6 @@ export default {
   verbPool: (verbs) => verbs.filter((v) => v.type === 'weak' && !v.separable && !v.reflexive),
   tenses: ['praesens'],
   exerciseTypes: ['fill', 'mc'],
-  checkpoint: { count: 8, passThreshold: 0.8 },
   explanation: {
     intro:
       'Präsens (present tense) is how you talk about now, habits, and - very often in German - the near future too ("Ich komme morgen" = "I\'m coming tomorrow" is perfectly normal). Most German verbs are "weak" (regular): you take the infinitive, drop the -en, and add one of six endings depending on who\'s doing the action.\n\nThat\'s the whole system for a regular verb. No vowel changes, no surprises - just the ending changes.',

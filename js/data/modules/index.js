@@ -12,7 +12,6 @@
 //   verbPool: (verbs) => verbs.filter(...),   // subset of VERBS this module drills
 //   tenses: ['praesens'],           // tense keys drills.js understands
 //   exerciseTypes: ['fill', 'mc'],
-//   checkpoint: { count: 8, passThreshold: 0.8 },
 //   explanation: {
 //     intro: 'string',
 //     rules: [{ heading, body }],
@@ -68,12 +67,12 @@ export function previousModule(mod) {
 /**
  * Soft lock only - never blocks navigation, just tells the UI whether to show a
  * "usually comes after X" nudge. A module is locked if the immediately-preceding
- * module (by course order) hasn't had its checkpoint passed yet for this profile.
+ * module (by course order) hasn't been practiced at all yet for this profile.
  */
 export function isModuleSoftLocked(mod, progress) {
   const prev = previousModule(mod);
   if (!prev) return false;
-  return !progress[prev.id]?.checkpointPassed;
+  return !progress[prev.id]?.practiced;
 }
 
 export function modulesByTier(tier) {
@@ -81,10 +80,11 @@ export function modulesByTier(tier) {
 }
 
 // ---------------------------------------------------------------- Practice-deck gating
-// Two independent gates, both driven by checkpoint-passed status (not merely visited):
-//   - TENSES: union of .tenses from every module whose checkpoint this profile has passed.
-//   - VERB LEVEL: a module's checkpoint passing unlocks its whole CEFR level's verbs,
-//     cumulatively (passing any B1 module also keeps A1/A2 unlocked).
+// Two independent gates, both driven by "practiced" status (has this profile finished at
+// least one practice round for the module - no score, no test, just "you showed up"):
+//   - TENSES: union of .tenses from every module this profile has practiced.
+//   - VERB LEVEL: practicing a module unlocks its whole CEFR level's verbs, cumulatively
+//     (practicing any B1 module also keeps A1/A2 unlocked).
 // Both fall back to module 1's tenses / level so a brand-new profile's Practice deck
 // is never empty on day one.
 
@@ -94,7 +94,7 @@ const LEVEL_RANK = { A1: 1, A2: 2, B1: 3 };
 export function unlockedTenses(progress) {
   const set = new Set();
   for (const mod of allModules()) {
-    if (progress[mod.id]?.checkpointPassed) mod.tenses.forEach((t) => set.add(t));
+    if (progress[mod.id]?.practiced) mod.tenses.forEach((t) => set.add(t));
   }
   if (set.size === 0) allModules()[0].tenses.forEach((t) => set.add(t));
   return set;
@@ -104,7 +104,7 @@ export function unlockedTenses(progress) {
 export function unlockedVerbRank(progress) {
   let rank = 0;
   for (const mod of allModules()) {
-    if (progress[mod.id]?.checkpointPassed) rank = Math.max(rank, LEVEL_RANK[mod.level] || 0);
+    if (progress[mod.id]?.practiced) rank = Math.max(rank, LEVEL_RANK[mod.level] || 0);
   }
   return rank || LEVEL_RANK[allModules()[0].level];
 }
