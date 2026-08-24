@@ -65,7 +65,7 @@ function levelCard(profileId, level) {
   card.appendChild(
     el('div', { class: 'track-card-title' }, [
       `${level} Conjugation`,
-      passed ? el('span', { class: 'track-card-tag track-card-tag--done' }, '✓ Certified') : !active ? el('span', { class: 'track-card-tag' }, '🔒 Locked') : null,
+      passed ? el('span', { class: 'track-card-tag track-card-tag--done' }, '✓ Practice unlocked') : !active ? el('span', { class: 'track-card-tag' }, '🔒 Locked') : null,
     ])
   );
   card.appendChild(

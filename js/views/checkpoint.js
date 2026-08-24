@@ -120,12 +120,12 @@ export async function renderCheckpoint(container, { profileId, level, setBreadcr
     const card = el('div', { class: 'card celebrate' });
     if (passed) {
       card.appendChild(el('span', { class: 'big-emoji' }, '✨'));
-      card.appendChild(el('div', { class: 'unlock-banner' }, `${level} certified - ${pct}%`));
-      card.appendChild(el('p', { style: 'margin-top:14px;color:var(--ink-soft)' }, `${level} is now unlocked for cumulative Practice.`));
+      card.appendChild(el('div', { class: 'unlock-banner' }, `Practice unlocked - ${pct}%`));
+      card.appendChild(el('p', { style: 'margin-top:14px;color:var(--ink-soft)' }, `${level}'s verbs are now in the cumulative Practice deck - keep practicing to actually retain them.`));
     } else {
       card.appendChild(el('span', { class: 'big-emoji' }, '🃏'));
       card.appendChild(el('h2', {}, `${pct}% this time`));
-      card.appendChild(el('p', { style: 'color:var(--ink-soft)' }, `Needed ${Math.round(PASS_THRESHOLD * 100)}% to certify - no rush, no streak to lose. Study a bit more and retake whenever you like.`));
+      card.appendChild(el('p', { style: 'color:var(--ink-soft)' }, `Needed ${Math.round(PASS_THRESHOLD * 100)}% to unlock Practice - no rush, no streak to lose. Study a bit more and retake whenever you like.`));
     }
     card.appendChild(
       el('div', { class: 'toolbar', style: 'justify-content:center;margin-top:14px' }, [
