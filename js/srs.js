@@ -35,27 +35,39 @@ export function isMastered(deck, key) {
   return !!f && f.box >= MAX_BOX;
 }
 
-/**
- * Builds a session queue from a candidate pool of fact keys: overdue facts first
- * (most urgent box first), then never-seen facts, then everything else, until `count`
- * is reached. This gives real spaced-repetition behavior across sessions while still
- * producing a full session's worth of drills even on a first-ever visit.
- */
-export function buildSessionQueue(deck, candidateKeys, count) {
-  const now = Date.now();
-  const due = [];
-  const fresh = [];
-  const rest = [];
-  for (const key of candidateKeys) {
-    const f = deck.facts[key];
-    if (!f) fresh.push(key);
-    else if (f.dueAt <= now) due.push({ key, box: f.box });
-    else rest.push({ key, dueAt: f.dueAt });
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
   }
-  due.sort((a, b) => a.box - b.box);
-  rest.sort((a, b) => a.dueAt - b.dueAt);
-  const ordered = [...due.map((d) => d.key), ...fresh, ...rest.map((r) => r.key)];
-  return ordered.slice(0, count);
+  return a;
+}
+
+/**
+ * Orders verb+tense entries for a session: overdue ones first (most urgent box first),
+ * then never-attempted ones, then everything else due later - same three-bucket shape as
+ * before, but each bucket is shuffled before its priority sort, so ties (most notably the
+ * whole "never-attempted" bucket, which has no inherent order) come out in random order
+ * instead of a fixed one. That's what makes repeated practice of the same module cycle
+ * through the whole verb pool - every entry gets drawn once before any of them repeat -
+ * rather than always drawing the same first few in the same order.
+ *
+ * `entries` is [{ vt, factKeys }] - one entry per verb+tense, with the underlying
+ * per-pronoun fact keys used only to look up due-ness/box in the deck.
+ */
+export function buildVtQueue(deck, entries) {
+  const now = Date.now();
+  const scored = entries.map(({ vt, factKeys }) => {
+    const facts = factKeys.map((k) => deck.facts[k]).filter(Boolean);
+    if (facts.length === 0) return { vt, bucket: 1, priority: 0 }; // never attempted
+    const dueFacts = facts.filter((f) => f.dueAt <= now);
+    if (dueFacts.length) return { vt, bucket: 0, priority: Math.min(...dueFacts.map((f) => f.box)) };
+    return { vt, bucket: 2, priority: Math.min(...facts.map((f) => f.dueAt)) };
+  });
+  return shuffle(scored)
+    .sort((a, b) => a.bucket - b.bucket || a.priority - b.priority)
+    .map((s) => s.vt);
 }
 
 /** Mastery % for a set of fact keys belonging to one module - used for the progress ring. */

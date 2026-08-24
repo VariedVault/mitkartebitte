@@ -8,7 +8,7 @@ export default {
   verbPool: (verbs) => verbs.filter((v) => v.type !== 'modal' && v.infinitive !== 'möchten' && !v.reflexive),
   tenses: ['futur1'],
   exerciseTypes: ['fill', 'mc'],
-  checkpoint: { count: 10, passThreshold: 0.8 },
+  checkpoint: { count: 8, passThreshold: 0.8 },
   explanation: {
     intro:
       'Here\'s the twist: Germans mostly DON\'T use Futur I to talk about the future - Präsens plus a time word ("Ich komme morgen") does that job just fine, as you saw back in Module 1. Futur I is reserved for prediction, promises, and assumption: "Es wird regnen" (it\'s going to rain) carries more certainty/emphasis than just describing a scheduled event.',

@@ -7,8 +7,8 @@ export default {
   summary: 'The irregular past stems - genuinely worth memorizing, since Perfekt reuses the same root.',
   verbPool: (verbs) => verbs.filter((v) => v.type === 'strong' || v.type === 'modal'),
   tenses: ['praeteritum'],
-  exerciseTypes: ['fill', 'mc', 'table'],
-  checkpoint: { count: 12, passThreshold: 0.8 },
+  exerciseTypes: ['fill', 'mc'],
+  checkpoint: { count: 8, passThreshold: 0.8 },
   explanation: {
     intro:
       'Strong verbs don\'t add -te - they change their stem vowel entirely, then take a lighter set of endings (and ich/er take NO ending at all). This is the "irregular" everyone worries about - but the payoff is real: the partizip2 you learned in Modules 6–7 is built from the same irregular root family, so recognizing the pattern here makes both tenses easier.',

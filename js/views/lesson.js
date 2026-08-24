@@ -5,7 +5,7 @@ import { getModule, isModuleSoftLocked, previousModule } from '../data/modules/i
 import { VERBS, PRONOUN_LABELS } from '../data/verbs.js';
 import {
   pronounsFor, pronounLabel, TENSE_LABELS, answersMatch, factLabel,
-  buildFillBlank, buildMultipleChoice, buildTableCompletion, factKeysForModule, getForm,
+  buildFillBlank, buildMultipleChoice, factKeyFor, factKeysForModule, getForm,
 } from '../ui/drills.js';
 import { navigate } from '../router.js';
 
@@ -15,30 +15,34 @@ function backToMapLink() {
   return link;
 }
 
-function randomPronoun(tense) {
-  const list = pronounsFor(tense);
-  return list[Math.floor(Math.random() * list.length)];
-}
-
+// Groups fact keys by verb+tense (one entry per unique combination, regardless of how
+// many pronoun forms it has) and hands them to srs.buildVtQueue so a session never
+// repeats a verb+tense until every one in the pool has come up at least once. Pools
+// smaller than `count` naturally produce a shorter plan instead of forcing repeats.
 function buildSessionPlan(pool, tenses, deck, count, exerciseTypes) {
-  const candidateKeys = factKeysForModule(pool, tenses);
-  const ordered = srs.buildSessionQueue(deck, candidateKeys, candidateKeys.length);
-  const seenVerbTense = new Set();
+  const vtInfo = new Map();
+  for (const verb of pool) {
+    for (const tense of tenses) {
+      const pronouns = pronounsFor(tense).filter((p) => getForm(verb, tense, p) != null);
+      if (pronouns.length === 0) continue;
+      const vt = `${verb.infinitive}|${tense}`;
+      vtInfo.set(vt, { verb, tense, pronouns });
+    }
+  }
+  const entries = [...vtInfo.entries()].map(([vt, { verb, tense, pronouns }]) => ({
+    vt,
+    factKeys: pronouns.map((p) => factKeyFor(verb, tense, p)),
+  }));
+  const ordered = srs.buildVtQueue(deck, entries).slice(0, count);
+
   const plan = [];
   let typeIdx = 0;
-  for (const key of ordered) {
-    if (plan.length >= count) break;
-    const [infinitive, tense] = key.split('|');
-    const vt = `${infinitive}|${tense}`;
-    if (seenVerbTense.has(vt)) continue;
-    seenVerbTense.add(vt);
-    const verb = VERBS.find((v) => v.infinitive === infinitive);
+  for (const vt of ordered) {
+    const { verb, tense, pronouns } = vtInfo.get(vt);
+    const pronoun = pronouns[Math.floor(Math.random() * pronouns.length)];
     const type = exerciseTypes[typeIdx % exerciseTypes.length];
     typeIdx++;
-    let exercise = null;
-    if (type === 'table') exercise = buildTableCompletion(verb, tense);
-    else if (type === 'mc') exercise = buildMultipleChoice(verb, tense, randomPronoun(tense), pool);
-    else exercise = buildFillBlank(verb, tense, randomPronoun(tense));
+    const exercise = type === 'mc' ? buildMultipleChoice(verb, tense, pronoun, pool) : buildFillBlank(verb, tense, pronoun);
     if (exercise) plan.push(exercise);
   }
   return plan;
@@ -136,7 +140,7 @@ export function demoTable(verb, tense, highlightPronoun) {
 function renderPracticePhase(container, mod, profileId) {
   const deck = store.getSRSDeck(profileId);
   const pool = mod.verbPool(VERBS);
-  const plan = buildSessionPlan(pool, mod.tenses, deck, 10, mod.exerciseTypes);
+  const plan = buildSessionPlan(pool, mod.tenses, deck, 6, mod.exerciseTypes);
 
   if (plan.length === 0) {
     container.innerHTML = '';
@@ -259,7 +263,6 @@ function exampleContext(verb) {
 }
 
 function renderExercise(exercise, { onAnswered, onNext }) {
-  if (exercise.type === 'table') return renderTableExercise(exercise, { onAnswered, onNext });
   if (exercise.type === 'mc') return renderChoiceExercise(exercise, { onAnswered, onNext });
   return renderFillExercise(exercise, { onAnswered, onNext });
 }
@@ -322,67 +325,13 @@ function renderChoiceExercise(exercise, { onAnswered, onNext }) {
   return box;
 }
 
-function renderTableExercise(exercise, { onAnswered, onNext }) {
-  const { verb, tense, cells } = exercise;
-  const box = el('div', { class: 'drill-box' });
-  box.appendChild(exerciseHeader(verb, tense, null));
-  box.appendChild(el('p', { style: 'color:var(--ink-soft);font-size:13px' }, 'Fill in every form, then check the whole table.'));
-  const table = el('table', { class: 'conj-table' });
-  const tbody = el('tbody');
-  const inputs = [];
-  for (const cell of cells) {
-    const input = el('input', { class: 'conj-cell-input', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false' });
-    inputs.push({ input, cell });
-    tbody.appendChild(
-      el('tr', {}, [
-        el('td', { class: `pron-cell pron-${tense === 'imperativ' ? '' : cell.pronoun}`.trim(), style: 'width:38%' }, pronounLabel(tense, cell.pronoun)),
-        el('td', {}, input),
-      ])
-    );
-  }
-  table.appendChild(tbody);
-  box.appendChild(table);
-  box.appendChild(keyboardHelper(inputs.map((i) => i.input)));
-  const submit = el('button', { class: 'btn btn-primary btn-block', style: 'margin-top:12px' }, 'Check table');
-  box.appendChild(submit);
-
-  let answered = false;
-  submit.addEventListener('click', () => {
-    if (answered) {
-      onNext();
-      return;
-    }
-    answered = true;
-    let allCorrect = true;
-    for (const { input, cell } of inputs) {
-      const typed = input.value.trim();
-      const correct = answersMatch(input.value, cell.answer);
-      input.classList.add('filled');
-      if (!correct) input.classList.add('wrong');
-      if (!correct) {
-        allCorrect = false;
-        input.value = cell.answer;
-      }
-      input.disabled = true;
-      onAnswered({
-        correct,
-        factKey: cell.factKey,
-        entry: { prompt: factLabel(verb, tense, cell.pronoun), userAnswer: typed || '(blank)', correctAnswer: cell.answer, correct },
-      });
-    }
-    submit.textContent = allCorrect ? '✓ Alles richtig - Next →' : 'Corrected - Next →';
-  });
-  return box;
-}
-
 // ---------------------------------------------------------------- checkpoint phase
 
 function renderCheckpointPhase(container, mod, profileId) {
   const deck = store.getSRSDeck(profileId);
   const pool = mod.verbPool(VERBS);
-  const count = mod.checkpoint?.count || 10;
-  const types = mod.exerciseTypes.filter((t) => t !== 'table').length ? mod.exerciseTypes.filter((t) => t !== 'table') : ['fill'];
-  const plan = buildSessionPlan(pool, mod.tenses, deck, count, types);
+  const count = mod.checkpoint?.count || 8;
+  const plan = buildSessionPlan(pool, mod.tenses, deck, count, mod.exerciseTypes);
 
   let idx = 0;
   let correct = 0;

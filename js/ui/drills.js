@@ -128,16 +128,6 @@ export function buildMultipleChoice(verb, tense, pronoun, pool) {
   return { type: 'mc', verb, tense, pronoun, answer, choices, factKey: factKeyFor(verb, tense, pronoun) };
 }
 
-/** { type:'table', verb, tense, cells:[{pronoun, answer, factKey}] } */
-export function buildTableCompletion(verb, tense) {
-  const pronouns = pronounsFor(tense);
-  const cells = pronouns
-    .map((p) => ({ pronoun: p, answer: getForm(verb, tense, p), factKey: factKeyFor(verb, tense, p) }))
-    .filter((c) => c.answer != null);
-  if (cells.length === 0) return null;
-  return { type: 'table', verb, tense, cells };
-}
-
 /**
  * Builds one exercise for a fact key using the requested type, choosing pool for MC
  * distractors. Falls back to 'fill' if the requested type can't be built for this fact.

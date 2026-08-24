@@ -7,8 +7,8 @@ export default {
   summary: 'a→ä, e→i, e→ie - the present-tense vowel shifts, and why the imperative ignores one of them.',
   verbPool: (verbs) => verbs.filter((v) => v.type === 'strong' && (v.tags || []).some((t) => t === 'ablaut-a-ä' || t === 'ablaut-e-i' || t === 'ablaut-e-ie')),
   tenses: ['praesens'],
-  exerciseTypes: ['fill', 'mc', 'table'],
-  checkpoint: { count: 10, passThreshold: 0.8 },
+  exerciseTypes: ['fill', 'mc'],
+  checkpoint: { count: 8, passThreshold: 0.8 },
   explanation: {
     intro:
       'Some verbs are "strong" - a family of everyday, high-frequency verbs that bend a vowel instead of (or alongside) taking regular endings. In the present tense, exactly three patterns exist, and the change only ever happens in du and er/sie/es - never ich, wir, ihr, or sie/Sie.',

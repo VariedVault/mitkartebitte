@@ -8,7 +8,7 @@ export default {
   verbPool: (verbs) => verbs.filter((v) => v.type !== 'modal' && v.infinitive !== 'möchten' && !v.reflexive),
   tenses: ['plusquamperfekt'],
   exerciseTypes: ['fill', 'mc'],
-  checkpoint: { count: 10, passThreshold: 0.8 },
+  checkpoint: { count: 8, passThreshold: 0.8 },
   explanation: {
     intro:
       'Plusquamperfekt (past perfect) describes something that had already happened before another past event. If Perfekt/Präteritum is "I ate", Plusquamperfekt is "I had already eaten (before you arrived)". You already know every piece of it - this module is really just Perfekt\'s structure with the auxiliary rewound one tense further.',

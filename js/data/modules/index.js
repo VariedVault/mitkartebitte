@@ -11,8 +11,8 @@
 //   summary: 'One-line course-map card description.',
 //   verbPool: (verbs) => verbs.filter(...),   // subset of VERBS this module drills
 //   tenses: ['praesens'],           // tense keys drills.js understands
-//   exerciseTypes: ['fill', 'mc', 'table'],
-//   checkpoint: { count: 10, passThreshold: 0.8 },
+//   exerciseTypes: ['fill', 'mc'],
+//   checkpoint: { count: 8, passThreshold: 0.8 },
 //   explanation: {
 //     intro: 'string',
 //     rules: [{ heading, body }],

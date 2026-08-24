@@ -10,7 +10,7 @@ export default {
   verbPool: (verbs) => verbs.filter((v) => PASSIV_VERBS.includes(v.infinitive)),
   tenses: ['passivVorgang'],
   exerciseTypes: ['fill', 'mc'],
-  checkpoint: { count: 10, passThreshold: 0.8 },
+  checkpoint: { count: 8, passThreshold: 0.8 },
   explanation: {
     intro:
       'Active voice: "Der Kellner bringt die Rechnung" (the waiter brings the bill) - the doer is the subject. Passive voice: "Die Rechnung wird gebracht" (the bill is brought/being brought) - the thing being acted on becomes the subject, and the doer either disappears entirely or gets demoted to a "von + dative" phrase. German reaches for this constantly in instructions, news, and anywhere the ACTION matters more than who did it.',

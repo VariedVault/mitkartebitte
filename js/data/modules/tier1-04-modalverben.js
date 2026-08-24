@@ -7,8 +7,8 @@ export default {
   summary: 'können, müssen, dürfen, sollen, wollen, mögen - plus the everyday "möchte".',
   verbPool: (verbs) => verbs.filter((v) => v.type === 'modal'),
   tenses: ['praesens'],
-  exerciseTypes: ['fill', 'mc', 'table'],
-  checkpoint: { count: 10, passThreshold: 0.8 },
+  exerciseTypes: ['fill', 'mc'],
+  checkpoint: { count: 8, passThreshold: 0.8 },
   explanation: {
     intro:
       'Modal verbs add a shade of meaning - ability, obligation, permission, desire - to another verb. They\'re a closed set of six, and they\'re all irregular in the same distinctive way: in the singular (ich/du/er), the vowel changes and, most noticeably, ich and er/sie/es use the EXACT SAME FORM, with no ending at all.',
