@@ -152,3 +152,20 @@ export function factKeysForModule(verbPool, tenses) {
   }
   return keys;
 }
+
+/**
+ * How many of a module's verb+tense pairs have never come up in a session yet, vs. how
+ * many exist in total. A pair counts as "started" the moment any of its pronoun forms
+ * has been answered at least once - a plain countdown that drops every session (unlike
+ * the SRS mastery %, which can take weeks to move), for surfacing "N left to try".
+ */
+export function unstartedVerbTenseCount(deck, verbPool, tenses) {
+  const byVt = new Map();
+  for (const key of factKeysForModule(verbPool, tenses)) {
+    const vt = key.split('|').slice(0, 2).join('|');
+    byVt.set(vt, (byVt.get(vt) || false) || !!deck.facts[key]);
+  }
+  const total = byVt.size;
+  const started = [...byVt.values()].filter(Boolean).length;
+  return { total, started, remaining: total - started };
+}
