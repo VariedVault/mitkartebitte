@@ -146,11 +146,21 @@ export function getActivity(profileId) {
   return read(keyFor(profileId, 'activity'), {});
 }
 
+/** Local calendar-day key (not UTC) - toISOString() would misfile any session between
+ *  local midnight and the local UTC offset (e.g. 00:00-02:00 in CEST) under the
+ *  previous day, since that moment is still "yesterday" in UTC. */
+export function activityDateKey(date = new Date()) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 export function recordActivity(profileId) {
   const settings = getSettings(profileId);
   if (!settings.heatmapEnabled) return;
   const activity = getActivity(profileId);
-  const day = new Date().toISOString().slice(0, 10);
+  const day = activityDateKey();
   activity[day] = (activity[day] || 0) + 1;
   write(keyFor(profileId, 'activity'), activity);
 }

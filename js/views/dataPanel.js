@@ -11,19 +11,73 @@ function downloadJSON(obj, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-function heatmapGrid(activity) {
-  const grid = el('div', { class: 'heatmap-grid' });
-  const days = 84;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+const MAX_WEEKS = 12; // ~3 months - matches the old fixed 84-day window's horizon
+
+function mondayOf(date) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  return d;
+}
+
+/**
+ * One row per week (Mon-Sun), newest first, plus a plain-English summary line - replaces
+ * the old unlabeled 84-cell grid, which had no day/week structure a user could read and
+ * (for a brand-new profile) was 82+ blank cells before they'd used the site even once.
+ * Row count grows from 1 (signup week) up to MAX_WEEKS, based on the profile's createdAt,
+ * so a new user's activity view starts small and relevant instead of mostly empty.
+ */
+function activityWeeklyStrip(activity, createdAt) {
+  const wrap = el('div', { class: 'activity-strip' });
   const today = new Date();
-  for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    const key = d.toISOString().slice(0, 10);
-    const count = activity[key] || 0;
-    const cell = el('div', { class: `heatmap-cell${count > 0 ? ' active' : ''}`, title: `${key}: ${count} session${count === 1 ? '' : 's'}`, style: count > 2 ? 'opacity:1' : count > 0 ? 'opacity:.65' : '' });
-    grid.appendChild(cell);
+  today.setHours(0, 0, 0, 0);
+  const thisWeekStart = mondayOf(today);
+  const signupWeekStart = mondayOf(createdAt || today);
+  const weeksSinceSignup = Math.round((thisWeekStart - signupWeekStart) / (7 * DAY_MS));
+  const weekCount = Math.min(MAX_WEEKS, weeksSinceSignup + 1);
+
+  const daylabels = el('div', { class: 'activity-daylabels' });
+  daylabels.appendChild(el('span', { class: 'activity-week-label' }, ''));
+  const labelsRow = el('div', { class: 'activity-days' });
+  for (const l of DAY_LABELS) labelsRow.appendChild(el('span', {}, l));
+  daylabels.appendChild(labelsRow);
+  wrap.appendChild(daylabels);
+
+  let totalDays = 0;
+  for (let w = 0; w < weekCount; w++) {
+    const weekStart = new Date(thisWeekStart.getTime() - w * 7 * DAY_MS);
+    const row = el('div', { class: 'activity-week' });
+    row.appendChild(el('span', { class: 'activity-week-label' }, w === 0 ? 'This week' : w === 1 ? 'Last week' : `${w} weeks ago`));
+    const days = el('div', { class: 'activity-days' });
+    for (let d = 0; d < 7; d++) {
+      const date = new Date(weekStart.getTime() + d * DAY_MS);
+      const key = store.activityDateKey(date);
+      const isFuture = date > today;
+      const count = activity[key] || 0;
+      if (count > 0) totalDays++;
+      days.appendChild(
+        el('div', {
+          class: `activity-day${count > 0 ? ' filled' : ''}${isFuture ? ' future' : ''}`,
+          title: isFuture ? '' : `${key}: ${count} session${count === 1 ? '' : 's'}`,
+        })
+      );
+    }
+    row.appendChild(days);
+    wrap.appendChild(row);
   }
-  return grid;
+
+  wrap.appendChild(
+    el(
+      'p',
+      { class: 'activity-summary' },
+      weekCount === 1
+        ? `Practiced ${totalDays} day${totalDays === 1 ? '' : 's'} this week.`
+        : `Practiced ${totalDays} day${totalDays === 1 ? '' : 's'} in the last ${weekCount} weeks.`
+    )
+  );
+  return wrap;
 }
 
 export async function renderDataPanel(container, { profileId }) {
@@ -56,20 +110,20 @@ export async function renderDataPanel(container, { profileId }) {
   // Settings card
   const settingsCard = el('div', { class: 'card' });
   const settings = store.getSettings(profileId);
-  settingsCard.appendChild(el('h3', {}, 'Activity heatmap'));
+  settingsCard.appendChild(el('h3', {}, 'Activity'));
   settingsCard.appendChild(el('p', {}, 'Purely optional, off by default. Shows when you practiced - never a streak to protect, never a guilt trip for a skipped day.'));
   const toggleRow = el('label', { style: 'display:flex;align-items:center;gap:10px;cursor:pointer;margin:10px 0' });
   const checkbox = el('input', { type: 'checkbox' });
   checkbox.checked = !!settings.heatmapEnabled;
   toggleRow.appendChild(checkbox);
-  toggleRow.appendChild(el('span', {}, 'Show my activity heatmap'));
+  toggleRow.appendChild(el('span', {}, 'Show my activity'));
   settingsCard.appendChild(toggleRow);
   const heatmapWrap = el('div', { style: 'margin-top:10px' });
   settingsCard.appendChild(heatmapWrap);
 
   function drawHeatmap() {
     heatmapWrap.innerHTML = '';
-    if (checkbox.checked) heatmapWrap.appendChild(heatmapGrid(store.getActivity(profileId)));
+    if (checkbox.checked) heatmapWrap.appendChild(activityWeeklyStrip(store.getActivity(profileId), profile?.createdAt));
   }
   checkbox.addEventListener('change', () => {
     store.setSetting(profileId, 'heatmapEnabled', checkbox.checked);
