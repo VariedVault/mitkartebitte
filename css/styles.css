@@ -336,6 +336,11 @@ button.card { border: none; width: 100%; text-align: left; font-size: inherit; d
   cursor: pointer; text-align: center !important; display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 3px; padding: 16px 6px;
 }
+/* Same `.card + .card` stacked-list-spacing leak as the verb grid and Foundations tiles
+   (see .card.verb-tile/.card.foundation-tile) - A1 has no preceding .card sibling so it
+   didn't get the extra margin, while A2/B1 did, making them sit 14px lower/shorter than A1.
+   Same fix: match `.card + .card`'s specificity and declare it later so it wins. */
+.card.level-card { margin-top: 0; }
 .level-card:disabled { cursor: default; }
 .level-card-name { font-family: var(--font-display); font-weight: 800; font-size: 21px; color: var(--ink); }
 .level-card-count { font-size: 11px; color: var(--ink-soft); line-height: 1.3; }
