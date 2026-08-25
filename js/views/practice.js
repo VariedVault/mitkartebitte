@@ -2,30 +2,11 @@ import * as store from '../store.js';
 import * as srs from '../srs.js';
 import { el, speakerButton, reviewList } from '../ui/components.js';
 import { VERBS, PRONOUN_COLORS } from '../data/verbs-a1.js';
-import { factKeysFor, TENSE_LABELS, pronounLabel, spokenPronoun, factLabel } from '../ui/verbUtils.js';
+import { practicePoolKeys } from '../data/practicePool.js';
+import { TENSE_LABELS, pronounLabel, spokenPronoun, factLabel } from '../ui/verbUtils.js';
 import { navigate } from '../router.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const LEVELS = ['A1', 'A2', 'B1'];
-// A brand-new profile (no checkpoint passed yet, nothing pinned) still gets a non-empty,
-// varied deck instead of "nothing to practice" - a small hand-picked spread of common
-// verbs, not the whole A1 set (that stays behind the A1 checkpoint, same as every level).
-const STARTER_INFINITIVES = ['sein', 'haben', 'machen', 'gehen', 'kommen', 'essen', 'trinken', 'wohnen', 'arbeiten', 'kaufen'];
-const PRACTICE_TENSES = ['praesens', 'imperativ', 'perfekt'];
-
-/** Cumulative pool = every verb from a checkpoint-passed level, PLUS anything explicitly
- *  pinned via a verb card's "Add to practice" (regardless of level/checkpoint status) -
- *  falling back to the starter set when neither applies, so Practice is never blank. */
-function practicePool(profileId) {
-  const progress = store.getProgress(profileId);
-  const unlockedLevels = LEVELS.filter((l) => progress.levels[l]?.checkpointPassed);
-  const pinnedSet = new Set(progress.pinnedVerbs);
-
-  const unlockedVerbs = unlockedLevels.length > 0 ? VERBS.filter((v) => unlockedLevels.includes(v.level)) : VERBS.filter((v) => STARTER_INFINITIVES.includes(v.infinitive));
-  const pinnedVerbs = VERBS.filter((v) => pinnedSet.has(v.infinitive));
-  const verbs = [...new Set([...unlockedVerbs, ...pinnedVerbs])];
-  return factKeysFor(verbs, PRACTICE_TENSES);
-}
 
 /** SRS-weighted random pick: overdue/new facts draw far more often than well-known ones,
  *  but nothing is ever fully excluded - keeps the whole unlocked pool "endless" and alive.
@@ -88,7 +69,7 @@ function buildReveal(verb, tense, pronoun, answer) {
 
 export async function renderPractice(container, { profileId }) {
   const deck = store.getSRSDeck(profileId);
-  const keys = practicePool(profileId);
+  const keys = practicePoolKeys(profileId);
 
   container.innerHTML = '';
   container.appendChild(el('h1', {}, 'Practice'));

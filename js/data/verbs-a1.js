@@ -1,24 +1,32 @@
-// The A1 verb core - ~35 verbs confirmed against the official Goethe-Institut A1
-// wordlist (reference only; no list content is reproduced here - every conjugation
-// and example sentence below is authored independently for this app).
+// The A1 + A2 verb core - ~59 verbs, each confirmed at its stated CEFR level against the
+// official Goethe-Institut wordlists (reference only; no list content is reproduced here -
+// every conjugation and example sentence below is authored independently for this app).
 //
-// FULL SCHEMA, A1-DEPTH DATA: every verb carries all seven tense slots so A2/B1 phases
-// only ever populate a field, never restructure one. This phase fills only praesens,
-// imperativ, and perfekt - praeteritum/konjunktiv2/futur1/plusquamperfekt/passiv are
-// present as explicit `null` placeholders.
+// FULL SCHEMA: every verb carries all eight tense slots so B1 only ever populates a field,
+// never restructures one. This phase (A1+A2) fills praesens, imperativ, perfekt, and now
+// praeteritum (added to the A1 core too - the "spiral revisit") - konjunktiv2/futur1/
+// plusquamperfekt/passiv are still explicit `null` placeholders for B1.
 //
 // CORRECT BY CONSTRUCTION: every regular form below is a literal call into rules.js at
 // module load, not a hand-typed string - see rules.js's header for why. Only genuinely
-// irregular stems (stem-changers' du/er, strong/mixed partizip2, sein/haben/werden, the
+// irregular stems (stem-changers' du/er, strong/mixed ablaut, sein/haben/werden, the
 // modals, wissen) are hand-typed string literals; scripts/verify.mjs re-derives every
 // non-hand-flagged form and fails the build if a shipped form ever disagrees.
+//
+// REFLEXIVE VERBS store the bare base infinitive (e.g. 'fühlen', not 'sich fühlen') since
+// rules.js's functions operate on that; `reflexive: true` plus rules.js's applyReflexive()
+// bakes the reflexive pronoun into every stored form, and ui/verbUtils.js's
+// displayInfinitive() prepends "sich " wherever the infinitive is shown to a learner.
 //
 // verb.tags carries a short REGULARITY NOTE for the per-verb review table in
 // scripts/verify.mjs's output - not used by the UI.
 
-import { PRONOUNS, regularPraesens, regularImperativ, regularPartizip2, buildPerfekt } from './rules.js';
+import {
+  PRONOUNS, regularPraesens, regularImperativ, regularPartizip2, buildPerfekt,
+  regularPraeteritum, strongPraeteritumEndings, weakPraeteritumEndings, applyReflexive, REFLEXIVE_PRONOUNS,
+} from './rules.js';
 
-export { PRONOUNS };
+export { PRONOUNS, REFLEXIVE_PRONOUNS };
 
 export const PRONOUN_LABELS = { ich: 'ich', du: 'du', er: 'er/sie/es', wir: 'wir', ihr: 'ihr', sie: 'sie/Sie' };
 
@@ -27,12 +35,9 @@ export const PRONOUN_COLORS = {
   ich: '#FF6B6B', du: '#4ECDC4', er: '#FFD166', wir: '#6C8EFF', ihr: '#C77DFF', sie: '#5FD98A',
 };
 
-export const REFLEXIVE_PRONOUNS = { ich: 'mich', du: 'dich', er: 'sich', wir: 'uns', ihr: 'euch', sie: 'sich' };
-
 // The empty-schema shape every unfilled tense uses this phase - keeps `tables` a
 // consistent 8-key object everywhere instead of some verbs having the key and others not.
 const EMPTY_TENSES = {
-  praeteritum: null,
   konjunktiv2: null,
   futur1: null,
   plusquamperfekt: null,
@@ -56,6 +61,7 @@ const SEIN = {
     praesens: SEIN_PRAESENS,
     imperativ: { du: 'Sei!', ihr: 'Seid!', Sie: 'Seien Sie!' },
     perfekt: buildPerfekt(SEIN_PRAESENS, 'gewesen'),
+    praeteritum: strongPraeteritumEndings('war'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -79,6 +85,7 @@ const HABEN = {
     praesens: HABEN_PRAESENS,
     imperativ: { du: 'Hab!', ihr: 'Habt!', Sie: 'Haben Sie!' },
     perfekt: buildPerfekt(HABEN_PRAESENS, 'gehabt'),
+    praeteritum: weakPraeteritumEndings('hatte'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -102,6 +109,7 @@ const WERDEN = {
     praesens: WERDEN_PRAESENS,
     imperativ: { du: 'Werde!', ihr: 'Werdet!', Sie: 'Werden Sie!' },
     perfekt: buildPerfekt(SEIN_PRAESENS, 'geworden'),
+    praeteritum: weakPraeteritumEndings('wurde'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -127,6 +135,7 @@ const MACHEN = {
     praesens: regularPraesens('machen'),
     imperativ: regularImperativ('machen', regularPraesens('machen')),
     perfekt: buildPerfekt(HABEN_PRAESENS, regularPartizip2('machen')),
+    praeteritum: regularPraeteritum('machen'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -150,6 +159,7 @@ const KAUFEN = {
     praesens: regularPraesens('kaufen'),
     imperativ: regularImperativ('kaufen', regularPraesens('kaufen')),
     perfekt: buildPerfekt(HABEN_PRAESENS, regularPartizip2('kaufen')),
+    praeteritum: regularPraeteritum('kaufen'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -173,6 +183,7 @@ const WOHNEN = {
     praesens: regularPraesens('wohnen'),
     imperativ: regularImperativ('wohnen', regularPraesens('wohnen')),
     perfekt: buildPerfekt(HABEN_PRAESENS, regularPartizip2('wohnen')),
+    praeteritum: regularPraeteritum('wohnen'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -196,6 +207,7 @@ const ARBEITEN = {
     praesens: regularPraesens('arbeiten'),
     imperativ: regularImperativ('arbeiten', regularPraesens('arbeiten')),
     perfekt: buildPerfekt(HABEN_PRAESENS, regularPartizip2('arbeiten')),
+    praeteritum: regularPraeteritum('arbeiten'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -221,6 +233,7 @@ const GEHEN = {
     praesens: regularPraesens('gehen'),
     imperativ: regularImperativ('gehen', regularPraesens('gehen')),
     perfekt: buildPerfekt(SEIN_PRAESENS, 'gegangen'),
+    praeteritum: strongPraeteritumEndings('ging'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -244,6 +257,7 @@ const KOMMEN = {
     praesens: regularPraesens('kommen'),
     imperativ: regularImperativ('kommen', regularPraesens('kommen')),
     perfekt: buildPerfekt(SEIN_PRAESENS, 'gekommen'),
+    praeteritum: strongPraeteritumEndings('kam'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -267,6 +281,7 @@ const BLEIBEN = {
     praesens: regularPraesens('bleiben'),
     imperativ: regularImperativ('bleiben', regularPraesens('bleiben')),
     perfekt: buildPerfekt(SEIN_PRAESENS, 'geblieben'),
+    praeteritum: strongPraeteritumEndings('blieb'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -290,6 +305,7 @@ const SCHREIBEN = {
     praesens: regularPraesens('schreiben'),
     imperativ: regularImperativ('schreiben', regularPraesens('schreiben')),
     perfekt: buildPerfekt(HABEN_PRAESENS, 'geschrieben'),
+    praeteritum: strongPraeteritumEndings('schrieb'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -313,6 +329,7 @@ const HEISSEN = {
     praesens: regularPraesens('heißen'),
     imperativ: regularImperativ('heißen', regularPraesens('heißen')),
     perfekt: buildPerfekt(HABEN_PRAESENS, 'geheißen'),
+    praeteritum: strongPraeteritumEndings('hieß'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -336,6 +353,7 @@ const TRINKEN = {
     praesens: regularPraesens('trinken'),
     imperativ: regularImperativ('trinken', regularPraesens('trinken')),
     perfekt: buildPerfekt(HABEN_PRAESENS, 'getrunken'),
+    praeteritum: strongPraeteritumEndings('trank'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -359,6 +377,7 @@ const FINDEN = {
     praesens: regularPraesens('finden'),
     imperativ: regularImperativ('finden', regularPraesens('finden')),
     perfekt: buildPerfekt(HABEN_PRAESENS, 'gefunden'),
+    praeteritum: strongPraeteritumEndings('fand'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -382,6 +401,7 @@ const KENNEN = {
     praesens: regularPraesens('kennen'),
     imperativ: regularImperativ('kennen', regularPraesens('kennen')),
     perfekt: buildPerfekt(HABEN_PRAESENS, 'gekannt'),
+    praeteritum: weakPraeteritumEndings('kannte'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -407,6 +427,7 @@ const FAHREN = {
     praesens: { ...regularPraesens('fahren'), du: 'fährst', er: 'fährt' },
     imperativ: regularImperativ('fahren', regularPraesens('fahren')), // a->ä changers use the UNCHANGED stem in imperativ
     perfekt: buildPerfekt(SEIN_PRAESENS, 'gefahren'),
+    praeteritum: strongPraeteritumEndings('fuhr'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -430,6 +451,7 @@ const ESSEN = {
     praesens: { ...regularPraesens('essen'), du: 'isst', er: 'isst' },
     imperativ: { ...regularImperativ('essen', regularPraesens('essen')), du: 'Iss!' },
     perfekt: buildPerfekt(HABEN_PRAESENS, 'gegessen'),
+    praeteritum: strongPraeteritumEndings('aß'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -453,6 +475,7 @@ const GEBEN = {
     praesens: { ...regularPraesens('geben'), du: 'gibst', er: 'gibt' },
     imperativ: { ...regularImperativ('geben', regularPraesens('geben')), du: 'Gib!' },
     perfekt: buildPerfekt(HABEN_PRAESENS, 'gegeben'),
+    praeteritum: strongPraeteritumEndings('gab'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -476,6 +499,7 @@ const NEHMEN = {
     praesens: { ...regularPraesens('nehmen'), du: 'nimmst', er: 'nimmt' },
     imperativ: { ...regularImperativ('nehmen', regularPraesens('nehmen')), du: 'Nimm!' },
     perfekt: buildPerfekt(HABEN_PRAESENS, 'genommen'),
+    praeteritum: strongPraeteritumEndings('nahm'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -499,6 +523,7 @@ const SEHEN = {
     praesens: { ...regularPraesens('sehen'), du: 'siehst', er: 'sieht' },
     imperativ: { ...regularImperativ('sehen', regularPraesens('sehen')), du: 'Sieh!' },
     perfekt: buildPerfekt(HABEN_PRAESENS, 'gesehen'),
+    praeteritum: strongPraeteritumEndings('sah'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -522,6 +547,7 @@ const LESEN = {
     praesens: { ...regularPraesens('lesen'), du: 'liest', er: 'liest' },
     imperativ: { ...regularImperativ('lesen', regularPraesens('lesen')), du: 'Lies!' },
     perfekt: buildPerfekt(HABEN_PRAESENS, 'gelesen'),
+    praeteritum: strongPraeteritumEndings('las'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -545,6 +571,7 @@ const SPRECHEN = {
     praesens: { ...regularPraesens('sprechen'), du: 'sprichst', er: 'spricht' },
     imperativ: { ...regularImperativ('sprechen', regularPraesens('sprechen')), du: 'Sprich!' },
     perfekt: buildPerfekt(HABEN_PRAESENS, 'gesprochen'),
+    praeteritum: strongPraeteritumEndings('sprach'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -568,6 +595,7 @@ const SCHLAFEN = {
     praesens: { ...regularPraesens('schlafen'), du: 'schläfst', er: 'schläft' },
     imperativ: regularImperativ('schlafen', regularPraesens('schlafen')), // a->ä changers use the UNCHANGED stem in imperativ
     perfekt: buildPerfekt(HABEN_PRAESENS, 'geschlafen'),
+    praeteritum: strongPraeteritumEndings('schlief'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -591,6 +619,7 @@ const LAUFEN = {
     praesens: { ...regularPraesens('laufen'), du: 'läufst', er: 'läuft' },
     imperativ: regularImperativ('laufen', regularPraesens('laufen')), // au->äu changers use the UNCHANGED stem in imperativ
     perfekt: buildPerfekt(SEIN_PRAESENS, 'gelaufen'),
+    praeteritum: strongPraeteritumEndings('lief'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -614,6 +643,7 @@ const HELFEN = {
     praesens: { ...regularPraesens('helfen'), du: 'hilfst', er: 'hilft' },
     imperativ: { ...regularImperativ('helfen', regularPraesens('helfen')), du: 'Hilf!' },
     perfekt: buildPerfekt(HABEN_PRAESENS, 'geholfen'),
+    praeteritum: strongPraeteritumEndings('half'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -637,6 +667,7 @@ const TREFFEN = {
     praesens: { ...regularPraesens('treffen'), du: 'triffst', er: 'trifft' },
     imperativ: { ...regularImperativ('treffen', regularPraesens('treffen')), du: 'Triff!' },
     perfekt: buildPerfekt(HABEN_PRAESENS, 'getroffen'),
+    praeteritum: strongPraeteritumEndings('traf'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -662,6 +693,7 @@ const KOENNEN = {
     praesens: { ich: 'kann', du: 'kannst', er: 'kann', wir: 'können', ihr: 'könnt', sie: 'können' },
     imperativ: null, // modals have no imperative mood in standard German
     perfekt: buildPerfekt(HABEN_PRAESENS, 'gekonnt'),
+    praeteritum: weakPraeteritumEndings('konnte'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -685,6 +717,7 @@ const MUESSEN = {
     praesens: { ich: 'muss', du: 'musst', er: 'muss', wir: 'müssen', ihr: 'müsst', sie: 'müssen' },
     imperativ: null,
     perfekt: buildPerfekt(HABEN_PRAESENS, 'gemusst'),
+    praeteritum: weakPraeteritumEndings('musste'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -708,6 +741,7 @@ const WOLLEN = {
     praesens: { ich: 'will', du: 'willst', er: 'will', wir: 'wollen', ihr: 'wollt', sie: 'wollen' },
     imperativ: null,
     perfekt: buildPerfekt(HABEN_PRAESENS, 'gewollt'),
+    praeteritum: weakPraeteritumEndings('wollte'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -731,6 +765,7 @@ const DUERFEN = {
     praesens: { ich: 'darf', du: 'darfst', er: 'darf', wir: 'dürfen', ihr: 'dürft', sie: 'dürfen' },
     imperativ: null,
     perfekt: buildPerfekt(HABEN_PRAESENS, 'gedurft'),
+    praeteritum: weakPraeteritumEndings('durfte'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -754,6 +789,7 @@ const SOLLEN = {
     praesens: { ich: 'soll', du: 'sollst', er: 'soll', wir: 'sollen', ihr: 'sollt', sie: 'sollen' },
     imperativ: null,
     perfekt: buildPerfekt(HABEN_PRAESENS, 'gesollt'),
+    praeteritum: weakPraeteritumEndings('sollte'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -777,6 +813,7 @@ const MOEGEN = {
     praesens: { ich: 'mag', du: 'magst', er: 'mag', wir: 'mögen', ihr: 'mögt', sie: 'mögen' },
     imperativ: null,
     perfekt: buildPerfekt(HABEN_PRAESENS, 'gemocht'),
+    praeteritum: weakPraeteritumEndings('mochte'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -800,6 +837,7 @@ const WISSEN = {
     praesens: { ich: 'weiß', du: 'weißt', er: 'weiß', wir: 'wissen', ihr: 'wisst', sie: 'wissen' },
     imperativ: null, // grammatically exists ("Wisse...") but archaic/literary - skipped as out of scope for A1 register
     perfekt: buildPerfekt(HABEN_PRAESENS, 'gewusst'),
+    praeteritum: weakPraeteritumEndings('wusste'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -825,6 +863,7 @@ const AUFSTEHEN = {
     praesens: regularPraesens('stehen'),
     imperativ: regularImperativ('stehen', regularPraesens('stehen')),
     perfekt: buildPerfekt(SEIN_PRAESENS, 'aufgestanden'),
+    praeteritum: strongPraeteritumEndings('stand'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -848,6 +887,7 @@ const ANRUFEN = {
     praesens: regularPraesens('rufen'),
     imperativ: regularImperativ('rufen', regularPraesens('rufen')),
     perfekt: buildPerfekt(HABEN_PRAESENS, 'angerufen'),
+    praeteritum: strongPraeteritumEndings('rief'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -871,6 +911,7 @@ const EINKAUFEN = {
     praesens: regularPraesens('kaufen'),
     imperativ: regularImperativ('kaufen', regularPraesens('kaufen')),
     perfekt: buildPerfekt(HABEN_PRAESENS, regularPartizip2('kaufen', 'ein')),
+    praeteritum: regularPraeteritum('kaufen'),
     ...EMPTY_TENSES,
   },
   examplesByPronoun: {
@@ -887,6 +928,577 @@ const EINKAUFEN = {
   tags: ['separable, weak base "kaufen" - fully regular praesens + partizip2'],
 };
 
+// ================================================================== A2 CORE ==================================================================
+// ~23 verbs, each individually checked against the DWDS/Goethe A2 wordlist
+// (https://www.dwds.de/api/lemma/goethe/A2.csv) - several originally-proposed verbs
+// turned out to be A1 (anfangen, verstehen, gefallen, empfehlen, waschen, anziehen,
+// bringen, halten, schließen, freuen, treffen) or B1 (steigen, wachsen) per that source
+// and were swapped out; see the phase report for the full swap list. None collide with
+// an existing A1 infinitive.
+
+// ---------------------------------------------------------------- strong (irregular praesens, hand-typed partizip2/praeteritum)
+
+const TRAGEN = {
+  infinitive: 'tragen', english: 'to carry, to wear', level: 'A2', type: 'strong', auxiliary: 'haben',
+  separable: false, reflexive: false, partizip2: 'getragen',
+  tables: {
+    praesens: { ...regularPraesens('tragen'), du: 'trägst', er: 'trägt' },
+    imperativ: regularImperativ('tragen', regularPraesens('tragen')), // a->ä changers use the UNCHANGED stem in imperativ
+    perfekt: buildPerfekt(HABEN_PRAESENS, 'getragen'),
+    praeteritum: strongPraeteritumEndings('trug'),
+    ...EMPTY_TENSES,
+  },
+  examplesByPronoun: {
+    praesens: {
+      ich: { de: 'Ich trage eine neue Jacke.', en: "I'm wearing a new jacket." },
+      du: { de: 'Du trägst immer die gleichen Schuhe.', en: 'You always wear the same shoes.' },
+      er: { de: 'Er trägt die Tasche für seine Mutter.', en: "He's carrying the bag for his mother." },
+      wir: { de: 'Wir tragen die Kisten in die Wohnung.', en: "We're carrying the boxes into the apartment." },
+      ihr: { de: 'Ihr tragt heute alle Blau.', en: 'You all are wearing blue today.' },
+      sie: { de: 'Sie tragen die Möbel in den zweiten Stock.', en: "They're carrying the furniture to the second floor." },
+    },
+    ...EMPTY_EXAMPLES,
+  },
+  tags: ['strong - irregular du/er stem (a->ä), hand-typed partizip2/praeteritum'],
+};
+
+const FALLEN = {
+  infinitive: 'fallen', english: 'to fall', level: 'A2', type: 'strong', auxiliary: 'sein',
+  separable: false, reflexive: false, partizip2: 'gefallen',
+  tables: {
+    praesens: { ...regularPraesens('fallen'), du: 'fällst', er: 'fällt' },
+    imperativ: regularImperativ('fallen', regularPraesens('fallen')),
+    perfekt: buildPerfekt(SEIN_PRAESENS, 'gefallen'),
+    praeteritum: strongPraeteritumEndings('fiel'),
+    ...EMPTY_TENSES,
+  },
+  examplesByPronoun: {
+    praesens: {
+      ich: { de: 'Ich falle fast hin.', en: 'I almost fall over.' },
+      du: { de: 'Du fällst mir in die Arme.', en: 'You fall into my arms.' },
+      er: { de: 'Er fällt vom Fahrrad.', en: 'He falls off his bike.' },
+      wir: { de: 'Wir fallen beide gleichzeitig um.', en: 'We both fall over at the same time.' },
+      ihr: { de: 'Ihr fallt ständig übereinander.', en: 'You all keep falling over each other.' },
+      sie: { de: 'Sie fallen langsam in einen tiefen Schlaf.', en: 'They slowly fall into a deep sleep.' },
+    },
+    ...EMPTY_EXAMPLES,
+  },
+  tags: ['strong - irregular du/er stem (a->ä), hand-typed partizip2/praeteritum'],
+};
+
+const LASSEN = {
+  infinitive: 'lassen', english: 'to let, to leave', level: 'A2', type: 'strong', auxiliary: 'haben',
+  separable: false, reflexive: false, partizip2: 'gelassen',
+  tables: {
+    praesens: { ...regularPraesens('lassen'), du: 'lässt', er: 'lässt' },
+    imperativ: regularImperativ('lassen', regularPraesens('lassen')),
+    perfekt: buildPerfekt(HABEN_PRAESENS, 'gelassen'),
+    praeteritum: strongPraeteritumEndings('ließ'),
+    ...EMPTY_TENSES,
+  },
+  examplesByPronoun: {
+    praesens: {
+      ich: { de: 'Ich lasse das Fenster offen.', en: 'I leave the window open.' },
+      du: { de: 'Du lässt mich nie in Ruhe.', en: 'You never leave me alone.' },
+      er: { de: 'Er lässt seinen Hund im Garten.', en: 'He leaves his dog in the garden.' },
+      wir: { de: 'Wir lassen die Kinder heute zu Hause.', en: "We're leaving the kids at home today." },
+      ihr: { de: 'Ihr lasst eure Sachen überall liegen.', en: 'You all leave your things lying around everywhere.' },
+      sie: { de: 'Sie lassen die Tür offen.', en: 'They leave the door open.' },
+    },
+    ...EMPTY_EXAMPLES,
+  },
+  tags: ['strong - irregular du/er stem (a->ä, s-contraction), hand-typed partizip2/praeteritum'],
+};
+
+const RUFEN = {
+  infinitive: 'rufen', english: 'to call, to shout', level: 'A2', type: 'strong', auxiliary: 'haben',
+  separable: false, reflexive: false, partizip2: 'gerufen',
+  tables: {
+    praesens: regularPraesens('rufen'),
+    imperativ: regularImperativ('rufen', regularPraesens('rufen')),
+    perfekt: buildPerfekt(HABEN_PRAESENS, 'gerufen'),
+    praeteritum: strongPraeteritumEndings('rief'),
+    ...EMPTY_TENSES,
+  },
+  examplesByPronoun: {
+    praesens: {
+      ich: { de: 'Ich rufe laut nach dir.', en: 'I call out loudly for you.' },
+      du: { de: 'Du rufst mich immer zu spät.', en: 'You always call me too late.' },
+      er: { de: 'Er ruft schnell einen Arzt.', en: 'He quickly calls a doctor.' },
+      wir: { de: 'Wir rufen ein Taxi.', en: "We're calling a taxi." },
+      ihr: { de: 'Ihr ruft viel zu laut.', en: 'You all are shouting way too loud.' },
+      sie: { de: 'Sie rufen aus dem Fenster.', en: 'They call out from the window.' },
+    },
+    ...EMPTY_EXAMPLES,
+  },
+  tags: ['strong - regular praesens, hand-typed partizip2/praeteritum'],
+};
+
+const VERGESSEN = {
+  infinitive: 'vergessen', english: 'to forget', level: 'A2', type: 'strong', auxiliary: 'haben',
+  separable: false, reflexive: false, partizip2: 'vergessen', // inseparable ver- takes no ge-; coincidentally identical to the infinitive
+  tables: {
+    praesens: { ...regularPraesens('vergessen'), du: 'vergisst', er: 'vergisst' },
+    imperativ: { ...regularImperativ('vergessen', regularPraesens('vergessen')), du: 'Vergiss!' },
+    perfekt: buildPerfekt(HABEN_PRAESENS, 'vergessen'),
+    praeteritum: strongPraeteritumEndings('vergaß'),
+    ...EMPTY_TENSES,
+  },
+  examplesByPronoun: {
+    praesens: {
+      ich: { de: 'Ich vergesse oft meinen Schlüssel.', en: 'I often forget my key.' },
+      du: { de: 'Du vergisst nie einen Geburtstag.', en: 'You never forget a birthday.' },
+      er: { de: 'Er vergisst seinen Regenschirm im Bus.', en: 'He forgets his umbrella on the bus.' },
+      wir: { de: 'Wir vergessen die Zeit beim Reden.', en: 'We lose track of time talking.' },
+      ihr: { de: 'Ihr vergesst immer die Hausaufgaben.', en: 'You all always forget your homework.' },
+      sie: { de: 'Sie vergessen den Termin.', en: 'They forget the appointment.' },
+    },
+    ...EMPTY_EXAMPLES,
+  },
+  tags: ['strong - irregular du/er stem (e->i, s-contraction), inseparable ver- (no ge-), hand-typed praeteritum'],
+};
+
+const VERLIEREN = {
+  infinitive: 'verlieren', english: 'to lose', level: 'A2', type: 'strong', auxiliary: 'haben',
+  separable: false, reflexive: false, partizip2: 'verloren', // inseparable ver-, no ge-
+  tables: {
+    praesens: regularPraesens('verlieren'),
+    imperativ: regularImperativ('verlieren', regularPraesens('verlieren')),
+    perfekt: buildPerfekt(HABEN_PRAESENS, 'verloren'),
+    praeteritum: strongPraeteritumEndings('verlor'),
+    ...EMPTY_TENSES,
+  },
+  examplesByPronoun: {
+    praesens: {
+      ich: { de: 'Ich verliere ständig meine Schlüssel.', en: 'I constantly lose my keys.' },
+      du: { de: 'Du verlierst nie die Geduld.', en: 'You never lose your patience.' },
+      er: { de: 'Er verliert das Spiel knapp.', en: 'He loses the game narrowly.' },
+      wir: { de: 'Wir verlieren langsam die Orientierung.', en: "We're slowly losing our bearings." },
+      ihr: { de: 'Ihr verliert wieder beim Kartenspiel.', en: 'You all are losing at cards again.' },
+      sie: { de: 'Sie verlieren kein einziges Spiel.', en: "They don't lose a single game." },
+    },
+    ...EMPTY_EXAMPLES,
+  },
+  tags: ['strong - regular praesens, inseparable ver- (no ge-), hand-typed praeteritum'],
+};
+
+const BESCHREIBEN = {
+  infinitive: 'beschreiben', english: 'to describe', level: 'A2', type: 'strong', auxiliary: 'haben',
+  separable: false, reflexive: false, partizip2: 'beschrieben', // inseparable be-, no ge-
+  tables: {
+    praesens: regularPraesens('beschreiben'),
+    imperativ: regularImperativ('beschreiben', regularPraesens('beschreiben')),
+    perfekt: buildPerfekt(HABEN_PRAESENS, 'beschrieben'),
+    praeteritum: strongPraeteritumEndings('beschrieb'),
+    ...EMPTY_TENSES,
+  },
+  examplesByPronoun: {
+    praesens: {
+      ich: { de: 'Ich beschreibe den Weg zum Bahnhof.', en: 'I describe the way to the station.' },
+      du: { de: 'Du beschreibst das Problem sehr genau.', en: 'You describe the problem very precisely.' },
+      er: { de: 'Er beschreibt seine Wohnung im Detail.', en: 'He describes his apartment in detail.' },
+      wir: { de: 'Wir beschreiben unsere Erfahrungen.', en: 'We describe our experiences.' },
+      ihr: { de: 'Ihr beschreibt die Situation ganz anders.', en: 'You all describe the situation quite differently.' },
+      sie: { de: 'Sie beschreiben den Täter der Polizei.', en: 'They describe the culprit to the police.' },
+    },
+    ...EMPTY_EXAMPLES,
+  },
+  tags: ['strong - regular praesens, inseparable be- (no ge-), hand-typed praeteritum'],
+};
+
+const SINGEN = {
+  infinitive: 'singen', english: 'to sing', level: 'A2', type: 'strong', auxiliary: 'haben',
+  separable: false, reflexive: false, partizip2: 'gesungen',
+  tables: {
+    praesens: regularPraesens('singen'),
+    imperativ: regularImperativ('singen', regularPraesens('singen')),
+    perfekt: buildPerfekt(HABEN_PRAESENS, 'gesungen'),
+    praeteritum: strongPraeteritumEndings('sang'),
+    ...EMPTY_TENSES,
+  },
+  examplesByPronoun: {
+    praesens: {
+      ich: { de: 'Ich singe gern unter der Dusche.', en: 'I like singing in the shower.' },
+      du: { de: 'Du singst wirklich schön.', en: 'You sing really beautifully.' },
+      er: { de: 'Er singt in einem Chor.', en: 'He sings in a choir.' },
+      wir: { de: 'Wir singen zusammen ein Lied.', en: "We're singing a song together." },
+      ihr: { de: 'Ihr singt viel zu laut.', en: 'You all are singing way too loud.' },
+      sie: { de: 'Sie singen bei jeder Party.', en: 'They sing at every party.' },
+    },
+    ...EMPTY_EXAMPLES,
+  },
+  tags: ['strong - regular praesens, hand-typed partizip2/praeteritum'],
+};
+
+const SCHNEIDEN = {
+  infinitive: 'schneiden', english: 'to cut', level: 'A2', type: 'strong', auxiliary: 'haben',
+  separable: false, reflexive: false, partizip2: 'geschnitten',
+  tables: {
+    praesens: regularPraesens('schneiden'),
+    imperativ: regularImperativ('schneiden', regularPraesens('schneiden')),
+    perfekt: buildPerfekt(HABEN_PRAESENS, 'geschnitten'),
+    praeteritum: strongPraeteritumEndings('schnitt'),
+    ...EMPTY_TENSES,
+  },
+  examplesByPronoun: {
+    praesens: {
+      ich: { de: 'Ich schneide das Gemüse klein.', en: 'I cut the vegetables into small pieces.' },
+      du: { de: 'Du schneidest dir die Haare selbst.', en: 'You cut your own hair.' },
+      er: { de: 'Er schneidet das Brot in Scheiben.', en: 'He cuts the bread into slices.' },
+      wir: { de: 'Wir schneiden den Kuchen in acht Stücke.', en: 'We cut the cake into eight pieces.' },
+      ihr: { de: 'Ihr schneidet die Pizza in Stücke.', en: 'You all cut the pizza into pieces.' },
+      sie: { de: 'Sie schneiden die Blumen im Garten.', en: 'They cut the flowers in the garden.' },
+    },
+    ...EMPTY_EXAMPLES,
+  },
+  tags: ['strong - regular praesens (linking-e stem), hand-typed partizip2/praeteritum'],
+};
+
+const STERBEN = {
+  infinitive: 'sterben', english: 'to die', level: 'A2', type: 'strong', auxiliary: 'sein',
+  separable: false, reflexive: false, partizip2: 'gestorben',
+  tables: {
+    praesens: { ...regularPraesens('sterben'), du: 'stirbst', er: 'stirbt' },
+    imperativ: { ...regularImperativ('sterben', regularPraesens('sterben')), du: 'Stirb!' },
+    perfekt: buildPerfekt(SEIN_PRAESENS, 'gestorben'),
+    praeteritum: strongPraeteritumEndings('starb'),
+    ...EMPTY_TENSES,
+  },
+  examplesByPronoun: {
+    // All idiomatic "sterben vor X" (to be dying of X) - common, light hyperbole, not literal.
+    praesens: {
+      ich: { de: 'Ich sterbe fast vor Hunger.', en: "I'm practically dying of hunger." },
+      du: { de: 'Du stirbst noch vor Lachen.', en: "You'll die laughing." },
+      er: { de: 'Er stirbt fast vor Langeweile.', en: "He's practically dying of boredom." },
+      wir: { de: 'Wir sterben vor Neugier.', en: "We're dying of curiosity." },
+      ihr: { de: 'Ihr sterbt wohl vor Durst.', en: 'You all must be dying of thirst.' },
+      sie: { de: 'Sie sterben fast vor Aufregung.', en: "They're practically dying of excitement." },
+    },
+    ...EMPTY_EXAMPLES,
+  },
+  tags: ['strong - irregular du/er stem (e->i), hand-typed partizip2/praeteritum'],
+};
+
+// ---------------------------------------------------------------- mixed (regular praesens, hand-typed praeteritum/partizip2)
+
+const DENKEN = {
+  infinitive: 'denken', english: 'to think', level: 'A2', type: 'mixed', auxiliary: 'haben',
+  separable: false, reflexive: false, partizip2: 'gedacht',
+  tables: {
+    praesens: regularPraesens('denken'),
+    imperativ: regularImperativ('denken', regularPraesens('denken')),
+    perfekt: buildPerfekt(HABEN_PRAESENS, 'gedacht'),
+    praeteritum: weakPraeteritumEndings('dachte'),
+    ...EMPTY_TENSES,
+  },
+  examplesByPronoun: {
+    praesens: {
+      ich: { de: 'Ich denke oft an dich.', en: 'I often think of you.' },
+      du: { de: 'Du denkst zu viel nach.', en: 'You overthink things.' },
+      er: { de: 'Er denkt über das Angebot nach.', en: "He's thinking over the offer." },
+      wir: { de: 'Wir denken an den Urlaub.', en: "We're thinking about the vacation." },
+      ihr: { de: 'Ihr denkt immer positiv.', en: 'You all always think positively.' },
+      sie: { de: 'Sie denken gemeinsam über die Lösung nach.', en: 'They think about the solution together.' },
+    },
+    ...EMPTY_EXAMPLES,
+  },
+  tags: ['mixed - regular praesens, hand-typed partizip2/praeteritum (ablaut)'],
+};
+
+const NENNEN = {
+  infinitive: 'nennen', english: 'to name, to call', level: 'A2', type: 'mixed', auxiliary: 'haben',
+  separable: false, reflexive: false, partizip2: 'genannt',
+  tables: {
+    praesens: regularPraesens('nennen'),
+    imperativ: regularImperativ('nennen', regularPraesens('nennen')),
+    perfekt: buildPerfekt(HABEN_PRAESENS, 'genannt'),
+    praeteritum: weakPraeteritumEndings('nannte'),
+    ...EMPTY_TENSES,
+  },
+  examplesByPronoun: {
+    praesens: {
+      ich: { de: 'Ich nenne meinen Sohn Max.', en: "I'm naming my son Max." },
+      du: { de: 'Du nennst mich immer "Schatz".', en: 'You always call me "honey".' },
+      er: { de: 'Er nennt das Problem beim Namen.', en: 'He addresses the problem directly.' },
+      wir: { de: 'Wir nennen unser Boot "Freiheit".', en: 'We\'re naming our boat "Freedom".' },
+      ihr: { de: 'Ihr nennt eure Katze Minka.', en: 'You all are naming your cat Minka.' },
+      sie: { de: 'Sie nennen ihn einfach "Chef".', en: 'They just call him "boss".' },
+    },
+    ...EMPTY_EXAMPLES,
+  },
+  tags: ['mixed - regular praesens, hand-typed partizip2/praeteritum (ablaut)'],
+};
+
+// ---------------------------------------------------------------- fully regular weak
+
+const PLANEN = {
+  infinitive: 'planen', english: 'to plan', level: 'A2', type: 'weak', auxiliary: 'haben',
+  separable: false, reflexive: false, partizip2: regularPartizip2('planen'),
+  tables: {
+    praesens: regularPraesens('planen'),
+    imperativ: regularImperativ('planen', regularPraesens('planen')),
+    perfekt: buildPerfekt(HABEN_PRAESENS, regularPartizip2('planen')),
+    praeteritum: regularPraeteritum('planen'),
+    ...EMPTY_TENSES,
+  },
+  examplesByPronoun: {
+    praesens: {
+      ich: { de: 'Ich plane die ganze Reise allein.', en: "I'm planning the whole trip alone." },
+      du: { de: 'Du planst immer sehr genau.', en: 'You always plan very precisely.' },
+      er: { de: 'Er plant eine große Überraschung.', en: "He's planning a big surprise." },
+      wir: { de: 'Wir planen unsere Hochzeit.', en: "We're planning our wedding." },
+      ihr: { de: 'Ihr plant zu viel auf einmal.', en: 'You all are planning too much at once.' },
+      sie: { de: 'Sie planen ein neues Projekt.', en: "They're planning a new project." },
+    },
+    ...EMPTY_EXAMPLES,
+  },
+  tags: ['regular - rule-generated'],
+};
+
+const PROBIEREN = {
+  infinitive: 'probieren', english: 'to try', level: 'A2', type: 'weak', auxiliary: 'haben',
+  separable: false, reflexive: false, partizip2: 'probiert', // -ieren verbs take NO ge- in partizip2 (a general rule this phase hand-types rather than adding a single-case rule-engine branch for)
+  tables: {
+    praesens: regularPraesens('probieren'),
+    imperativ: regularImperativ('probieren', regularPraesens('probieren')),
+    perfekt: buildPerfekt(HABEN_PRAESENS, 'probiert'),
+    praeteritum: regularPraeteritum('probieren'),
+    ...EMPTY_TENSES,
+  },
+  examplesByPronoun: {
+    praesens: {
+      ich: { de: 'Ich probiere die neue Suppe.', en: "I'm trying the new soup." },
+      du: { de: 'Du probierst den Kuchen.', en: "You're trying the cake." },
+      er: { de: 'Er probiert den neuen Kaffee.', en: "He's trying the new coffee." },
+      wir: { de: 'Wir probieren das Restaurant zum ersten Mal.', en: "We're trying the restaurant for the first time." },
+      ihr: { de: 'Ihr probiert alle Sorten.', en: "You all are trying every flavor." },
+      sie: { de: 'Sie probieren das Gericht vorsichtig.', en: 'They cautiously try the dish.' },
+    },
+    ...EMPTY_EXAMPLES,
+  },
+  tags: ['regular - rule-generated praesens/praeteritum, hand-typed partizip2 (-ieren verbs take no ge-)'],
+};
+
+// ---------------------------------------------------------------- separable
+
+const AUFRAEUMEN = {
+  infinitive: 'aufräumen', english: 'to tidy up', level: 'A2', type: 'weak', auxiliary: 'haben',
+  separable: true, prefix: 'auf', reflexive: false, partizip2: regularPartizip2('räumen', 'auf'),
+  tables: {
+    praesens: regularPraesens('räumen'),
+    imperativ: regularImperativ('räumen', regularPraesens('räumen')),
+    perfekt: buildPerfekt(HABEN_PRAESENS, regularPartizip2('räumen', 'auf')),
+    praeteritum: regularPraeteritum('räumen'),
+    ...EMPTY_TENSES,
+  },
+  examplesByPronoun: {
+    praesens: {
+      ich: { de: 'Ich räume mein Zimmer auf.', en: "I'm tidying up my room." },
+      du: { de: 'Du räumst nie deinen Schreibtisch auf.', en: 'You never tidy up your desk.' },
+      er: { de: 'Er räumt die Küche nach dem Essen auf.', en: 'He tidies the kitchen after eating.' },
+      wir: { de: 'Wir räumen zusammen die Wohnung auf.', en: "We're tidying the apartment together." },
+      ihr: { de: 'Ihr räumt eure Sachen bitte auf.', en: 'Please tidy up your things.' },
+      sie: { de: 'Sie räumen den Keller auf.', en: "They're tidying up the basement." },
+    },
+    ...EMPTY_EXAMPLES,
+  },
+  tags: ['separable, weak base "räumen" - fully regular praesens/partizip2/praeteritum'],
+};
+
+const ZUMACHEN = {
+  infinitive: 'zumachen', english: 'to close', level: 'A2', type: 'weak', auxiliary: 'haben',
+  separable: true, prefix: 'zu', reflexive: false, partizip2: regularPartizip2('machen', 'zu'),
+  tables: {
+    praesens: regularPraesens('machen'),
+    imperativ: regularImperativ('machen', regularPraesens('machen')),
+    perfekt: buildPerfekt(HABEN_PRAESENS, regularPartizip2('machen', 'zu')),
+    praeteritum: regularPraeteritum('machen'),
+    ...EMPTY_TENSES,
+  },
+  examplesByPronoun: {
+    praesens: {
+      ich: { de: 'Ich mache das Fenster zu.', en: "I'm closing the window." },
+      du: { de: 'Du machst die Tür nicht zu.', en: "You don't close the door." },
+      er: { de: 'Er macht den Laden um acht zu.', en: 'He closes the shop at eight.' },
+      wir: { de: 'Wir machen den Koffer zu.', en: "We're closing the suitcase." },
+      ihr: { de: 'Ihr macht die Augen zu.', en: 'You all close your eyes.' },
+      sie: { de: 'Sie machen das Geschäft früh zu.', en: 'They close the store early.' },
+    },
+    ...EMPTY_EXAMPLES,
+  },
+  tags: ['separable, weak base "machen" (shared with A1 machen) - fully regular'],
+};
+
+const ZUHOEREN = {
+  infinitive: 'zuhören', english: 'to listen', level: 'A2', type: 'weak', auxiliary: 'haben',
+  separable: true, prefix: 'zu', reflexive: false, partizip2: regularPartizip2('hören', 'zu'),
+  tables: {
+    praesens: regularPraesens('hören'),
+    imperativ: regularImperativ('hören', regularPraesens('hören')),
+    perfekt: buildPerfekt(HABEN_PRAESENS, regularPartizip2('hören', 'zu')),
+    praeteritum: regularPraeteritum('hören'),
+    ...EMPTY_TENSES,
+  },
+  examplesByPronoun: {
+    praesens: {
+      ich: { de: 'Ich höre dir aufmerksam zu.', en: "I'm listening to you attentively." },
+      du: { de: 'Du hörst nie richtig zu.', en: 'You never really listen.' },
+      er: { de: 'Er hört dem Lehrer genau zu.', en: 'He listens carefully to the teacher.' },
+      wir: { de: 'Wir hören der Musik zu.', en: "We're listening to the music." },
+      ihr: { de: 'Ihr hört gar nicht zu.', en: "You all aren't listening at all." },
+      sie: { de: 'Sie hören dem Vortrag zu.', en: 'They listen to the lecture.' },
+    },
+    ...EMPTY_EXAMPLES,
+  },
+  tags: ['separable, weak base "hören" - fully regular praesens/partizip2/praeteritum'],
+};
+
+const ZURUECKKOMMEN = {
+  infinitive: 'zurückkommen', english: 'to come back', level: 'A2', type: 'strong', auxiliary: 'sein',
+  separable: true, prefix: 'zurück', reflexive: false, partizip2: 'zurückgekommen',
+  tables: {
+    praesens: regularPraesens('kommen'), // base shared with A1's kommen - already regular praesens
+    imperativ: regularImperativ('kommen', regularPraesens('kommen')),
+    perfekt: buildPerfekt(SEIN_PRAESENS, 'zurückgekommen'),
+    praeteritum: strongPraeteritumEndings('kam'),
+    ...EMPTY_TENSES,
+  },
+  examplesByPronoun: {
+    praesens: {
+      ich: { de: 'Ich komme morgen zurück.', en: "I'm coming back tomorrow." },
+      du: { de: 'Du kommst viel zu spät zurück.', en: 'You come back way too late.' },
+      er: { de: 'Er kommt aus dem Urlaub zurück.', en: "He's coming back from vacation." },
+      wir: { de: 'Wir kommen nächste Woche zurück.', en: "We're coming back next week." },
+      ihr: { de: 'Ihr kommt hoffentlich bald zurück.', en: 'Hopefully you all come back soon.' },
+      sie: { de: 'Sie kommen gemeinsam zurück.', en: 'They come back together.' },
+    },
+    ...EMPTY_EXAMPLES,
+  },
+  tags: ['separable, strong base "kommen" (shared with A1 kommen) - hand-typed partizip2/praeteritum'],
+};
+
+const ZURUECKGEBEN = {
+  infinitive: 'zurückgeben', english: 'to give back', level: 'A2', type: 'strong', auxiliary: 'haben',
+  separable: true, prefix: 'zurück', reflexive: false, partizip2: 'zurückgegeben',
+  tables: {
+    praesens: { ...regularPraesens('geben'), du: 'gibst', er: 'gibt' }, // base shared with A1's geben
+    imperativ: { ...regularImperativ('geben', regularPraesens('geben')), du: 'Gib!' },
+    perfekt: buildPerfekt(HABEN_PRAESENS, 'zurückgegeben'),
+    praeteritum: strongPraeteritumEndings('gab'),
+    ...EMPTY_TENSES,
+  },
+  examplesByPronoun: {
+    praesens: {
+      ich: { de: 'Ich gebe dir das Buch morgen zurück.', en: "I'll give you the book back tomorrow." },
+      du: { de: 'Du gibst mir nie mein Geld zurück.', en: 'You never give me my money back.' },
+      er: { de: 'Er gibt der Verkäuferin das Kleid zurück.', en: 'He gives the dress back to the saleswoman.' },
+      wir: { de: 'Wir geben die Schlüssel am Ende zurück.', en: 'We give the keys back at the end.' },
+      ihr: { de: 'Ihr gebt das Auto pünktlich zurück.', en: 'You all return the car on time.' },
+      sie: { de: 'Sie geben die Bücher in die Bibliothek zurück.', en: 'They return the books to the library.' },
+    },
+    ...EMPTY_EXAMPLES,
+  },
+  tags: ['separable, strong base "geben" (shared with A1 geben) - hand-typed partizip2/praeteritum'],
+};
+
+const UMSTEIGEN = {
+  infinitive: 'umsteigen', english: 'to change (trains, transport)', level: 'A2', type: 'strong', auxiliary: 'sein',
+  separable: true, prefix: 'um', reflexive: false, partizip2: 'umgestiegen',
+  tables: {
+    praesens: regularPraesens('steigen'), // new base this phase - regular praesens (no stem vowel change)
+    imperativ: regularImperativ('steigen', regularPraesens('steigen')),
+    perfekt: buildPerfekt(SEIN_PRAESENS, 'umgestiegen'),
+    praeteritum: strongPraeteritumEndings('stieg'),
+    ...EMPTY_TENSES,
+  },
+  examplesByPronoun: {
+    praesens: {
+      ich: { de: 'Ich steige in Frankfurt um.', en: 'I change trains in Frankfurt.' },
+      du: { de: 'Du steigst an der falschen Station um.', en: 'You change trains at the wrong station.' },
+      er: { de: 'Er steigt schnell in den nächsten Zug um.', en: 'He quickly changes to the next train.' },
+      wir: { de: 'Wir steigen zweimal um.', en: 'We change trains twice.' },
+      ihr: { de: 'Ihr steigt hier in die U-Bahn um.', en: 'You all change to the subway here.' },
+      sie: { de: 'Sie steigen am Hauptbahnhof um.', en: 'They change trains at the main station.' },
+    },
+    ...EMPTY_EXAMPLES,
+  },
+  tags: ['separable, strong base "steigen" (new base this phase) - regular praesens, hand-typed partizip2/praeteritum'],
+};
+
+// ---------------------------------------------------------------- reflexive
+
+const FUEHLEN_SICH = {
+  infinitive: 'fühlen', english: 'to feel', level: 'A2', type: 'weak', auxiliary: 'haben',
+  separable: false, reflexive: true, partizip2: regularPartizip2('fühlen'),
+  tables: {
+    praesens: applyReflexive(regularPraesens('fühlen')),
+    imperativ: applyReflexive(regularImperativ('fühlen', regularPraesens('fühlen'))),
+    perfekt: buildPerfekt(HABEN_PRAESENS, regularPartizip2('fühlen'), true),
+    praeteritum: applyReflexive(regularPraeteritum('fühlen')),
+    ...EMPTY_TENSES,
+  },
+  examplesByPronoun: {
+    praesens: {
+      ich: { de: 'Ich fühle mich heute sehr gut.', en: 'I feel very good today.' },
+      du: { de: 'Du fühlst dich schon besser, oder?', en: "You're feeling better already, right?" },
+      er: { de: 'Er fühlt sich nicht wohl.', en: "He doesn't feel well." },
+      wir: { de: 'Wir fühlen uns hier zu Hause.', en: 'We feel at home here.' },
+      ihr: { de: 'Ihr fühlt euch sicher müde.', en: 'You all surely feel tired.' },
+      sie: { de: 'Sie fühlen sich in der neuen Stadt wohl.', en: 'They feel comfortable in the new city.' },
+    },
+    ...EMPTY_EXAMPLES,
+  },
+  tags: ['reflexive, regular - rule-generated then reflexive pronoun applied'],
+};
+
+const AERGERN_SICH = {
+  infinitive: 'ärgern', english: 'to get annoyed, to be angry', level: 'A2', type: 'weak', auxiliary: 'haben',
+  separable: false, reflexive: true, partizip2: regularPartizip2('ärgern'),
+  tables: {
+    praesens: applyReflexive(regularPraesens('ärgern')),
+    imperativ: applyReflexive(regularImperativ('ärgern', regularPraesens('ärgern'))),
+    perfekt: buildPerfekt(HABEN_PRAESENS, regularPartizip2('ärgern'), true),
+    praeteritum: applyReflexive(regularPraeteritum('ärgern')),
+    ...EMPTY_TENSES,
+  },
+  examplesByPronoun: {
+    praesens: {
+      ich: { de: 'Ich ärgere mich über den Verkehr.', en: 'I get annoyed about the traffic.' },
+      du: { de: 'Du ärgerst dich zu schnell.', en: 'You get annoyed too quickly.' },
+      er: { de: 'Er ärgert sich über den Fehler.', en: "He's annoyed about the mistake." },
+      wir: { de: 'Wir ärgern uns über das Wetter.', en: "We're annoyed about the weather." },
+      ihr: { de: 'Ihr ärgert euch wegen Kleinigkeiten.', en: 'You all get annoyed over small things.' },
+      sie: { de: 'Sie ärgern sich über den Nachbarn.', en: "They're annoyed about the neighbor." },
+    },
+    ...EMPTY_EXAMPLES,
+  },
+  tags: ['reflexive, regular -eln/-ern class - rule-generated then reflexive pronoun applied'],
+};
+
+const VERABREDEN_SICH = {
+  infinitive: 'verabreden', english: 'to arrange to meet', level: 'A2', type: 'weak', auxiliary: 'haben',
+  separable: false, reflexive: true, partizip2: 'verabredet', // inseparable ver-, no ge- (would otherwise be regular)
+  tables: {
+    praesens: applyReflexive(regularPraesens('verabreden')),
+    imperativ: applyReflexive(regularImperativ('verabreden', regularPraesens('verabreden'))),
+    perfekt: buildPerfekt(HABEN_PRAESENS, 'verabredet', true),
+    praeteritum: applyReflexive(regularPraeteritum('verabreden')),
+    ...EMPTY_TENSES,
+  },
+  examplesByPronoun: {
+    praesens: {
+      ich: { de: 'Ich verabrede mich mit meiner Freundin.', en: "I'm arranging to meet my friend." },
+      du: { de: 'Du verabredest dich schon wieder mit ihm?', en: "You're meeting up with him again?" },
+      er: { de: 'Er verabredet sich zum Kaffee.', en: 'He arranges to meet for coffee.' },
+      wir: { de: 'Wir verabreden uns für Samstag.', en: 'We arrange to meet on Saturday.' },
+      ihr: { de: 'Ihr verabredet euch zu oft ohne mich.', en: 'You all arrange to meet too often without me.' },
+      sie: { de: 'Sie verabreden sich im Park.', en: 'They arrange to meet in the park.' },
+    },
+    ...EMPTY_EXAMPLES,
+  },
+  tags: ['reflexive, regular praesens/praeteritum, inseparable ver- (no ge-) hand-typed partizip2'],
+};
+
 export const VERBS = [
   SEIN, HABEN, WERDEN,
   MACHEN, KAUFEN, WOHNEN, ARBEITEN,
@@ -894,4 +1506,9 @@ export const VERBS = [
   FAHREN, ESSEN, GEBEN, NEHMEN, SEHEN, LESEN, SPRECHEN, SCHLAFEN, LAUFEN, HELFEN, TREFFEN,
   KOENNEN, MUESSEN, WOLLEN, DUERFEN, SOLLEN, MOEGEN, WISSEN,
   AUFSTEHEN, ANRUFEN, EINKAUFEN,
+  TRAGEN, FALLEN, LASSEN, RUFEN, VERGESSEN, VERLIEREN, BESCHREIBEN, SINGEN, SCHNEIDEN, STERBEN,
+  DENKEN, NENNEN,
+  PLANEN, PROBIEREN,
+  AUFRAEUMEN, ZUMACHEN, ZUHOEREN, ZURUECKKOMMEN, ZURUECKGEBEN, UMSTEIGEN,
+  FUEHLEN_SICH, AERGERN_SICH, VERABREDEN_SICH,
 ];

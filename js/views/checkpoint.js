@@ -2,12 +2,19 @@ import * as store from '../store.js';
 import * as srs from '../srs.js';
 import { el, speakerButton, backLink } from '../ui/components.js';
 import { VERBS } from '../data/verbs-a1.js';
-import { pronounLabel, spokenPronoun, factKeysFor, TENSE_LABELS } from '../ui/verbUtils.js';
+import { pronounLabel, spokenPronoun, factKeysFor, availableTenses, TENSE_LABELS } from '../ui/verbUtils.js';
 import { navigate } from '../router.js';
 
 const QUESTION_COUNT = 8;
 const PASS_THRESHOLD = 0.8;
-const CHECKPOINT_TENSES = ['praesens', 'perfekt']; // the two tested tenses - imperativ is reference-only, not quizzed
+
+/** Every tense this level's verbs have data for, except Imperativ - Imperativ stays
+ *  reference-only (not quizzed) at every level, by design, not by accident. */
+function checkpointTenses(levelVerbs) {
+  const set = new Set();
+  for (const verb of levelVerbs) for (const t of availableTenses(verb)) if (t !== 'imperativ') set.add(t);
+  return [...set];
+}
 
 function shuffle(arr) {
   const a = [...arr];
@@ -23,7 +30,7 @@ function shuffle(arr) {
 export async function renderCheckpoint(container, { profileId, level, setBreadcrumb }) {
   setBreadcrumb(`${level} Checkpoint`);
   const levelVerbs = VERBS.filter((v) => v.level === level);
-  const pool = shuffle(factKeysFor(levelVerbs, CHECKPOINT_TENSES)).slice(0, QUESTION_COUNT);
+  const pool = shuffle(factKeysFor(levelVerbs, checkpointTenses(levelVerbs))).slice(0, QUESTION_COUNT);
 
   container.innerHTML = '';
   container.appendChild(backLink(`${level} Conjugation`, () => navigate(`/level/${level}`)));

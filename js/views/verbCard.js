@@ -2,7 +2,7 @@ import * as store from '../store.js';
 import * as srs from '../srs.js';
 import { el, speakerButton, progressRing, backLink } from '../ui/components.js';
 import { VERBS } from '../data/verbs-a1.js';
-import { TENSE_LABELS, factKeysFor, pronounsFor, pronounLabel, getForm } from '../ui/verbUtils.js';
+import { TENSE_LABELS, factKeysFor, pronounsFor, pronounLabel, getForm, availableTenses, displayInfinitive } from '../ui/verbUtils.js';
 import { navigate } from '../router.js';
 
 /** Präsens/Imperativ/Perfekt side by side instead of three stacked tables - the whole
@@ -47,10 +47,12 @@ export async function renderVerbCard(container, { profileId, infinitive, setBrea
   setBreadcrumb(`${verb.level} · ${verb.infinitive}`);
 
   const deck = store.getSRSDeck(profileId);
-  const keys = factKeysFor([verb], ['praesens', 'imperativ', 'perfekt']);
+  const tenses = availableTenses(verb);
+  const keys = factKeysFor([verb], tenses);
   const mastery = srs.masteryForKeys(deck, keys);
   const pinned = store.isPinnedVerb(profileId, verb.infinitive);
   const primaryExample = verb.examplesByPronoun.praesens?.ich;
+  const label = displayInfinitive(verb);
 
   const scene = el('div', { class: 'verb-card-scene' });
   const card = el('div', { class: 'card verb-card' });
@@ -60,8 +62,8 @@ export async function renderVerbCard(container, { profileId, infinitive, setBrea
   headRow.appendChild(
     el('div', {}, [
       el('div', { style: 'font-family:var(--font-mono);font-size:26px;font-weight:800;color:var(--ink);display:flex;align-items:center;gap:8px' }, [
-        verb.infinitive,
-        speakerButton(verb.infinitive),
+        label,
+        speakerButton(label),
       ]),
       el('div', { style: 'color:var(--ink-soft);margin-top:2px' }, verb.english),
     ])
@@ -89,7 +91,7 @@ export async function renderVerbCard(container, { profileId, infinitive, setBrea
   });
   scroll.appendChild(pinBtn);
 
-  scroll.appendChild(tenseColumns(verb, ['praesens', 'imperativ', 'perfekt']));
+  scroll.appendChild(tenseColumns(verb, tenses));
 
   card.appendChild(scroll);
   scene.appendChild(card);

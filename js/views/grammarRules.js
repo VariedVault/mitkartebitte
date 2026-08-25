@@ -82,12 +82,41 @@ const LESSONS = {
     ],
     exampleVerb: 'gehen',
   },
+  praeteritum: {
+    title: 'Präteritum (Narrative Past)',
+    level: 'A2',
+    intro: 'Präteritum is the past tense used in writing (books, news, formal texts) and, for a handful of very common verbs, in speech too - Germans say "ich war" and "ich hatte", not "ich bin gewesen" / "ich habe gehabt", even in casual conversation.',
+    rules: [
+      {
+        heading: 'Weak verbs: -te off the stem',
+        body: 'Add -te/-test/-te/-ten/-tet/-ten to the stem: machen → machte, kaufte, kauften... Same linking -e- as Präsens for stems ending in -d/-t or a hard cluster: arbeiten → arbeitete (not "arbeittete").',
+      },
+      {
+        heading: 'Strong verbs: a changed stem, then almost-bare endings',
+        body: 'Strong verbs use an irregular ("ablaut") stem you have to learn per verb - gehen → ging, sehen → sah, tragen → trug. From that stem, ich and er/sie/es take NO ending at all (a genuine exception - every other tense marks 1st/3rd singular differently): ich ging, er ging. du/wir/ihr/sie add -st/-en/-t/-en: du gingst, wir gingen.',
+      },
+      {
+        heading: 'Mixed verbs: a changed stem, but weak endings',
+        body: 'A small group (denken, bringen, wissen, kennen, nennen) changes its stem like a strong verb AND keeps the weak -te ending: denken → dachte, dachtest, dachte, dachten... These have to be memorized as their own group, same as modals in Präsens.',
+      },
+      {
+        heading: 'sein, haben, werden, and the modals',
+        body: 'All fully irregular, all worth memorizing outright: sein → war, haben → hatte, werden → wurde. Modals lose their Präsens umlaut in Präteritum: können → konnte (not "könnte" - that spelling is actually Konjunktiv II, a different, later tense), müssen → musste, dürfen → durfte.',
+      },
+      {
+        heading: 'Reflexive and separable verbs',
+        body: 'Reflexive verbs keep the same pronoun placement as Präsens: "ich fühlte mich", "wir ärgerten uns". Separable verbs split in a main clause exactly like Präsens, with the prefix at the end: "Ich räumte das Zimmer auf."',
+      },
+    ],
+    exampleVerb: 'gehen',
+  },
 };
 
 export async function renderGrammarRules(container, { tense, setBreadcrumb }) {
   const lesson = LESSONS[tense];
   container.innerHTML = '';
-  container.appendChild(backLink('A1 Conjugation', () => navigate('/level/A1')));
+  const backLevel = lesson?.level ?? 'A1';
+  container.appendChild(backLink(`${backLevel} Conjugation`, () => navigate(`/level/${backLevel}`)));
 
   if (!lesson) {
     setBreadcrumb('Grammar');

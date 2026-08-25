@@ -17,8 +17,19 @@ export const TENSE_LABELS = {
 
 const IMPERATIV_FORMS = ['du', 'ihr', 'Sie'];
 
+// Canonical display order - later phases append new keys to the end, never reorder,
+// so a verb's tense sections always appear in the same learn-progression order.
+export const TENSE_ORDER = ['praesens', 'imperativ', 'perfekt', 'praeteritum', 'konjunktiv2', 'futur1', 'plusquamperfekt', 'passiv'];
+
 export function pronounsFor(tense) {
   return tense === 'imperativ' ? IMPERATIV_FORMS : PRONOUNS;
+}
+
+/** "sich fühlen" for reflexive verbs, else the bare infinitive - reflexive verbs store
+ *  just the bare base infinitive (rule-engine functions operate on that), so "sich " is
+ *  prepended only where the infinitive is actually displayed to a learner. */
+export function displayInfinitive(verb) {
+  return verb.reflexive ? `sich ${verb.infinitive}` : verb.infinitive;
 }
 
 export const PRONOUN_LABELS = { ich: 'ich', du: 'du', er: 'er/sie/es', wir: 'wir', ihr: 'ihr', sie: 'sie/Sie' };
@@ -41,9 +52,9 @@ export function getForm(verb, tense, pronoun) {
   return verb.tables[tense]?.[pronoun] ?? null;
 }
 
-/** Tenses this verb actually has data for in the current phase. */
+/** Tenses this verb actually has data for in the current phase, in canonical order. */
 export function availableTenses(verb) {
-  return Object.keys(verb.tables).filter((t) => verb.tables[t] != null);
+  return TENSE_ORDER.filter((t) => verb.tables[t] != null);
 }
 
 export function factKeyFor(verb, tense, pronoun) {
@@ -51,7 +62,7 @@ export function factKeyFor(verb, tense, pronoun) {
 }
 
 export function factLabel(verb, tense, pronoun) {
-  return `${pronoun ? pronounLabel(tense, pronoun) + ' · ' : ''}${verb.infinitive} (${TENSE_LABELS[tense]})`;
+  return `${pronoun ? pronounLabel(tense, pronoun) + ' · ' : ''}${displayInfinitive(verb)} (${TENSE_LABELS[tense]})`;
 }
 
 /** Every fact key a set of verbs can produce across the given tenses - used for mastery %,

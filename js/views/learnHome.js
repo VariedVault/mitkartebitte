@@ -2,21 +2,21 @@ import * as store from '../store.js';
 import * as srs from '../srs.js';
 import { el } from '../ui/components.js';
 import { VERBS } from '../data/verbs-a1.js';
-import { factKeysFor } from '../ui/verbUtils.js';
+import { practicePoolKeys, unlockedLevels, LEVELS } from '../data/practicePool.js';
 import { navigate } from '../router.js';
 
-const LEVELS = ['A1', 'A2', 'B1'];
-const A1_VERBS = VERBS.filter((v) => v.level === 'A1');
-const A1_TENSES = ['praesens', 'imperativ', 'perfekt'];
-const A1_KEYS = factKeysFor(A1_VERBS, A1_TENSES);
-
-/** The main return signal: how many already-seen A1 facts are due for review right now.
- *  Earned (only counts real review debt, not new material), calm when it's zero, never a
- *  streak or a guilt trip - see srs.js's dueCount for the "why never-seen isn't due" note. */
+/** The main return signal: how many already-seen facts (across whatever's currently
+ *  unlocked for Practice - same pool practice.js draws from, so the number here always
+ *  matches what Practice actually shows) are due for review right now. Earned (only
+ *  counts real review debt, not new material), calm when it's zero, never a streak or a
+ *  guilt trip - see srs.js's dueCount for the "why never-seen isn't due" note. */
 function returnHookCard(profileId) {
   const deck = store.getSRSDeck(profileId);
-  const due = srs.dueCount(deck, A1_KEYS);
-  const mastery = srs.masteryForKeys(deck, A1_KEYS);
+  const keys = practicePoolKeys(profileId);
+  const due = srs.dueCount(deck, keys);
+  const mastery = srs.masteryForKeys(deck, keys);
+  const levels = unlockedLevels(profileId);
+  const levelLabel = levels.length > 0 ? levels.join('+') : 'starter set';
 
   const card = el('div', { class: 'card', style: 'text-align:center' });
   if (due > 0) {
@@ -29,7 +29,7 @@ function returnHookCard(profileId) {
     card.appendChild(el('div', { style: 'font-size:30px' }, '✓'));
     card.appendChild(el('p', { style: 'margin:6px 0 0;color:var(--ink-soft)' }, 'Nothing due today. Come back tomorrow, or practice anyway.'));
   }
-  card.appendChild(el('p', { style: 'margin-top:14px;font-size:12.5px;color:var(--ink-soft)' }, `A1 mastery: ${mastery}%`));
+  card.appendChild(el('p', { style: 'margin-top:14px;font-size:12.5px;color:var(--ink-soft)' }, `${levelLabel} mastery: ${mastery}%`));
   return card;
 }
 
@@ -59,7 +59,7 @@ function foundationsCard() {
 function levelCard(profileId, level) {
   const levelVerbs = VERBS.filter((v) => v.level === level);
   const passed = store.isCheckpointPassed(profileId, level);
-  const active = level === 'A1'; // only A1 has data this phase
+  const active = levelVerbs.length > 0; // this level has verb data authored, whichever level it is
 
   const card = el('button', { class: `card track-card level-card${!active ? ' track-card--locked' : ''}` });
   card.appendChild(
@@ -73,7 +73,7 @@ function levelCard(profileId, level) {
       'p',
       { style: 'color:var(--ink-soft);margin:0' },
       active
-        ? `${levelVerbs.length} verbs · Präsens, Imperativ, Perfekt`
+        ? `${levelVerbs.length} verbs`
         : 'Verb data and tenses for this level arrive in a later phase.'
     )
   );

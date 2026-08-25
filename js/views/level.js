@@ -2,14 +2,39 @@ import * as store from '../store.js';
 import * as srs from '../srs.js';
 import { el, progressRing, backLink } from '../ui/components.js';
 import { VERBS } from '../data/verbs-a1.js';
-import { factKeysFor } from '../ui/verbUtils.js';
+import { factKeysFor, TENSE_LABELS, TENSE_ORDER, availableTenses, displayInfinitive } from '../ui/verbUtils.js';
 import { navigate } from '../router.js';
 
-const GRAMMAR_TENSES = [
-  { tense: 'praesens', label: 'Präsens', blurb: 'The present tense - talking about now, habits, and near-future plans.' },
-  { tense: 'imperativ', label: 'Imperativ', blurb: 'Commands and requests - "Come here!", "Please wait!".' },
-  { tense: 'perfekt', label: 'Perfekt', blurb: 'The everyday past tense used in speech - "I have done...".' },
-];
+const GRAMMAR_BLURBS = {
+  praesens: 'The present tense - talking about now, habits, and near-future plans.',
+  imperativ: 'Commands and requests - "Come here!", "Please wait!".',
+  perfekt: 'The everyday past tense used in speech - "I have done...".',
+  praeteritum: 'The written/narrative past tense - and how sein/haben/werden and modals actually prefer it even in speech.',
+};
+
+const LEVELS = ['A1', 'A2', 'B1'];
+
+/** Union of every tense any verb in this level actually has data for, in canonical
+ *  order - drives the summary caption and (in checkpoint.js) which tenses get quizzed,
+ *  so a level's UI never hardcodes which tenses it covers. */
+function levelTenses(levelVerbs) {
+  const set = new Set();
+  for (const verb of levelVerbs) for (const t of availableTenses(verb)) set.add(t);
+  return TENSE_ORDER.filter((t) => set.has(t));
+}
+
+/** Which level's grammar page a tense's reference lesson belongs on - a curriculum
+ *  decision, not something derivable from which verbs happen to carry data for a tense.
+ *  Präteritum is a deliberate exception: the spiral revisit backfills it onto the A1
+ *  verbs too (so A1 vocabulary can drill A2 grammar), which would make a purely
+ *  data-driven "first level with this tense" check wrongly attribute the lesson to A1. */
+const TENSE_INTRODUCED_AT = { praesens: 'A1', imperativ: 'A1', perfekt: 'A1', praeteritum: 'A2' };
+
+/** Tenses genuinely NEW at this level - A2's page only needs a Präteritum grammar-rule
+ *  link, not Präsens/Imperativ/Perfekt again, since A1's page already covers those. */
+function newTensesForLevel(level) {
+  return levelTenses(VERBS.filter((v) => v.level === level)).filter((t) => TENSE_INTRODUCED_AT[t] === level);
+}
 
 export async function renderLevel(container, { profileId, level, setBreadcrumb }) {
   setBreadcrumb(`Learn · ${level} Conjugation`);
@@ -25,7 +50,8 @@ export async function renderLevel(container, { profileId, level, setBreadcrumb }
 
   container.appendChild(el('h1', {}, `${level} Conjugation`));
   const deck = store.getSRSDeck(profileId);
-  const keys = factKeysFor(levelVerbs, ['praesens', 'imperativ', 'perfekt']);
+  const tenses = levelTenses(levelVerbs);
+  const keys = factKeysFor(levelVerbs, tenses);
   const mastery = srs.masteryForKeys(deck, keys);
   const passed = store.isCheckpointPassed(profileId, level);
 
@@ -37,7 +63,7 @@ export async function renderLevel(container, { profileId, level, setBreadcrumb }
   const summary = el('div', { class: 'card', style: 'display:flex;align-items:center;gap:16px' });
   if (!passed) summary.appendChild(progressRing(mastery, { size: 52, stroke: 5 }));
   const summaryText = el('div', { style: 'flex:1' });
-  summaryText.appendChild(el('p', { style: 'margin:0;font-weight:700;color:var(--ink)' }, `${levelVerbs.length} verbs · Präsens, Imperativ, Perfekt`));
+  summaryText.appendChild(el('p', { style: 'margin:0;font-weight:700;color:var(--ink)' }, `${levelVerbs.length} verbs · ${tenses.map((t) => TENSE_LABELS[t]).join(', ')}`));
   summaryText.appendChild(
     el(
       'p',
@@ -63,26 +89,29 @@ export async function renderLevel(container, { profileId, level, setBreadcrumb }
   checkpointBtn.addEventListener('click', () => navigate(`/checkpoint/${level}`));
   container.appendChild(checkpointBtn);
 
-  container.appendChild(el('h2', { style: 'margin:24px 0 10px;font-size:15px;letter-spacing:0.04em;text-transform:uppercase;color:var(--cream-dim)' }, 'Grammar rules'));
-  container.appendChild(el('p', { style: 'color:var(--cream-dim);font-size:13px;margin:0 0 12px' }, 'Short reference lessons - read anytime, nothing to complete.'));
-  const grammarGrid = el('div', { style: 'display:flex;flex-direction:column;gap:10px' });
-  for (const g of GRAMMAR_TENSES) {
-    const gcard = el('button', { class: 'card', style: 'text-align:left' }, [
-      el('div', { style: 'font-weight:700;color:var(--ink)' }, g.label),
-      el('div', { style: 'color:var(--ink-soft);font-size:13px;margin-top:2px' }, g.blurb),
-    ]);
-    gcard.addEventListener('click', () => navigate(`/grammar/${g.tense}`));
-    grammarGrid.appendChild(gcard);
+  const newTenses = newTensesForLevel(level);
+  if (newTenses.length > 0) {
+    container.appendChild(el('h2', { style: 'margin:24px 0 10px;font-size:15px;letter-spacing:0.04em;text-transform:uppercase;color:var(--cream-dim)' }, 'Grammar rules'));
+    container.appendChild(el('p', { style: 'color:var(--cream-dim);font-size:13px;margin:0 0 12px' }, 'Short reference lessons - read anytime, nothing to complete.'));
+    const grammarGrid = el('div', { style: 'display:flex;flex-direction:column;gap:10px' });
+    for (const t of newTenses) {
+      const gcard = el('button', { class: 'card', style: 'text-align:left' }, [
+        el('div', { style: 'font-weight:700;color:var(--ink)' }, TENSE_LABELS[t]),
+        el('div', { style: 'color:var(--ink-soft);font-size:13px;margin-top:2px' }, GRAMMAR_BLURBS[t]),
+      ]);
+      gcard.addEventListener('click', () => navigate(`/grammar/${t}`));
+      grammarGrid.appendChild(gcard);
+    }
+    container.appendChild(grammarGrid);
   }
-  container.appendChild(grammarGrid);
 
   container.appendChild(el('h2', { style: 'margin:24px 0 10px;font-size:15px;letter-spacing:0.04em;text-transform:uppercase;color:var(--cream-dim)' }, `Verbs (${levelVerbs.length})`));
   const verbGrid = el('div', { style: 'display:grid;grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));gap:10px' });
   for (const verb of levelVerbs) {
-    const verbKeys = factKeysFor([verb], ['praesens', 'imperativ', 'perfekt']);
+    const verbKeys = factKeysFor([verb], availableTenses(verb));
     const verbMastery = srs.masteryForKeys(deck, verbKeys);
     const vcard = el('button', { class: 'card', style: 'text-align:left;position:relative;padding:12px 14px' }, [
-      el('div', { style: 'font-family:var(--font-mono);font-weight:700;color:var(--ink)' }, verb.infinitive),
+      el('div', { style: 'font-family:var(--font-mono);font-weight:700;color:var(--ink)' }, displayInfinitive(verb)),
       el('div', { style: 'color:var(--ink-soft);font-size:12.5px;margin-top:2px' }, verb.english),
       verbMastery > 0 ? el('div', { style: 'margin-top:6px;font-size:11px;font-weight:700;color:var(--gold)' }, `${verbMastery}%`) : null,
     ]);
