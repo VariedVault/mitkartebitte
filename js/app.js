@@ -10,6 +10,9 @@ import { renderCheckpoint } from './views/checkpoint.js';
 import { renderPractice } from './views/practice.js';
 import { renderDataPanel } from './views/dataPanel.js';
 import { renderImpressum, renderDatenschutz, renderContact } from './views/legal.js';
+import { renderFoundationsHome } from './views/foundationsHome.js';
+import { renderFoundationsGroup } from './views/foundationsGroup.js';
+import { renderFoundationsCard } from './views/foundationsCard.js';
 
 store.migrateIfNeeded(); // must run before anything else reads profile-scoped storage
 initTTS();
@@ -109,6 +112,27 @@ route('/verb/:infinitive', async ({ infinitive }) => {
   setActiveNav('learn');
   refreshProfilePill();
   await renderVerbCard(els.view, { profileId, infinitive, setBreadcrumb });
+});
+
+route('/foundations', async () => {
+  const profileId = requireProfile();
+  setActiveNav('learn');
+  refreshProfilePill();
+  await renderFoundationsHome(els.view, { profileId, setBreadcrumb });
+});
+
+route('/foundations/:group', async ({ group }) => {
+  requireProfile();
+  setActiveNav('learn');
+  refreshProfilePill();
+  await renderFoundationsGroup(els.view, { group, setBreadcrumb });
+});
+
+route('/foundations/:group/:index', async ({ group, index }) => {
+  requireProfile();
+  setActiveNav('learn');
+  refreshProfilePill();
+  await renderFoundationsCard(els.view, { group, index, setBreadcrumb });
 });
 
 route('/grammar/:tense', async ({ tense }) => {

@@ -49,10 +49,17 @@ function restructureNotice(profileId) {
   return wrap;
 }
 
-function foundationsCard() {
-  const card = el('div', { class: 'card track-card track-card--locked' });
-  card.appendChild(el('div', { class: 'track-card-title' }, ['🔤 Foundations', el('span', { class: 'track-card-tag' }, 'Coming soon')]));
-  card.appendChild(el('p', { style: 'color:var(--ink-soft);margin:0' }, 'The alphabet, pronunciation, and numbers - a future phase.'));
+function foundationsCard(profileId) {
+  const studied = !!store.getSettings(profileId).foundationsStudied;
+  const card = el('button', { class: 'card track-card', style: 'text-align:left' });
+  card.appendChild(
+    el('div', { class: 'track-card-title' }, [
+      '🔤 Foundations',
+      studied ? el('span', { class: 'track-card-tag track-card-tag--done' }, '✓ Studied') : null,
+    ])
+  );
+  card.appendChild(el('p', { style: 'color:var(--ink-soft);margin:0' }, 'The alphabet, umlauts, and the sound rules that trip up beginners - reference only.'));
+  card.addEventListener('click', () => navigate('/foundations'));
   return card;
 }
 
@@ -97,7 +104,7 @@ export async function renderLearnHome(container, { profileId }) {
   container.appendChild(returnHookCard(profileId));
 
   container.appendChild(el('h2', { style: 'margin:24px 0 12px;font-size:15px;letter-spacing:0.04em;text-transform:uppercase;color:var(--cream-dim)' }, 'Foundations'));
-  container.appendChild(foundationsCard());
+  container.appendChild(foundationsCard(profileId));
 
   container.appendChild(el('h2', { style: 'margin:24px 0 12px;font-size:15px;letter-spacing:0.04em;text-transform:uppercase;color:var(--cream-dim)' }, 'Conjugation'));
   const trackGrid = el('div', { style: 'display:flex;flex-direction:column;gap:12px' });
