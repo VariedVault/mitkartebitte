@@ -325,8 +325,21 @@ button.card { border: none; width: 100%; text-align: left; font-size: inherit; d
 }
 .track-card-tag--done { background: var(--gold); color: var(--felt-900); }
 .track-card--locked { opacity: 0.6; cursor: default; }
-.level-card { cursor: pointer; }
+
+/* A1/A2/B1 side by side instead of stacked - the whole point is that Learn home's entire
+   above-the-fold content (return-hook, Foundations, all three levels) fits in one screen
+   with no scroll, on a phone-width viewport included. Compact/centered instead of the
+   left-aligned title+subtitle .track-card layout, which is too wide per-row to survive
+   being squeezed to a third of the screen. */
+.level-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.level-card {
+  cursor: pointer; text-align: center !important; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 3px; padding: 16px 6px;
+}
 .level-card:disabled { cursor: default; }
+.level-card-name { font-family: var(--font-display); font-weight: 800; font-size: 21px; color: var(--ink); }
+.level-card-count { font-size: 11px; color: var(--ink-soft); line-height: 1.3; }
+.level-card-badge { font-size: 12px; }
 
 /* ---------------------------------------------------------------- legend */
 .legend-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0; }

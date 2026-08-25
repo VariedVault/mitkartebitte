@@ -62,27 +62,18 @@ function foundationsCard(profileId) {
   return card;
 }
 
+/** Compact, centered, side-by-side-with-its-siblings card - deliberately NOT the same
+ *  left-aligned title+subtitle layout as foundationsCard/other .track-card uses, since this
+ *  one has to survive being squeezed to a third of the screen width (see .level-grid). */
 function levelCard(profileId, level) {
   const levelVerbs = VERBS.filter((v) => v.level === level);
   const passed = store.isCheckpointPassed(profileId, level);
   const active = levelVerbs.length > 0; // this level has verb data authored, whichever level it is
 
-  const card = el('button', { class: `card track-card level-card${!active ? ' track-card--locked' : ''}` });
-  card.appendChild(
-    el('div', { class: 'track-card-title' }, [
-      `${level} Conjugation`,
-      passed ? el('span', { class: 'track-card-tag track-card-tag--done' }, '✓ Practice unlocked') : !active ? el('span', { class: 'track-card-tag' }, '🔒 Locked') : null,
-    ])
-  );
-  card.appendChild(
-    el(
-      'p',
-      { style: 'color:var(--ink-soft);margin:0' },
-      active
-        ? `${levelVerbs.length} verbs`
-        : 'Verb data and tenses for this level arrive in a later phase.'
-    )
-  );
+  const card = el('button', { class: `card level-card${!active ? ' track-card--locked' : ''}` });
+  card.appendChild(el('div', { class: 'level-card-badge' }, passed ? '✓' : active ? ' ' : '🔒'));
+  card.appendChild(el('div', { class: 'level-card-name' }, level));
+  card.appendChild(el('div', { class: 'level-card-count' }, active ? `${levelVerbs.length} verbs` : 'Later phase'));
   if (active) {
     card.addEventListener('click', () => navigate(`/level/${level}`));
   } else {
@@ -102,11 +93,11 @@ export async function renderLearnHome(container, { profileId }) {
 
   container.appendChild(returnHookCard(profileId));
 
-  container.appendChild(el('h2', { style: 'margin:24px 0 12px;font-size:15px;letter-spacing:0.04em;text-transform:uppercase;color:var(--cream-dim)' }, 'Foundations'));
+  container.appendChild(el('h2', { style: 'margin:16px 0 10px;font-size:15px;letter-spacing:0.04em;text-transform:uppercase;color:var(--cream-dim)' }, 'Foundations'));
   container.appendChild(foundationsCard(profileId));
 
-  container.appendChild(el('h2', { style: 'margin:24px 0 12px;font-size:15px;letter-spacing:0.04em;text-transform:uppercase;color:var(--cream-dim)' }, 'Conjugation'));
-  const trackGrid = el('div', { style: 'display:flex;flex-direction:column;gap:12px' });
+  container.appendChild(el('h2', { style: 'margin:16px 0 10px;font-size:15px;letter-spacing:0.04em;text-transform:uppercase;color:var(--cream-dim)' }, 'Conjugation'));
+  const trackGrid = el('div', { class: 'level-grid' });
   for (const level of LEVELS) trackGrid.appendChild(levelCard(profileId, level));
   container.appendChild(trackGrid);
 }
