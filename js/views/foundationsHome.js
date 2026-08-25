@@ -1,15 +1,38 @@
 import * as store from '../store.js';
 import { el, backLink } from '../ui/components.js';
-import { LETTERS, UMLAUTS, TRICKY_SOUNDS } from '../data/foundations.js';
+import { LETTERS, UMLAUTS, TRICKY_SOUNDS, NUMBERS, CALENDAR_TIME } from '../data/foundations.js';
 import { navigate } from '../router.js';
 
 // Foundations is reference material, not drilled - no SRS facts, no checkpoint. The only
 // per-profile state is a single "studied" boolean (store.setSetting key 'foundationsStudied'),
 // tracked exactly like any other setting, not a new storage concept.
+//
+// subGroups (optional) splits a section's tile grid into labeled sub-sections instead of one
+// flat grid - see foundationsGroup.js. Each entry's `type` decides which sub-section it
+// falls into; order here is the order they render in.
 export const GROUPS = [
   { id: 'letters', label: 'Letters A–Z', emoji: '🔤', items: LETTERS, blurb: 'The alphabet - how each letter is named and what it sounds like in a word.' },
   { id: 'umlauts', label: 'Umlauts & ß', emoji: '✏️', items: UMLAUTS, blurb: 'ä, ö, ü, and ß - sounds English simply doesn\'t have.' },
   { id: 'tricky', label: 'Tricky Sounds', emoji: '👂', items: TRICKY_SOUNDS, blurb: 'The combinations and quirks that trip up beginners - ch, sch, ei vs ie, and more.' },
+  {
+    id: 'numbers', label: 'Numbers', emoji: '🔢', items: NUMBERS,
+    blurb: '0–100 - how to say them, and the backwards-order rule German uses for combining them.',
+    subGroups: [
+      { label: '0–20', type: 'number-basic' },
+      { label: 'Decades (20–100)', type: 'number-decade' },
+      { label: 'Combining the pattern', type: 'number-compound' },
+    ],
+  },
+  {
+    id: 'calendar', label: 'Calendar & Time', emoji: '📅', items: CALENDAR_TIME,
+    blurb: 'Weekdays, months, seasons, and today/tomorrow/yesterday.',
+    subGroups: [
+      { label: 'Weekdays', type: 'weekday' },
+      { label: 'Months', type: 'month' },
+      { label: 'Seasons', type: 'season' },
+      { label: 'Today, Tomorrow, Yesterday', type: 'time-word' },
+    ],
+  },
 ];
 
 function groupCard(profileId, group) {

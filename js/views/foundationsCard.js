@@ -2,7 +2,11 @@ import { el, speakerButton, backLink } from '../ui/components.js';
 import { GROUPS } from './foundationsHome.js';
 import { navigate } from '../router.js';
 
-const TYPE_LABELS = { letter: 'Letter', umlaut: 'Umlaut', digraph: 'Sound combination', special: 'Special rule' };
+const TYPE_LABELS = {
+  letter: 'Letter', umlaut: 'Umlaut', digraph: 'Sound combination', special: 'Special rule',
+  'number-basic': 'Number', 'number-decade': 'Number (decade)', 'number-compound': 'Number (combined)',
+  weekday: 'Weekday', month: 'Month', season: 'Season', 'time-word': 'Time word',
+};
 
 /** The actual German name of each letter, spelled the way DIN 5009 (the German spelling-
  *  alphabet standard) writes it - confirmed against Wikipedia's Deutsches Alphabet article.
