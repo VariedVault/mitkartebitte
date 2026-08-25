@@ -116,7 +116,7 @@ a { color: var(--gold-bright); }
 .view {
   flex: 1;
   padding: calc(var(--header-h) + 16px) 16px 24px;
-  max-width: 880px; width: 100%; margin: 0 auto;
+  max-width: 1100px; width: 100%; margin: 0 auto;
 }
 
 /* Normal document flow, NOT fixed — this is a real end-of-page footer, part of the
@@ -128,7 +128,7 @@ a { color: var(--gold-bright); }
   background: var(--felt-800); border-top: 1px solid rgba(232, 184, 75, 0.15);
   padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 18px);
 }
-.footer-inner { max-width: 880px; margin: 0 auto; padding: 28px 16px 0; }
+.footer-inner { max-width: 1100px; margin: 0 auto; padding: 28px 16px 0; }
 .footer-grid {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 22px;
   padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -248,28 +248,52 @@ a { color: var(--gold-bright); }
 .flip-card-front { background: var(--cream); color: var(--ink); }
 .flip-card-back { background: var(--felt-700); color: var(--cream); transform: rotateY(180deg); border: 2px solid var(--gold); }
 
-/* ---------------------------------------------------------------- verb card (fixed size) */
-.verb-card-scene { max-width: 640px; margin: 0 auto; }
-.verb-card { height: 540px; overflow-y: auto; padding: 0; }
-.verb-card-scroll { min-height: 100%; display: flex; flex-direction: column; justify-content: center; padding: 24px; box-sizing: border-box; }
+/* ---------------------------------------------------------------- verb card */
+/* Natural height, normal page scroll - no inner scrollbar hiding content in a cropped
+   box. Wide on desktop (.view's own 1100px cap is the real limit) so multiple tense
+   columns sit side by side instead of wrapping to 2 lines per value. */
+.verb-card-scene { max-width: 960px; margin: 0 auto; }
+.verb-card { padding: 0; }
+.verb-card-scroll { padding: 24px; box-sizing: border-box; }
 
-/* Präsens/Imperativ/Perfekt side by side instead of stacked - wraps to fewer columns
-   on narrow screens instead of clipping (the card's internal scroll is the fallback). */
-.tense-columns { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 20px; }
-.tense-col { flex: 1 1 150px; min-width: 150px; }
-.tense-col-title { font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--ink); margin-bottom: 8px; }
+/* Every populated tense as its own column, side by side - wraps to fewer columns only
+   on narrow screens (flex-wrap), never clips. white-space:nowrap on the form itself
+   keeps two-word values ("ist gewesen", "würde gehen") on one line - the column widens
+   to fit instead of breaking the phrase across two lines. */
+.tense-columns { display: flex; flex-wrap: wrap; gap: 16px 28px; margin-top: 20px; }
+/* flex-shrink:0 is load-bearing: with shrink allowed, a row that doesn't quite fit would
+   squeeze every column below its content's natural (nowrap) width instead of wrapping the
+   overflow column to the next line - the squeeze is what let "wird entschieden" spill into
+   the next column instead of just moving down a row. */
+.tense-col { flex: 1 0 210px; min-width: 210px; }
+.tense-col-title { font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--ink); margin-bottom: 8px; padding-left: 10px; border-left: 4px solid var(--tense-color, var(--gold)); }
 .tense-col-row {
   display: flex; align-items: center; gap: 6px; padding: 6px 0; border-bottom: 1px solid var(--cream-line);
 }
 .tense-col-row:last-child { border-bottom: none; }
 .tense-col-pron { flex-shrink: 0; font-size: 10.5px; padding: 2px 8px; }
-.tense-col-form { font-family: var(--font-mono); font-size: 14px; font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 4px; }
+.tense-col-form { font-family: var(--font-mono); font-size: 14px; font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 4px; white-space: nowrap; }
 
 /* ---------------------------------------------------------------- Foundations (fixed size, same pattern as .verb-card) */
 .foundation-card-scene { max-width: 640px; margin: 0 auto; }
 .foundation-card { height: 420px; overflow-y: auto; padding: 0; }
 .foundation-card-scroll { min-height: 100%; display: flex; flex-direction: column; justify-content: center; padding: 24px; box-sizing: border-box; }
 .foundation-glyph { font-family: var(--font-display); font-weight: 800; font-size: 40px; color: var(--ink); line-height: 1.1; }
+
+/* ---------------------------------------------------------------- verb grid tiles (uniform size) */
+/* Fixed height regardless of English-gloss length - a 2-word gloss ("to be called") and a
+   longer one ("to know, to be familiar with") used to make their row taller than every
+   other row. line-clamp trims a long gloss to 2 lines with an ellipsis instead. */
+.verb-tile { height: 100px; overflow: hidden; }
+/* .card + .card's 14px stacked-list spacing (meant for single-column card lists like
+   Learn home's track cards) was leaking into this grid: every tile except the first in DOM
+   order picked it up, pushing it 14px lower than its own row-mates - the grid's own 10px
+   `gap` already spaces tiles correctly in both directions, so cancel it here. Matches
+   `.card + .card`'s specificity (two classes) and is declared later, so it wins. */
+.card.verb-tile { margin-top: 0; }
+.verb-tile-gloss {
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
 
 /* ---------------------------------------------------------------- progress ring */
 .ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }

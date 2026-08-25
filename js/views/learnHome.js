@@ -27,7 +27,6 @@ function returnHookCard(profileId) {
     card.appendChild(btn);
   } else {
     card.appendChild(el('div', { style: 'font-size:30px' }, '✓'));
-    card.appendChild(el('p', { style: 'margin:6px 0 0;color:var(--ink-soft)' }, 'Nothing due today. Come back tomorrow, or practice anyway.'));
   }
   card.appendChild(el('p', { style: 'margin-top:14px;font-size:12.5px;color:var(--ink-soft)' }, `${levelLabel} mastery: ${mastery}%`));
   return card;

@@ -2,17 +2,23 @@ import * as store from '../store.js';
 import * as srs from '../srs.js';
 import { el, speakerButton, backLink } from '../ui/components.js';
 import { VERBS } from '../data/verbs-a1.js';
-import { pronounLabel, spokenPronoun, factKeysFor, availableTenses, TENSE_LABELS } from '../ui/verbUtils.js';
+import { pronounLabel, spokenPronoun, factKeysFor, studyTenses, TENSE_LABELS } from '../ui/verbUtils.js';
 import { navigate } from '../router.js';
 
 const QUESTION_COUNT = 8;
 const PASS_THRESHOLD = 0.8;
 
 /** Every tense this level's verbs have data for, except Imperativ - Imperativ stays
- *  reference-only (not quizzed) at every level, by design, not by accident. */
+ *  reference-only (not quizzed) at every level, by design, not by accident. Uses
+ *  studyTenses(), not availableTenses() - a verb's data carries every tense (the spiral
+ *  revisit backfills Präteritum/Konjunktiv II/Futur I/Plusquamperfekt/Passiv onto earlier-
+ *  level verbs so they can resurface in the cumulative Practice pool later), but the A1
+ *  checkpoint must only test A1-taught material. Quizzing a first-time learner on
+ *  Konjunktiv II during the A1 checkpoint - content they haven't been taught yet - would be
+ *  a genuine bug, not just a display inconsistency. */
 function checkpointTenses(levelVerbs) {
   const set = new Set();
-  for (const verb of levelVerbs) for (const t of availableTenses(verb)) if (t !== 'imperativ') set.add(t);
+  for (const verb of levelVerbs) for (const t of studyTenses(verb)) if (t !== 'imperativ') set.add(t);
   return [...set];
 }
 

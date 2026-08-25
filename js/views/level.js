@@ -2,7 +2,7 @@ import * as store from '../store.js';
 import * as srs from '../srs.js';
 import { el, progressRing, backLink } from '../ui/components.js';
 import { VERBS } from '../data/verbs-a1.js';
-import { factKeysFor, TENSE_ORDER, availableTenses, displayInfinitive } from '../ui/verbUtils.js';
+import { factKeysFor, TENSE_ORDER, availableTenses, displayInfinitive, tenseColorFor, TENSE_LEVEL, levelAtLeast } from '../ui/verbUtils.js';
 import { navigate } from '../router.js';
 
 // Passiv is 4 separate tense-table slots (passivPraesens/passivPraeteritum/passivPerfekt/
@@ -56,20 +56,31 @@ function lessonIdsFor(tenses) {
   return ids;
 }
 
-/** Which level's grammar page a lesson belongs on - a curriculum decision, not something
- *  derivable from which verbs happen to carry data for a tense. Präteritum is a deliberate
- *  exception: the spiral revisit backfills it onto the A1 verbs too (so A1 vocabulary can
- *  drill A2 grammar), which would make a purely data-driven "first level with this tense"
- *  check wrongly attribute the lesson to A1. Konjunktiv II/Futur I/Plusquamperfekt/Passiv
- *  are the same story one level later: all four get backfilled onto A1 AND A2 verbs by the
- *  B1 spiral revisit, but the lessons themselves belong on B1's page. */
-const TENSE_INTRODUCED_AT = { praesens: 'A1', imperativ: 'A1', perfekt: 'A1', praeteritum: 'A2', konjunktiv2: 'B1', futur1: 'B1', plusquamperfekt: 'B1', passiv: 'B1' };
-
-/** Lessons genuinely NEW at this level - A2's page only needs a Präteritum grammar-rule
- *  link, not Präsens/Imperativ/Perfekt again, since A1's page already covers those. */
-function newLessonsForLevel(level) {
-  return lessonIdsFor(levelTenses(VERBS.filter((v) => v.level === level))).filter((id) => TENSE_INTRODUCED_AT[id] === level);
+/** Tenses genuinely NEW at this level (TENSE_LEVEL matches exactly, not cumulative) - what
+ *  the Grammar Rules section links to. levelTenses() returns everything any verb here has
+ *  DATA for, which by this phase is every tense on every verb (the spiral revisit backfills
+ *  Präteritum onto A1 verbs and Konjunktiv II/Futur I/Plusquamperfekt/Passiv onto A1+A2
+ *  verbs, purely so those verbs can resurface with new tenses in the cumulative Practice
+ *  pool once a later checkpoint is passed) - showing all of that on A1's page would dump
+ *  Konjunktiv II and Passiv on a first-time learner, and repeating Präsens/Imperativ/Perfekt
+ *  on A2's and B1's pages too would be redundant with A1's own page. Each lesson lives on
+ *  exactly one level's page: A2 shows only the Präteritum tile, not Präsens/Imperativ/
+ *  Perfekt again. (Individual VERB CARDS are a different, cumulative case - see
+ *  verbUtils.js's studyTenses(), used in verbCard.js - a "tragen" (A2) page should still
+ *  show its own Präsens/Imperativ/Perfekt, not just Präteritum.) */
+function newTensesForLevel(level, tenses) {
+  return tenses.filter((t) => TENSE_LEVEL[t] === level);
 }
+
+/** Tenses this level's own verbs cover cumulatively (their own level's tenses plus every
+ *  earlier level's) - used only for the summary caption's prose, which should read as an
+ *  honest "here's everything these verbs cover" rather than the Grammar Rules section's
+ *  "here's what's new" framing. A2's caption says "Präsens, Imperativ, Perfekt,
+ *  Präteritum", not just "Präteritum" - the verbs really do have all four. */
+function coreTensesForLevel(level, tenses) {
+  return tenses.filter((t) => levelAtLeast(level, TENSE_LEVEL[t]));
+}
+
 
 export async function renderLevel(container, { profileId, level, setBreadcrumb }) {
   setBreadcrumb(`Learn · ${level} Conjugation`);
@@ -90,15 +101,38 @@ export async function renderLevel(container, { profileId, level, setBreadcrumb }
   const mastery = srs.masteryForKeys(deck, keys);
   const passed = store.isCheckpointPassed(profileId, level);
 
+  // Grammar Rules first: only the lessons genuinely NEW at THIS level, not every tense the
+  // data technically carries and not repeats of lessons already covered on an earlier
+  // level's page - color-coded per tense so the same color always means the same tense
+  // everywhere in the app (verb-card columns included). Reading the rules comes before the
+  // verb list/practice status, not after - you want the reference material before you start
+  // drilling, not below it.
+  const lessons = lessonIdsFor(newTensesForLevel(level, tenses));
+  if (lessons.length > 0) {
+    container.appendChild(el('h2', { style: 'margin:8px 0 10px;font-size:15px;letter-spacing:0.04em;text-transform:uppercase;color:var(--cream-dim)' }, 'Grammar rules'));
+    container.appendChild(el('p', { style: 'color:var(--cream-dim);font-size:13px;margin:0 0 12px' }, 'Short reference lessons - read anytime, nothing to complete.'));
+    const grammarGrid = el('div', { style: 'display:flex;flex-direction:column;gap:10px' });
+    for (const id of lessons) {
+      const gcard = el('button', { class: 'card', style: `text-align:left;border-left:5px solid ${tenseColorFor(id)}` }, [
+        el('div', { style: 'font-weight:700;color:var(--ink)' }, LESSON_LABELS[id]),
+        el('div', { style: 'color:var(--ink-soft);font-size:13px;margin-top:2px' }, GRAMMAR_BLURBS[id]),
+      ]);
+      gcard.addEventListener('click', () => navigate(`/grammar/${id}`));
+      grammarGrid.appendChild(gcard);
+    }
+    container.appendChild(grammarGrid);
+  }
+
   // "Practice unlocked" and the mastery ring are two different axes (did you pass an
   // 8-question checkpoint, vs. how much long-term SRS retention you've built through
   // Practice) - avoid a word like "Certified" that reads as "you've mastered this, move
   // on to A2" when it only means the checkpoint is passed. A low ring % right next to it
   // would also contradict it, so the ring only shows pre-unlock, as a "you've started" cue.
-  const summary = el('div', { class: 'card', style: 'display:flex;align-items:center;gap:16px' });
+  const summary = el('div', { class: 'card', style: 'display:flex;align-items:center;gap:16px;margin-top:24px' });
   if (!passed) summary.appendChild(progressRing(mastery, { size: 52, stroke: 5 }));
   const summaryText = el('div', { style: 'flex:1' });
-  summaryText.appendChild(el('p', { style: 'margin:0;font-weight:700;color:var(--ink)' }, `${levelVerbs.length} verbs · ${lessonIdsFor(tenses).map((id) => LESSON_LABELS[id]).join(', ')}`));
+  const coreLessons = lessonIdsFor(coreTensesForLevel(level, tenses));
+  summaryText.appendChild(el('p', { style: 'margin:0;font-weight:700;color:var(--ink)' }, `${levelVerbs.length} verbs · ${coreLessons.map((id) => LESSON_LABELS[id]).join(', ')}`));
   summaryText.appendChild(
     el(
       'p',
@@ -124,30 +158,14 @@ export async function renderLevel(container, { profileId, level, setBreadcrumb }
   checkpointBtn.addEventListener('click', () => navigate(`/checkpoint/${level}`));
   container.appendChild(checkpointBtn);
 
-  const newLessons = newLessonsForLevel(level);
-  if (newLessons.length > 0) {
-    container.appendChild(el('h2', { style: 'margin:24px 0 10px;font-size:15px;letter-spacing:0.04em;text-transform:uppercase;color:var(--cream-dim)' }, 'Grammar rules'));
-    container.appendChild(el('p', { style: 'color:var(--cream-dim);font-size:13px;margin:0 0 12px' }, 'Short reference lessons - read anytime, nothing to complete.'));
-    const grammarGrid = el('div', { style: 'display:flex;flex-direction:column;gap:10px' });
-    for (const id of newLessons) {
-      const gcard = el('button', { class: 'card', style: 'text-align:left' }, [
-        el('div', { style: 'font-weight:700;color:var(--ink)' }, LESSON_LABELS[id]),
-        el('div', { style: 'color:var(--ink-soft);font-size:13px;margin-top:2px' }, GRAMMAR_BLURBS[id]),
-      ]);
-      gcard.addEventListener('click', () => navigate(`/grammar/${id}`));
-      grammarGrid.appendChild(gcard);
-    }
-    container.appendChild(grammarGrid);
-  }
-
   container.appendChild(el('h2', { style: 'margin:24px 0 10px;font-size:15px;letter-spacing:0.04em;text-transform:uppercase;color:var(--cream-dim)' }, `Verbs (${levelVerbs.length})`));
   const verbGrid = el('div', { style: 'display:grid;grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));gap:10px' });
   for (const verb of levelVerbs) {
     const verbKeys = factKeysFor([verb], availableTenses(verb));
     const verbMastery = srs.masteryForKeys(deck, verbKeys);
-    const vcard = el('button', { class: 'card', style: 'text-align:left;position:relative;padding:12px 14px' }, [
+    const vcard = el('button', { class: 'card verb-tile', style: 'text-align:left;position:relative;padding:12px 14px' }, [
       el('div', { style: 'font-family:var(--font-mono);font-weight:700;color:var(--ink)' }, displayInfinitive(verb)),
-      el('div', { style: 'color:var(--ink-soft);font-size:12.5px;margin-top:2px' }, verb.english),
+      el('div', { class: 'verb-tile-gloss', style: 'color:var(--ink-soft);font-size:12.5px;margin-top:2px' }, verb.english),
       verbMastery > 0 ? el('div', { style: 'margin-top:6px;font-size:11px;font-weight:700;color:var(--gold)' }, `${verbMastery}%`) : null,
     ]);
     vcard.addEventListener('click', () => navigate(`/verb/${verb.infinitive}`));

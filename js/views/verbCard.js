@@ -2,20 +2,20 @@ import * as store from '../store.js';
 import * as srs from '../srs.js';
 import { el, speakerButton, progressRing, backLink } from '../ui/components.js';
 import { VERBS } from '../data/verbs-a1.js';
-import { TENSE_LABELS, factKeysFor, pronounsFor, pronounLabel, getForm, availableTenses, displayInfinitive } from '../ui/verbUtils.js';
+import { TENSE_LABELS, factKeysFor, pronounsFor, pronounLabel, getForm, availableTenses, studyTenses, displayInfinitive, tenseColorFor } from '../ui/verbUtils.js';
 import { navigate } from '../router.js';
 
-/** Präsens/Imperativ/Perfekt side by side instead of three stacked tables - the whole
- *  point of the fixed-size card is to avoid a tall scroll, and three 6-7 row tables
- *  stacked defeated that. Wraps to fewer columns on narrow screens (flex-wrap), so it
- *  degrades gracefully instead of clipping - the card's own internal scroll is still
- *  there as a safety net either way. */
+/** Every populated tense as its own column, side by side, color-coded to match the same
+ *  tense colors used on the level page's Grammar Rules tiles - one consistent mental map
+ *  of "this color = this tense" everywhere. Wraps to fewer columns on narrow screens
+ *  (flex-wrap) and grows the card to its natural height on wide ones instead of clipping;
+ *  there's no inner scroll box to hide content in anymore - the page itself scrolls. */
 function tenseColumns(verb, tenses) {
   const wrap = el('div', { class: 'tense-columns' });
   for (const tense of tenses) {
     if (verb.tables[tense] == null) continue;
     const col = el('div', { class: 'tense-col' });
-    col.appendChild(el('div', { class: 'tense-col-title' }, TENSE_LABELS[tense]));
+    col.appendChild(el('div', { class: 'tense-col-title', style: `--tense-color:${tenseColorFor(tense)}` }, TENSE_LABELS[tense]));
     for (const p of pronounsFor(tense)) {
       const form = getForm(verb, tense, p);
       if (form == null) continue;
@@ -47,9 +47,13 @@ export async function renderVerbCard(container, { profileId, infinitive, setBrea
   setBreadcrumb(`${verb.level} · ${verb.infinitive}`);
 
   const deck = store.getSRSDeck(profileId);
-  const tenses = availableTenses(verb);
-  const keys = factKeysFor([verb], tenses);
+  // Mastery reflects everything actually drilled in Practice (every populated tense, once
+  // its checkpoint is passed) - the displayed columns are a narrower, level-appropriate
+  // subset (studyTenses), so an A1 "sein" page doesn't surface Konjunktiv II/Passiv to a
+  // first-time learner even though that data exists for the cumulative Practice pool.
+  const keys = factKeysFor([verb], availableTenses(verb));
   const mastery = srs.masteryForKeys(deck, keys);
+  const displayTenses = studyTenses(verb);
   const pinned = store.isPinnedVerb(profileId, verb.infinitive);
   const primaryExample = verb.examplesByPronoun.praesens?.ich;
   const label = displayInfinitive(verb);
@@ -91,7 +95,7 @@ export async function renderVerbCard(container, { profileId, infinitive, setBrea
   });
   scroll.appendChild(pinBtn);
 
-  scroll.appendChild(tenseColumns(verb, tenses));
+  scroll.appendChild(tenseColumns(verb, displayTenses));
 
   card.appendChild(scroll);
   scene.appendChild(card);

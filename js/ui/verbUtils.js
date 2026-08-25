@@ -18,6 +18,28 @@ export const TENSE_LABELS = {
   passivZustand: 'Zustandspassiv',
 };
 
+// One consistent color per tense, everywhere a tense appears (verb-card columns, grammar-
+// rule tiles) - the same "color as memory aid" idea already used for pronouns. Keyed by
+// lesson id, not raw table key - all 4 Passiv slots (passivPraesens/praeteritum/perfekt/
+// zustand) share the single "passiv" color, since they're one lesson/one concept.
+export const TENSE_COLORS = {
+  praesens: '#FF6B6B',
+  imperativ: '#FFA94D',
+  perfekt: '#4ECDC4',
+  praeteritum: '#6C8EFF',
+  konjunktiv2: '#C77DFF',
+  futur1: '#5FD98A',
+  plusquamperfekt: '#FFD166',
+  passiv: '#F783AC',
+};
+
+/** Accepts either a lesson id ('passiv') or an exact table key ('passivPraesens', ...) -
+ *  callers with a raw tables[key] name don't need to know about the lesson-id collapsing. */
+export function tenseColorFor(tenseKey) {
+  const lessonId = tenseKey.startsWith('passiv') ? 'passiv' : tenseKey;
+  return TENSE_COLORS[lessonId] || 'var(--gold)';
+}
+
 const IMPERATIV_FORMS = ['du', 'ihr', 'Sie'];
 
 // Canonical display order - later phases append new keys to the end, never reorder, so a
@@ -67,6 +89,37 @@ export function getForm(verb, tense, pronoun) {
 /** Tenses this verb actually has data for in the current phase, in canonical order. */
 export function availableTenses(verb) {
   return TENSE_ORDER.filter((t) => verb.tables[t] != null);
+}
+
+export const LEVEL_ORDER = ['A1', 'A2', 'B1'];
+
+/** Which level each tense is pedagogically introduced at - independent of which verbs
+ *  happen to carry DATA for it. The spiral revisit backfills Präteritum onto every A1 verb,
+ *  and Konjunktiv II/Futur I/Plusquamperfekt/Passiv onto every A1+A2 verb, so that once a
+ *  learner unlocks the later checkpoint those verbs can resurface in the cumulative
+ *  Practice pool with their new tense - but that's a Practice-pool concern, not a reason to
+ *  SHOW "Konjunktiv II" on a first-time learner's A1 "sein" card. studyTenses() below is
+ *  the display-side cap; the underlying data/mastery tracking is intentionally untouched. */
+export const TENSE_LEVEL = {
+  praesens: 'A1', imperativ: 'A1', perfekt: 'A1',
+  praeteritum: 'A2',
+  konjunktiv2: 'B1', futur1: 'B1', plusquamperfekt: 'B1',
+  passivPraesens: 'B1', passivPraeteritum: 'B1', passivPerfekt: 'B1', passivZustand: 'B1',
+};
+
+/** True when `level` is at or beyond `minLevel` in the course progression. */
+export function levelAtLeast(level, minLevel) {
+  return LEVEL_ORDER.indexOf(level) >= LEVEL_ORDER.indexOf(minLevel);
+}
+
+/** availableTenses(), further capped to what's appropriate to DISPLAY given the verb's own
+ *  level - an A1 verb only ever shows Präsens/Imperativ/Perfekt on its own card, even
+ *  though the data underneath carries every tense for the cumulative Practice pool. Use
+ *  this for what a learner reads on a verb's page; keep using availableTenses() for
+ *  mastery/fact-key calculations, which should reflect everything actually drilled in
+ *  Practice, not just what's shown here. */
+export function studyTenses(verb) {
+  return availableTenses(verb).filter((t) => levelAtLeast(verb.level, TENSE_LEVEL[t]));
 }
 
 export function factKeyFor(verb, tense, pronoun) {
