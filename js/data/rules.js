@@ -33,11 +33,33 @@ export function isSStem(stem) {
   return /[sßzx]$/.test(stem);
 }
 
-/** True for the -eln/-ern verb class (ärgern, sammeln, wandern, ...) - their stem already
- *  ends in -er/-el, so wir/sie reuse the bare infinitive as-is (wir ärgern) instead of
- *  stem+en (which would wrongly double the syllable into "ärgeren"). */
+/** True for the -eln verb class (sammeln, entwickeln, ...) specifically - see isEln vs
+ *  isErn below for why these need different ich-form/Imperativ handling despite sharing
+ *  the "wir/sie reuse the bare infinitive" behavior. */
+function isEln(infinitive) {
+  return infinitive.endsWith('eln');
+}
+
+/** True for the -ern verb class (ärgern, wandern, ...). */
+function isErn(infinitive) {
+  return infinitive.endsWith('ern');
+}
+
+/** True for the -eln/-ern verb class together - their stem already ends in -er/-el, so
+ *  wir/sie reuse the bare infinitive as-is (wir ärgern) instead of stem+en (which would
+ *  wrongly double the syllable into "ärgeren"). */
 function isElnErnClass(infinitive) {
-  return infinitive.endsWith('eln') || infinitive.endsWith('ern');
+  return isEln(infinitive) || isErn(infinitive);
+}
+
+/** -eln verbs contract their own stem's -e- away in the ich-form and du-Imperativ:
+ *  "entwickeln" -> "ich entwickle" (NOT "entwickele" - confirmed against Wiktionary,
+ *  which lists "entwickele" only as a secondary/less-common variant). -ern verbs do NOT
+ *  contract this way: "ärgern" -> "ich ärgere" (not "ärgre") is the standard form, already
+ *  verified in an earlier phase. Both classes are string-identical in every OTHER form
+ *  (du/er/wir/ihr/sie), so only the ich-shaped forms need this distinction. */
+function elnContractedStem(stem) {
+  return stem.replace(/el$/, 'l');
 }
 
 /** Regular weak-verb Präsens: -e/-st/-t/-en/-t/-en off the bare stem, with the linking-e,
@@ -49,8 +71,9 @@ export function regularPraesens(infinitive) {
   const e = needsLinkingE(stem) ? 'e' : '';
   const sStem = isSStem(stem);
   const wirSie = isElnErnClass(infinitive) ? infinitive : `${stem}en`;
+  const ichStem = isEln(infinitive) ? elnContractedStem(stem) : stem;
   return {
-    ich: `${stem}e`,
+    ich: `${ichStem}e`,
     du: sStem ? `${stem}${e}t` : `${stem}${e}st`,
     er: `${stem}${e}t`,
     wir: wirSie,
@@ -68,13 +91,16 @@ function capitalize(word) {
  * linking -e if the stem needed one, for pronounceability - "Arbeite!" not "Arbeit!" -
  * and always for the -eln/-ern class, where dropping it would leave an ending that reads
  * as a noun/adjective rather than a command - confirmed "ärgere" over bare "ärger" against
- * Wiktionary), ihr reuses the ihr-Präsens form as-is, Sie is the bare infinitive + "Sie".
+ * Wiktionary), with the same -eln stem-contraction as the Präsens ich-form ("Entwickle!",
+ * not "Entwickele!"). ihr reuses the ihr-Präsens form as-is, Sie is the bare infinitive +
+ * "Sie".
  */
 export function regularImperativ(infinitive, praesensTable) {
   const stem = stemOf(infinitive);
   const e = needsLinkingE(stem) || isElnErnClass(infinitive) ? 'e' : '';
+  const duStem = isEln(infinitive) ? elnContractedStem(stem) : stem;
   return {
-    du: `${capitalize(stem)}${e}!`,
+    du: `${capitalize(duStem)}${e}!`,
     ihr: `${capitalize(praesensTable.ihr)}!`,
     Sie: `${capitalize(infinitive)} Sie!`,
   };
@@ -107,6 +133,23 @@ export function applyReflexive(table) {
   for (const [pronoun, form] of Object.entries(table)) {
     const reflexivePronoun = REFLEXIVE_PRONOUNS[pronoun];
     out[pronoun] = form.endsWith('!') ? `${form.slice(0, -1)} ${reflexivePronoun}!` : `${form} ${reflexivePronoun}`;
+  }
+  return out;
+}
+
+/** Appends a separable verb's prefix to every form in an already-built Imperativ table -
+ *  "Mach!" -> "Mach zu!" (found while building B1's vorschlagen: the existing separable A1/
+ *  A2 verbs' Imperativ tables were missing their prefix entirely, e.g. aufräumen's du-form
+ *  shipped as bare "Räum!" instead of "Räum auf!" - a genuinely incomplete/wrong standalone
+ *  command, unlike Präsens where the paired example sentence supplies the missing prefix
+ *  as compensating context. Same trailing-"!" handling as applyReflexive - the prefix goes
+ *  BEFORE the punctuation. Präteritum/Perfekt/etc. don't need this: those forms end the
+ *  clause with the prefix export elsewhere (partizip2 already ge-infixes it) or aren't
+ *  quizzed as a bare command the way Imperativ is. */
+export function withSeparablePrefix(table, prefix) {
+  const out = {};
+  for (const [key, form] of Object.entries(table)) {
+    out[key] = form.endsWith('!') ? `${form.slice(0, -1)} ${prefix}!` : `${form} ${prefix}`;
   }
   return out;
 }
@@ -174,4 +217,88 @@ export function weakPraeteritumEndings(ichForm) {
     ihr: `${ichForm}t`,
     sie: `${ichForm}n`,
   };
+}
+
+// ================================================================== B1: the four remaining tenses
+// All four are pure sentence-assembly from pieces already sitting in the data (an
+// auxiliary's own table, partizip2, the bare infinitive) - "correct by construction" same
+// as buildPerfekt, never hand-typed. The one genuine exception is Konjunktiv II's synthetic
+// forms for ~15 high-frequency verbs (see SYNTHETIC_KONJUNKTIV2 in verbs-a1.js), which
+// cannot be derived from data already in this file and are hand-typed + cross-checked
+// against Wiktionary instead.
+
+/** Plusquamperfekt = the auxiliary's own PRÄTERITUM table (not Präsens, unlike Perfekt) +
+ *  partizip2 - "ich hatte gemacht", "ich war gegangen". Requires the aux verb's praeteritum
+ *  table to already be populated, which it is (sein/haben have carried praeteritum since
+ *  the A2 phase's spiral revisit). */
+export function buildPlusquamperfekt(auxiliaryPraeteritumTable, partizip2, reflexive) {
+  const out = {};
+  for (const p of PRONOUNS) {
+    out[p] = reflexive ? `${auxiliaryPraeteritumTable[p]} ${REFLEXIVE_PRONOUNS[p]} ${partizip2}` : `${auxiliaryPraeteritumTable[p]} ${partizip2}`;
+  }
+  return out;
+}
+
+/** Futur I = conjugated werden + the BARE infinitive at the end of the clause - true for
+ *  every verb type including separable ones (separable verbs do NOT split in Futur I; the
+ *  whole infinitive "aufstehen" stays intact, same as after any modal). Reflexive pronoun
+ *  goes directly after the conjugated werden. */
+export function buildFutur1(werdenPraesensTable, infinitive, reflexive) {
+  const out = {};
+  for (const p of PRONOUNS) {
+    out[p] = reflexive ? `${werdenPraesensTable[p]} ${REFLEXIVE_PRONOUNS[p]} ${infinitive}` : `${werdenPraesensTable[p]} ${infinitive}`;
+  }
+  return out;
+}
+
+/** werden's own Konjunktiv II ("würde") doubles as the auxiliary for every OTHER verb's
+ *  periphrastic Konjunktiv II - the modern default construction for the vast majority of
+ *  verbs (only ~15 high-frequency verbs keep a normal synthetic form instead, see
+ *  SYNTHETIC_KONJUNKTIV2 in verbs-a1.js). Hand-typed once here (not derived - it IS the
+ *  irregular base everything else in this section builds from) and cross-checked against
+ *  Wiktionary. */
+export const WUERDE_KONJUNKTIV2 = { ich: 'würde', du: 'würdest', er: 'würde', wir: 'würden', ihr: 'würdet', sie: 'würden' };
+
+export function buildWuerdeKonjunktiv2(infinitive, reflexive) {
+  const out = {};
+  for (const p of PRONOUNS) {
+    out[p] = reflexive ? `${WUERDE_KONJUNKTIV2[p]} ${REFLEXIVE_PRONOUNS[p]} ${infinitive}` : `${WUERDE_KONJUNKTIV2[p]} ${infinitive}`;
+  }
+  return out;
+}
+
+/**
+ * Passiv - four sub-forms, all pure assembly from pieces already in the data:
+ *   - passivPraesens:    werden (Präsens) + partizip2           "wird gemacht"
+ *   - passivPraeteritum: werden (Präteritum) + partizip2        "wurde gemacht"
+ *   - passivPerfekt:     sein (Präsens) + partizip2 + "worden"  "ist gemacht worden"
+ *                        (NOT "geworden" - "worden" is the special invariant passive-
+ *                        auxiliary participle, a genuine exception worth flagging: this is
+ *                        the one case in the whole schema where "werden"'s own participle
+ *                        does NOT surface as "geworden".)
+ *   - passivZustand:     sein (Präsens) + partizip2             "ist gemacht" (Zustandspassiv,
+ *                        the resulting STATE rather than the action - "das Fenster ist
+ *                        geöffnet" = it's open now, vs. Vorgangspassiv "wird geöffnet" = it's
+ *                        being opened right now)
+ * Only verbs that take a direct accusative object can form a genuine personal passive -
+ * dative-only verbs (helfen, zuhören, danken, ...) and reflexives cannot ("*mir wird
+ * geholfen" retains the dative, it is not "ich werde geholfen"; a reflexive's accusative
+ * slot is already the reflexive pronoun itself). `transitive: false` returns all four
+ * sub-forms as null instead of a fabricated form - "not applicable", not a data gap.
+ */
+export function buildPassiv({ werdenPraesens, werdenPraeteritum, seinPraesens, partizip2, transitive }) {
+  if (!transitive) {
+    return { passivPraesens: null, passivPraeteritum: null, passivPerfekt: null, passivZustand: null };
+  }
+  const passivPraesens = {};
+  const passivPraeteritum = {};
+  const passivPerfekt = {};
+  const passivZustand = {};
+  for (const p of PRONOUNS) {
+    passivPraesens[p] = `${werdenPraesens[p]} ${partizip2}`;
+    passivPraeteritum[p] = `${werdenPraeteritum[p]} ${partizip2}`;
+    passivPerfekt[p] = `${seinPraesens[p]} ${partizip2} worden`;
+    passivZustand[p] = `${seinPraesens[p]} ${partizip2}`;
+  }
+  return { passivPraesens, passivPraeteritum, passivPerfekt, passivZustand };
 }

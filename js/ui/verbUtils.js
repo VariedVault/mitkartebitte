@@ -12,14 +12,26 @@ export const TENSE_LABELS = {
   konjunktiv2: 'Konjunktiv II',
   futur1: 'Futur I',
   plusquamperfekt: 'Plusquamperfekt',
-  passiv: 'Passiv',
+  passivPraesens: 'Passiv (Präsens)',
+  passivPraeteritum: 'Passiv (Präteritum)',
+  passivPerfekt: 'Passiv (Perfekt)',
+  passivZustand: 'Zustandspassiv',
 };
 
 const IMPERATIV_FORMS = ['du', 'ihr', 'Sie'];
 
-// Canonical display order - later phases append new keys to the end, never reorder,
-// so a verb's tense sections always appear in the same learn-progression order.
-export const TENSE_ORDER = ['praesens', 'imperativ', 'perfekt', 'praeteritum', 'konjunktiv2', 'futur1', 'plusquamperfekt', 'passiv'];
+// Canonical display order - later phases append new keys to the end, never reorder, so a
+// verb's tense sections always appear in the same learn-progression order. Passiv is 4
+// separate flat-table tense slots (Vorgangspassiv in 3 sub-tenses + Zustandspassiv) rather
+// than 1 - each is either a plain 6-pronoun table or null (not authored yet, OR verb is
+// intransitive and genuinely takes no personal passive - see rules.js's buildPassiv), so
+// every existing generic consumer (availableTenses, factKeysFor, the verb-card columns,
+// checkpoint/practice pools) needs zero special-casing to support them.
+export const TENSE_ORDER = [
+  'praesens', 'imperativ', 'perfekt', 'praeteritum',
+  'konjunktiv2', 'futur1', 'plusquamperfekt',
+  'passivPraesens', 'passivPraeteritum', 'passivPerfekt', 'passivZustand',
+];
 
 export function pronounsFor(tense) {
   return tense === 'imperativ' ? IMPERATIV_FORMS : PRONOUNS;

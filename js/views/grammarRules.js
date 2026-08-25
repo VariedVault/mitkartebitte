@@ -110,6 +110,113 @@ const LESSONS = {
     ],
     exampleVerb: 'gehen',
   },
+  konjunktiv2: {
+    title: 'Konjunktiv II (Would/Could/Should)',
+    level: 'B1',
+    intro: 'Konjunktiv II is the "unreal" mood - wishes, polite requests, hypotheticals, and advice: "Ich würde das nicht machen" ("I wouldn\'t do that"), "Könntest du mir helfen?" ("Could you help me?").',
+    rules: [
+      {
+        heading: 'The modern default: würde + infinitive',
+        body: 'For the vast majority of verbs, modern German just uses würde (conjugated: würde/würdest/würde/würden/würdet/würden) plus the bare infinitive at the end - "Ich würde gern kommen." This is always safe to use and is what native speakers actually say for most verbs.',
+      },
+      {
+        heading: 'When a verb keeps its own short form instead',
+        body: 'A small set of very high-frequency verbs sound old-fashioned or clunky with würde and keep a short synthetic form instead: sein → wäre, haben → hätte, werden → würde (werden IS its own würde-form), and the modals können → könnte, müssen → müsste, dürfen → dürfte, mögen → möchte, sollen → sollte, wollen → wollte. "Ich wäre froh" sounds natural; "ich würde froh sein" sounds off. Use the short form for these.',
+      },
+      {
+        heading: 'A handful of strong verbs still in normal use',
+        body: 'gehen → ginge, kommen → käme, geben → gäbe, wissen → wüsste, finden → fände, bleiben → bliebe are still commonly heard in their short form ("Das gäbe es nicht" / "Ich wüsste nicht warum"), though würde + infinitive works for these too and is never wrong.',
+      },
+      {
+        heading: 'How the short form is built',
+        body: 'Take the Präteritum stem, add an umlaut if the vowel is a/o/u (a→ä, o→ö, u→ü - konnte→könnte), then add -e/-(e)st/-e/-en/-(e)t/-en. Verbs whose Präteritum vowel is i or ie (ging, blieb) can\'t umlaut, so a couple of them use the fuller -est/-et endings instead of the usual contracted -st/-t, specifically so the Konjunktiv II form doesn\'t collide with the plain Präteritum ("du gingest", not "du gingst", which is already gehen\'s ordinary past tense).',
+      },
+    ],
+    exampleVerb: 'gehen',
+  },
+  futur1: {
+    title: 'Futur I (Future Tense)',
+    level: 'B1',
+    intro: 'Futur I talks about the future: "Ich werde morgen anrufen" ("I will call tomorrow"). It\'s built the same way for every verb, no exceptions to memorize.',
+    rules: [
+      {
+        heading: 'The formula',
+        body: 'werden (conjugated for the subject) + the bare infinitive at the end of the clause: "Ich werde kommen." "Sie werden es verstehen." Even werden itself follows this ("ich werde werden" is grammatically valid, if unusual).',
+      },
+      {
+        heading: 'Separable verbs stay whole',
+        body: 'Unlike Präsens, a separable verb does NOT split here - the full infinitive stays together at the end: "Ich werde aufstehen," not "Ich werde auf stehen" or "Ich stehe werden auf."',
+      },
+      {
+        heading: 'Everyday German often skips it',
+        body: 'For near-future plans, spoken German very often just uses Präsens with a time word instead: "Ich komme morgen" rather than "Ich werde morgen kommen." Futur I is still correct and common for predictions, promises, and formal writing.',
+      },
+    ],
+    exampleVerb: 'kommen',
+  },
+  plusquamperfekt: {
+    title: 'Plusquamperfekt (Past Perfect)',
+    level: 'B1',
+    intro: 'Plusquamperfekt is "the past before the past" - what had already happened before another past event: "Ich hatte schon gegessen, bevor du kamst" ("I had already eaten before you came").',
+    rules: [
+      {
+        heading: 'The formula',
+        body: 'Exactly like Perfekt, but the auxiliary is in Präteritum instead of Präsens: haben/sein in Präteritum (hatte/war...) + partizip II. "Ich hatte gegessen." "Sie war gegangen."',
+      },
+      {
+        heading: 'Same auxiliary choice as Perfekt',
+        body: 'If a verb takes haben in Perfekt, it takes hatte here; if it takes sein, it takes war. Nothing new to learn about which verbs use which - it\'s the identical list.',
+      },
+      {
+        heading: 'What it\'s for',
+        body: 'Almost always used alongside another past-tense clause to show which event came first: "Nachdem wir gegessen hatten, gingen wir spazieren" ("After we had eaten, we went for a walk").',
+      },
+    ],
+    exampleVerb: 'gehen',
+  },
+  passiv: {
+    title: 'Passiv (Passive Voice)',
+    level: 'B1',
+    intro: 'Passiv shifts focus from WHO does something to what HAPPENS: "Der Brief wird geschrieben" ("The letter is being written") instead of "Sie schreibt den Brief" ("She writes the letter"). Only verbs with a direct (accusative) object can form it - "helfen" and "zuhören" take a dative object and can\'t.',
+    rules: [
+      {
+        heading: 'Vorgangspassiv - the action happening',
+        body: 'werden (conjugated) + partizip II, describing the action in progress: Präsens "wird gemacht" (is being done), Präteritum "wurde gemacht" (was being done). This is the "default" passive most learners mean by the word.',
+      },
+      {
+        heading: 'Perfekt passive uses "worden", not "geworden"',
+        body: 'sein (conjugated) + partizip II + worden: "Das Haus ist gebaut worden" ("The house has been built"). "Worden" is a special invariant form used only here - werden\'s normal partizip II is "geworden" (as in "Er ist müde geworden" = "He has become tired"), but that never appears in a passive construction. Mixing these up is the single most common Passiv mistake.',
+      },
+      {
+        heading: 'Zustandspassiv - the resulting state',
+        body: 'sein (conjugated) + partizip II, but describing a STATE rather than an action: "Die Tür ist geöffnet" (the door is [now] open) vs. Vorgangspassiv "Die Tür wird geöffnet" (the door is [currently] being opened). Same words, different focus: process vs. result.',
+      },
+      {
+        heading: 'Only for verbs with a direct object',
+        body: 'A verb needs a plain accusative object to form a personal passive: "man macht das" → "das wird gemacht". Verbs that only take a dative object (helfen, zuhören - "man hilft MIR", never "man hilft MICH") cannot form one; you\'ll see this marked as not applicable on those verb pages instead of a made-up form.',
+      },
+    ],
+    exampleVerb: 'machen',
+  },
+};
+
+// Which actual tables[...] key(s) to demo per lesson, with a heading for each - almost
+// always a 1:1 match to the lesson id, except 'passiv' which fans out into all 4 Passiv
+// sub-tenses (see verbUtils.js's TENSE_ORDER comment for why Passiv is 4 slots, not 1).
+const DEMO_TENSES = {
+  praesens: [{ key: 'praesens', heading: 'in Präsens' }],
+  imperativ: [{ key: 'imperativ', heading: 'in Imperativ' }],
+  perfekt: [{ key: 'perfekt', heading: 'in Perfekt' }],
+  praeteritum: [{ key: 'praeteritum', heading: 'in Präteritum' }],
+  konjunktiv2: [{ key: 'konjunktiv2', heading: 'in Konjunktiv II' }],
+  futur1: [{ key: 'futur1', heading: 'in Futur I' }],
+  plusquamperfekt: [{ key: 'plusquamperfekt', heading: 'in Plusquamperfekt' }],
+  passiv: [
+    { key: 'passivPraesens', heading: 'Vorgangspassiv - Präsens' },
+    { key: 'passivPraeteritum', heading: 'Vorgangspassiv - Präteritum' },
+    { key: 'passivPerfekt', heading: 'Vorgangspassiv - Perfekt (note: "worden")' },
+    { key: 'passivZustand', heading: 'Zustandspassiv' },
+  ],
 };
 
 export async function renderGrammarRules(container, { tense, setBreadcrumb }) {
@@ -137,18 +244,19 @@ export async function renderGrammarRules(container, { tense, setBreadcrumb }) {
   }
 
   const demoVerb = VERBS.find((v) => v.infinitive === lesson.exampleVerb);
-  if (demoVerb && demoVerb.tables[tense]) {
-    card.appendChild(el('h3', {}, `${demoVerb.infinitive} in ${lesson.title.split(' ')[0]}`));
+  for (const { key, heading } of DEMO_TENSES[tense] ?? []) {
+    if (!demoVerb || demoVerb.tables[key] == null) continue;
+    card.appendChild(el('h3', {}, `${demoVerb.infinitive} - ${heading}`));
     const table = el('table', { class: 'conj-table' });
     const tbody = el('tbody');
-    const pronouns = tense === 'imperativ' ? ['du', 'ihr', 'Sie'] : ['ich', 'du', 'er', 'wir', 'ihr', 'sie'];
+    const pronouns = key === 'imperativ' ? ['du', 'ihr', 'Sie'] : ['ich', 'du', 'er', 'wir', 'ihr', 'sie'];
     for (const p of pronouns) {
-      const form = demoVerb.tables[tense][p];
+      const form = demoVerb.tables[key][p];
       if (form == null) continue;
-      const label = tense === 'imperativ' ? p : { ich: 'ich', du: 'du', er: 'er/sie/es', wir: 'wir', ihr: 'ihr', sie: 'sie/Sie' }[p];
+      const label = key === 'imperativ' ? p : { ich: 'ich', du: 'du', er: 'er/sie/es', wir: 'wir', ihr: 'ihr', sie: 'sie/Sie' }[p];
       tbody.appendChild(
         el('tr', {}, [
-          el('td', { class: `pron-cell pron-${tense === 'imperativ' ? '' : p}`.trim() }, label),
+          el('td', { class: `pron-cell pron-${key === 'imperativ' ? '' : p}`.trim() }, label),
           el('td', { class: 'form-cell' }, [form, ' ', speakerButton(form)]),
         ])
       );

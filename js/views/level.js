@@ -2,14 +2,31 @@ import * as store from '../store.js';
 import * as srs from '../srs.js';
 import { el, progressRing, backLink } from '../ui/components.js';
 import { VERBS } from '../data/verbs-a1.js';
-import { factKeysFor, TENSE_LABELS, TENSE_ORDER, availableTenses, displayInfinitive } from '../ui/verbUtils.js';
+import { factKeysFor, TENSE_ORDER, availableTenses, displayInfinitive } from '../ui/verbUtils.js';
 import { navigate } from '../router.js';
 
+// Passiv is 4 separate tense-table slots (passivPraesens/passivPraeteritum/passivPerfekt/
+// passivZustand - see verbUtils.js's TENSE_ORDER comment) but ONE grammar lesson/summary
+// entry - a learner doesn't need 4 nearly-identical "Passiv" cards. LESSON_ID_FOR_TENSE
+// collapses them; every other tense maps 1:1 to its own lesson id.
+const LESSON_ID_FOR_TENSE = {
+  praesens: 'praesens', imperativ: 'imperativ', perfekt: 'perfekt', praeteritum: 'praeteritum',
+  konjunktiv2: 'konjunktiv2', futur1: 'futur1', plusquamperfekt: 'plusquamperfekt',
+  passivPraesens: 'passiv', passivPraeteritum: 'passiv', passivPerfekt: 'passiv', passivZustand: 'passiv',
+};
+const LESSON_LABELS = {
+  praesens: 'Präsens', imperativ: 'Imperativ', perfekt: 'Perfekt', praeteritum: 'Präteritum',
+  konjunktiv2: 'Konjunktiv II', futur1: 'Futur I', plusquamperfekt: 'Plusquamperfekt', passiv: 'Passiv',
+};
 const GRAMMAR_BLURBS = {
   praesens: 'The present tense - talking about now, habits, and near-future plans.',
   imperativ: 'Commands and requests - "Come here!", "Please wait!".',
   perfekt: 'The everyday past tense used in speech - "I have done...".',
   praeteritum: 'The written/narrative past tense - and how sein/haben/werden and modals actually prefer it even in speech.',
+  konjunktiv2: 'The "would" mood - würde + infinitive for most verbs, but a handful of high-frequency verbs (wäre, hätte, könnte, ginge...) keep their own short form instead.',
+  futur1: 'The future tense - werden + infinitive. Mostly for predictions/promises; everyday German often just uses Präsens for the future instead.',
+  plusquamperfekt: 'The "past before the past" - what had already happened before another past event.',
+  passiv: 'The passive voice - when the action matters more than who does it, plus the "is/was done" state vs. "is being done" action distinction.',
 };
 
 const LEVELS = ['A1', 'A2', 'B1'];
@@ -23,17 +40,35 @@ function levelTenses(levelVerbs) {
   return TENSE_ORDER.filter((t) => set.has(t));
 }
 
-/** Which level's grammar page a tense's reference lesson belongs on - a curriculum
- *  decision, not something derivable from which verbs happen to carry data for a tense.
- *  Präteritum is a deliberate exception: the spiral revisit backfills it onto the A1
- *  verbs too (so A1 vocabulary can drill A2 grammar), which would make a purely
- *  data-driven "first level with this tense" check wrongly attribute the lesson to A1. */
-const TENSE_INTRODUCED_AT = { praesens: 'A1', imperativ: 'A1', perfekt: 'A1', praeteritum: 'A2' };
+/** Collapses a tense list down to its distinct lesson ids, in first-seen (canonical) order -
+ *  used for both the summary caption and the grammar-links section, so Passiv's 4 slots
+ *  never render as 4 separate entries anywhere. */
+function lessonIdsFor(tenses) {
+  const seen = new Set();
+  const ids = [];
+  for (const t of tenses) {
+    const id = LESSON_ID_FOR_TENSE[t];
+    if (!seen.has(id)) {
+      seen.add(id);
+      ids.push(id);
+    }
+  }
+  return ids;
+}
 
-/** Tenses genuinely NEW at this level - A2's page only needs a Präteritum grammar-rule
+/** Which level's grammar page a lesson belongs on - a curriculum decision, not something
+ *  derivable from which verbs happen to carry data for a tense. Präteritum is a deliberate
+ *  exception: the spiral revisit backfills it onto the A1 verbs too (so A1 vocabulary can
+ *  drill A2 grammar), which would make a purely data-driven "first level with this tense"
+ *  check wrongly attribute the lesson to A1. Konjunktiv II/Futur I/Plusquamperfekt/Passiv
+ *  are the same story one level later: all four get backfilled onto A1 AND A2 verbs by the
+ *  B1 spiral revisit, but the lessons themselves belong on B1's page. */
+const TENSE_INTRODUCED_AT = { praesens: 'A1', imperativ: 'A1', perfekt: 'A1', praeteritum: 'A2', konjunktiv2: 'B1', futur1: 'B1', plusquamperfekt: 'B1', passiv: 'B1' };
+
+/** Lessons genuinely NEW at this level - A2's page only needs a Präteritum grammar-rule
  *  link, not Präsens/Imperativ/Perfekt again, since A1's page already covers those. */
-function newTensesForLevel(level) {
-  return levelTenses(VERBS.filter((v) => v.level === level)).filter((t) => TENSE_INTRODUCED_AT[t] === level);
+function newLessonsForLevel(level) {
+  return lessonIdsFor(levelTenses(VERBS.filter((v) => v.level === level))).filter((id) => TENSE_INTRODUCED_AT[id] === level);
 }
 
 export async function renderLevel(container, { profileId, level, setBreadcrumb }) {
@@ -63,7 +98,7 @@ export async function renderLevel(container, { profileId, level, setBreadcrumb }
   const summary = el('div', { class: 'card', style: 'display:flex;align-items:center;gap:16px' });
   if (!passed) summary.appendChild(progressRing(mastery, { size: 52, stroke: 5 }));
   const summaryText = el('div', { style: 'flex:1' });
-  summaryText.appendChild(el('p', { style: 'margin:0;font-weight:700;color:var(--ink)' }, `${levelVerbs.length} verbs · ${tenses.map((t) => TENSE_LABELS[t]).join(', ')}`));
+  summaryText.appendChild(el('p', { style: 'margin:0;font-weight:700;color:var(--ink)' }, `${levelVerbs.length} verbs · ${lessonIdsFor(tenses).map((id) => LESSON_LABELS[id]).join(', ')}`));
   summaryText.appendChild(
     el(
       'p',
@@ -89,17 +124,17 @@ export async function renderLevel(container, { profileId, level, setBreadcrumb }
   checkpointBtn.addEventListener('click', () => navigate(`/checkpoint/${level}`));
   container.appendChild(checkpointBtn);
 
-  const newTenses = newTensesForLevel(level);
-  if (newTenses.length > 0) {
+  const newLessons = newLessonsForLevel(level);
+  if (newLessons.length > 0) {
     container.appendChild(el('h2', { style: 'margin:24px 0 10px;font-size:15px;letter-spacing:0.04em;text-transform:uppercase;color:var(--cream-dim)' }, 'Grammar rules'));
     container.appendChild(el('p', { style: 'color:var(--cream-dim);font-size:13px;margin:0 0 12px' }, 'Short reference lessons - read anytime, nothing to complete.'));
     const grammarGrid = el('div', { style: 'display:flex;flex-direction:column;gap:10px' });
-    for (const t of newTenses) {
+    for (const id of newLessons) {
       const gcard = el('button', { class: 'card', style: 'text-align:left' }, [
-        el('div', { style: 'font-weight:700;color:var(--ink)' }, TENSE_LABELS[t]),
-        el('div', { style: 'color:var(--ink-soft);font-size:13px;margin-top:2px' }, GRAMMAR_BLURBS[t]),
+        el('div', { style: 'font-weight:700;color:var(--ink)' }, LESSON_LABELS[id]),
+        el('div', { style: 'color:var(--ink-soft);font-size:13px;margin-top:2px' }, GRAMMAR_BLURBS[id]),
       ]);
-      gcard.addEventListener('click', () => navigate(`/grammar/${t}`));
+      gcard.addEventListener('click', () => navigate(`/grammar/${id}`));
       grammarGrid.appendChild(gcard);
     }
     container.appendChild(grammarGrid);
