@@ -132,7 +132,7 @@ export const TRICKY_SOUNDS = [
   },
   {
     id: 'tricky-final-er',
-    character: '-ER (at the end of a word)',
+    character: '-ER',
     type: 'special',
     soundDescription: 'At the end of a word, -er is NOT a hard r sound - it relaxes into a soft "uh" (a schwa), similar to the "-er" in a British English "butter" without pronouncing the r at all.',
     exampleWord: 'Bruder',
@@ -141,7 +141,7 @@ export const TRICKY_SOUNDS = [
   },
   {
     id: 'tricky-s-vowel',
-    character: 'S (before a vowel, at the start of a word)',
+    character: 'S-',
     type: 'special',
     soundDescription: 'When s starts a word and is directly followed by a vowel, it sounds like an English z, not a plain s.',
     exampleWord: 'sagen',

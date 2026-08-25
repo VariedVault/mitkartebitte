@@ -4,13 +4,28 @@ import { navigate } from '../router.js';
 
 const TYPE_LABELS = { letter: 'Letter', umlaut: 'Umlaut', digraph: 'Sound combination', special: 'Special rule' };
 
-/** What the "character" speaker button actually says. Letters/umlauts speak cleanly on
- *  their own (a single character reads fine via TTS). The tricky-sound entries' `character`
- *  field is a visual label meant for the card heading ("EI vs IE", "-ER (at the end of a
- *  word)") rather than a pronounceable string, so those speak the example word instead -
- *  the concept itself isn't a single sayable word, but the example demonstrates it. */
+/** The actual German name of each letter, spelled the way DIN 5009 (the German spelling-
+ *  alphabet standard) writes it - confirmed against Wikipedia's Deutsches Alphabet article.
+ *  A bare single character fed to SpeechSynthesis does NOT reliably say the letter's name -
+ *  most voices instead attempt to sound out the raw phoneme (so "B" comes out as a clipped
+ *  /b/, not "be"), which is a genuine bug, not just an unfortunate default: it doesn't match
+ *  what the card's own text says the letter is called. Spelling out the real German word
+ *  ("be", "fau", "zet", ...) lets the German voice pronounce it correctly instead. */
+const LETTER_SPOKEN_NAME = {
+  A: 'a', B: 'be', C: 'ce', D: 'de', E: 'e', F: 'ef', G: 'ge', H: 'ha', I: 'i', J: 'jot',
+  K: 'ka', L: 'el', M: 'em', N: 'en', O: 'o', P: 'pe', Q: 'ku', R: 'er', S: 'es', T: 'te',
+  U: 'u', V: 'fau', W: 'we', X: 'iks', Y: 'ypsilon', Z: 'zet',
+  Ä: 'ä', Ö: 'ö', Ü: 'ü', 'ß': 'Eszett',
+};
+
+/** What the "character" speaker button actually says. Letters/umlauts speak their real
+ *  German name (see LETTER_SPOKEN_NAME above), not the bare glyph. The tricky-sound entries'
+ *  `character` field is a visual label meant for the card heading ("EI vs IE", "-ER (at the
+ *  end of a word)") rather than a pronounceable string, so those speak the example word
+ *  instead - the concept itself isn't a single sayable word, but the example demonstrates it. */
 function spokenCharacter(item) {
-  return item.type === 'letter' || item.type === 'umlaut' ? item.character : item.exampleWord;
+  if (item.type === 'letter' || item.type === 'umlaut') return LETTER_SPOKEN_NAME[item.character] || item.character;
+  return item.exampleWord;
 }
 
 export async function renderFoundationsCard(container, { group, index, setBreadcrumb }) {

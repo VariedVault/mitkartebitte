@@ -280,6 +280,18 @@ a { color: var(--gold-bright); }
 .foundation-card-scroll { min-height: 100%; display: flex; flex-direction: column; justify-content: center; padding: 24px; box-sizing: border-box; }
 .foundation-glyph { font-family: var(--font-display); font-weight: 800; font-size: 40px; color: var(--ink); line-height: 1.1; }
 
+/* Foundations group tile grid (Letters/Umlauts/Tricky Sounds) - fixed size so every tile
+   matches regardless of how long its label text is (Tricky Sounds mixes short ones like "V"
+   with longer ones like "-ER"); line-clamp trims anything still too long instead of
+   stretching the tile. Same `.card + .card` stacked-list-spacing leak as the verb grid
+   (see .card.verb-tile below) - same fix, same reasoning. */
+.foundation-tile { height: 76px; display: flex; align-items: center; justify-content: center; padding: 8px; overflow: hidden; }
+.foundation-tile-label {
+  font-family: var(--font-mono); font-weight: 800; font-size: 14.5px; color: var(--ink); text-align: center;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.card.foundation-tile { margin-top: 0; }
+
 /* ---------------------------------------------------------------- verb grid tiles (uniform size) */
 /* Fixed height regardless of English-gloss length - a 2-word gloss ("to be called") and a
    longer one ("to know, to be familiar with") used to make their row taller than every

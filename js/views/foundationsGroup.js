@@ -17,13 +17,9 @@ export async function renderFoundationsGroup(container, { group, setBreadcrumb }
   container.appendChild(el('h1', {}, `${groupDef.emoji} ${groupDef.label}`));
   container.appendChild(el('p', { style: 'color:var(--cream-dim)' }, groupDef.blurb));
 
-  const grid = el('div', { style: 'display:grid;grid-template-columns:repeat(auto-fill, minmax(76px, 1fr));gap:10px;margin-top:16px' });
+  const grid = el('div', { style: 'display:grid;grid-template-columns:repeat(auto-fill, minmax(90px, 1fr));gap:10px;margin-top:16px' });
   groupDef.items.forEach((item, index) => {
-    const tile = el(
-      'button',
-      { class: 'card', style: 'text-align:center;padding:14px 8px' },
-      el('div', { style: 'font-family:var(--font-mono);font-weight:800;font-size:15px;color:var(--ink)' }, item.character)
-    );
+    const tile = el('button', { class: 'card foundation-tile' }, el('div', { class: 'foundation-tile-label' }, item.character));
     tile.addEventListener('click', () => navigate(`/foundations/${group}/${index}`));
     grid.appendChild(tile);
   });
