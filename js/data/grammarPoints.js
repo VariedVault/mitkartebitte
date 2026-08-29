@@ -376,6 +376,144 @@ export const GRAMMAR_POINTS = [
       { id: 'adj-weak-teuer', type: 'weak-adj', prompt: 'Complete: "der ___ Mantel" (teuer, Nominativ)', answer: 'teure', why: '"teuer" drops its -e- → teur- + Nom. masc. -e = teure.' },
     ],
   },
+
+  // ================================================================ B1 TIER ================================================================
+  // Full adjective declension (weak/mixed/strong), relative pronouns, Genitiv prepositions.
+  // Builds on the A1 case tables and the A2 weak declension - reused, never redefined.
+
+  // ---------------------------------------------------------------- full adjective declension
+  {
+    id: 'b1-adj-full',
+    tier: 'B1',
+    topic: 'declension',
+    title: 'Adjective endings: weak, mixed, strong',
+    explanation:
+      'Which endings an adjective takes depends on what stands in front of it. The adjective and the article "share the work" of showing gender and case. WEAK (after a der-word, which already shows the case clearly): the easy -e/-en set (the A2 pattern). MIXED (after ein/kein/mein, which is vague in a few spots): the adjective fills those gaps with a strong ending (-er masc Nom, -es neut Nom/Akk), otherwise -e/-en. STRONG (no article at all): the adjective does the whole job and takes the endings the article would have carried.',
+    tables: [
+      {
+        caption: 'Weak — after der/die/das (recap from A2)',
+        columns: ['', 'Maskulin', 'Feminin', 'Neutrum', 'Plural'],
+        colAccent: [null, 'm', 'f', 'n', 'pl'],
+        rowAccent: ['nom', 'akk', 'dat', 'gen'],
+        rows: [
+          { label: 'Nominativ', cells: ['-e', '-e', '-e', '-en'] },
+          { label: 'Akkusativ', cells: ['-en', '-e', '-e', '-en'] },
+          { label: 'Dativ', cells: ['-en', '-en', '-en', '-en'] },
+          { label: 'Genitiv', cells: ['-en', '-en', '-en', '-en'] },
+        ],
+      },
+      {
+        caption: 'Mixed — after ein / kein / mein',
+        columns: ['', 'Maskulin', 'Feminin', 'Neutrum', 'Plural'],
+        colAccent: [null, 'm', 'f', 'n', 'pl'],
+        rowAccent: ['nom', 'akk', 'dat', 'gen'],
+        rows: [
+          { label: 'Nominativ', cells: ['-er', '-e', '-es', '-en'] },
+          { label: 'Akkusativ', cells: ['-en', '-e', '-es', '-en'] },
+          { label: 'Dativ', cells: ['-en', '-en', '-en', '-en'] },
+          { label: 'Genitiv', cells: ['-en', '-en', '-en', '-en'] },
+        ],
+      },
+      {
+        caption: 'Strong — no article',
+        columns: ['', 'Maskulin', 'Feminin', 'Neutrum', 'Plural'],
+        colAccent: [null, 'm', 'f', 'n', 'pl'],
+        rowAccent: ['nom', 'akk', 'dat', 'gen'],
+        rows: [
+          { label: 'Nominativ', cells: ['-er', '-e', '-es', '-e'] },
+          { label: 'Akkusativ', cells: ['-en', '-e', '-es', '-e'] },
+          { label: 'Dativ', cells: ['-em', '-er', '-em', '-en'] },
+          { label: 'Genitiv', cells: ['-en', '-er', '-en', '-er'] },
+        ],
+      },
+    ],
+    examples: [
+      { de: 'Ein guter Wein ist teuer.', en: 'A good wine is expensive.', note: 'Mixed, Nom. masc. → -er: "ein" shows no ending, so the adjective takes -er.' },
+      { de: 'Ich trinke ein gutes Bier.', en: 'I drink a good beer.', note: 'Mixed, Akk. neut. → -es: "ein gutes Bier".' },
+      { de: 'Guter Wein ist teuer.', en: 'Good wine is expensive.', note: 'Strong (no article), Nom. masc. → -er.' },
+      { de: 'Ich koche mit gutem Wein.', en: 'I cook with good wine.', note: 'Strong, Dat. masc. → -em: "mit gutem Wein".' },
+      { de: 'Kaltes Bier schmeckt gut.', en: 'Cold beer tastes good.', note: 'Strong, Nom. neut. → -es.' },
+    ],
+    drillFacts: [
+      { id: 'adj-mixed-nom-m', type: 'mixed-adj', prompt: 'Complete: "ein ___ Mann" (gut, Nominativ)', answer: 'guter', why: 'Mixed Nom. masc. → -er (ein has no ending, so the adjective shows it).' },
+      { id: 'adj-mixed-nom-n', type: 'mixed-adj', prompt: 'Complete: "ein ___ Kind" (gut, Nominativ neuter)', answer: 'gutes', why: 'Mixed Nom. neut. → -es.' },
+      { id: 'adj-mixed-akk-m', type: 'mixed-adj', prompt: 'Complete: "einen ___ Mann" (gut, Akkusativ)', answer: 'guten', why: 'Mixed Akk. masc. → -en.' },
+      { id: 'adj-mixed-dat-m', type: 'mixed-adj', prompt: 'Complete: "mit einem ___ Mann" (gut, Dativ)', answer: 'guten', why: 'Mixed Dativ is always -en.' },
+      { id: 'adj-strong-nom-m', type: 'strong-adj', prompt: 'Complete: "___ Wein" (gut, Nominativ masc, no article)', answer: 'guter', why: 'Strong Nom. masc. → -er (the adjective carries the case).' },
+      { id: 'adj-strong-akk-m', type: 'strong-adj', prompt: 'Complete: "Ich trinke ___ Wein." (gut, Akkusativ masc, no article)', answer: 'guten', why: 'Strong Akk. masc. → -en.' },
+      { id: 'adj-strong-dat-m', type: 'strong-adj', prompt: 'Complete: "mit ___ Wein" (gut, Dativ masc, no article)', answer: 'gutem', why: 'Strong Dat. masc. → -em.' },
+      { id: 'adj-strong-nom-n', type: 'strong-adj', prompt: 'Complete: "___ Bier" (kalt, Nominativ neuter, no article)', answer: 'kaltes', why: 'Strong Nom. neut. → -es.' },
+    ],
+  },
+
+  // ---------------------------------------------------------------- relative pronouns
+  {
+    id: 'b1-relativ',
+    tier: 'B1',
+    topic: 'relative',
+    title: 'Relative pronouns (Relativpronomen)',
+    explanation:
+      'A relative clause adds information about a noun ("the man WHO lives here", "the book THAT I read"). It is introduced by a relative pronoun whose form has two inputs: the GENDER comes from the noun it refers back to, and the CASE comes from the pronoun\'s role INSIDE the relative clause. The forms are the same as the definite article, with three exceptions: Dativ plural is "denen" (not den), and every Genitiv is "dessen" (masc/neut) or "deren" (fem/plural). The conjugated verb goes to the END of the relative clause.',
+    table: {
+      caption: 'Relative pronoun forms (der/die/das)',
+      columns: ['', 'Maskulin', 'Feminin', 'Neutrum', 'Plural'],
+      colAccent: [null, 'm', 'f', 'n', 'pl'],
+      rowAccent: ['nom', 'akk', 'dat', 'gen'],
+      rows: [
+        { label: 'Nominativ', cells: ['der', 'die', 'das', 'die'] },
+        { label: 'Akkusativ', cells: ['den', 'die', 'das', 'die'] },
+        { label: 'Dativ', cells: ['dem', 'der', 'dem', 'denen'] },
+        { label: 'Genitiv', cells: ['dessen', 'deren', 'dessen', 'deren'] },
+      ],
+    },
+    examples: [
+      { de: 'Der Mann, der dort steht, ist mein Vater.', en: 'The man who is standing there is my father.', note: 'Refers to "der Mann" (masc); subject inside the clause → Nom. masc. = der.' },
+      { de: 'Der Mann, den ich sehe, ist alt.', en: 'The man (whom) I see is old.', note: 'Object inside the clause → Akk. masc. = den.' },
+      { de: 'Die Frau, der ich helfe, ist nett.', en: 'The woman (whom) I help is nice.', note: 'helfen takes Dativ → Dat. fem. = der.' },
+      { de: 'Das Kind, dessen Mutter Ärztin ist, spielt.', en: 'The child whose mother is a doctor is playing.', note: 'Possession → Genitiv; masc/neut = dessen.' },
+      { de: 'Die Leute, denen ich danke, sind freundlich.', en: 'The people (whom) I thank are friendly.', note: 'danken takes Dativ; plural → denen (not den).' },
+    ],
+    drillFacts: [
+      { id: 'rel-akk-m', type: 'relativ', prompt: 'Complete: "Der Mann, ___ ich sehe, ist alt." (masc; object in the clause)', answer: 'den', why: 'Object → Akkusativ; rel. Akk. masc. = den.' },
+      { id: 'rel-dat-f', type: 'relativ', prompt: 'Complete: "Die Frau, ___ ich helfe, ist nett." (fem)', answer: 'der', why: 'helfen → Dativ; rel. Dat. fem. = der.' },
+      { id: 'rel-akk-n', type: 'relativ', prompt: 'Complete: "Das Auto, ___ ich fahre, ist neu." (neut; object)', answer: 'das', why: 'Object → Akkusativ; rel. Akk. neut. = das.' },
+      { id: 'rel-dat-pl', type: 'relativ', prompt: 'Complete: "Die Leute, ___ ich danke, ..." (plural; danken + Dativ)', answer: 'denen', why: 'Dativ plural relative pronoun = denen (NOT den).' },
+      { id: 'rel-gen-m', type: 'relativ', prompt: 'Complete: "Der Mann, ___ Auto rot ist, ..." (masc; whose)', answer: 'dessen', why: 'Possession → Genitiv; masc/neut = dessen.' },
+      { id: 'rel-gen-f', type: 'relativ', prompt: 'Complete: "Die Frau, ___ Mann Arzt ist, ..." (fem; whose)', answer: 'deren', why: 'Possession → Genitiv; fem/plural = deren.' },
+      { id: 'rel-case-role', type: 'relativ', prompt: 'The case of a relative pronoun comes from what?', answer: 'its role INSIDE the relative clause', why: 'Gender comes from the noun it refers to; case from its job in the clause.' },
+    ],
+  },
+
+  // ---------------------------------------------------------------- genitive prepositions
+  {
+    id: 'b1-prep-genitiv',
+    tier: 'B1',
+    topic: 'preposition',
+    title: 'Genitive prepositions',
+    explanation:
+      'A set of prepositions govern the Genitiv case. The common ones at B1 are trotz (despite), während (during) and wegen (because of). In careful and written German they take the Genitiv; in casual speech you will often hear the Dativ instead ("wegen dem Wetter"), but the Genitiv is the standard form to learn.',
+    table: {
+      caption: 'The three common B1 genitive prepositions',
+      columns: ['Preposition', 'Meaning', 'Example'],
+      rows: [
+        { cells: ['trotz', 'despite / in spite of', 'trotz des Regens (despite the rain)'] },
+        { cells: ['während', 'during', 'während der Woche (during the week)'] },
+        { cells: ['wegen', 'because of', 'wegen des Wetters (because of the weather)'] },
+      ],
+    },
+    examples: [
+      { de: 'Trotz des Regens gehen wir spazieren.', en: 'Despite the rain, we go for a walk.', note: '"trotz" → Genitiv; "des Regens" (masc. Gen.).' },
+      { de: 'Während der Woche arbeite ich viel.', en: 'During the week I work a lot.', note: '"während" → Genitiv; "der Woche" (fem. Gen.).' },
+      { de: 'Wegen des Wetters bleiben wir zu Hause.', en: 'Because of the weather, we stay home.', note: '"wegen" → Genitiv; "des Wetters" (neut. Gen.).' },
+    ],
+    drillFacts: [
+      { id: 'prep-trotz', type: 'prep-case', prompt: 'Which case does "trotz" take?', answer: 'Genitiv', why: '"trotz" is a genitive preposition.' },
+      { id: 'prep-waehrend', type: 'prep-case', prompt: 'Which case does "während" take?', answer: 'Genitiv', why: '"während" is a genitive preposition.' },
+      { id: 'prep-wegen', type: 'prep-case', prompt: 'Which case does "wegen" take?', answer: 'Genitiv', why: '"wegen" is a genitive preposition.' },
+      { id: 'prep-gen-fill-trotz', type: 'article-fill', prompt: 'Complete: "trotz ___ Regens" (masculine, definite)', answer: 'des', why: '"trotz" → Genitiv; masc. Gen. definite = des.' },
+      { id: 'prep-gen-fill-waehrend', type: 'article-fill', prompt: 'Complete: "während ___ Woche" (feminine, definite)', answer: 'der', why: '"während" → Genitiv; fem. Gen. definite = der.' },
+    ],
+  },
 ];
 
 // ---------------------------------------------------------------- reference lessons (read-only, not drilled)
@@ -438,6 +576,32 @@ export const GRAMMAR_LESSONS = [
       { heading: 'Where -e goes', body: 'Use -e in the singular Nominativ (all three genders) and in the singular Akkusativ for feminine and neuter: "der gute Wein", "die schöne Frau", "das kleine Kind". Five spots, all -e.' },
       { heading: 'Where -en goes', body: 'Everything else takes -en: masculine Akkusativ ("den guten Wein"), the entire Dativ ("dem guten Wein"), the entire Genitiv, and the entire plural ("die guten Weine").' },
       { heading: 'This is only the start', body: 'This weak pattern is for adjectives after der-words. After "ein/kein" (mixed endings) and with no article at all (strong endings), the endings differ - those two patterns come in the B1 tier.' },
+    ],
+  },
+
+  // -------------------------------------------------------------- B1 lessons
+  {
+    id: 'adj-three-types',
+    tier: 'B1',
+    title: 'Adjective endings: weak, mixed, strong',
+    intro: 'You already know the weak endings (after der-words). The full picture has three patterns, and which one you use depends entirely on what - if anything - comes before the adjective. The principle: the adjective and the article together must show the gender and case ONCE. If the article already shows it clearly, the adjective relaxes; if not, the adjective steps up.',
+    rules: [
+      { heading: 'Weak — after a der-word', body: 'der/die/das (and dieser, jeder…) already mark the case, so the adjective takes the easy -e/-en set. "der gute Wein", "dem guten Wein". This is the A2 pattern.' },
+      { heading: 'Mixed — after ein / kein / mein', body: 'These are unmarked in exactly the spots where "ein" has no ending: masculine Nominativ and neuter Nominativ/Akkusativ. There the adjective takes a STRONG ending to fill the gap: "ein guter Wein" (-er), "ein gutes Bier" (-es). Everywhere else it is the same -e/-en as weak.' },
+      { heading: 'Strong — no article at all', body: 'With no article, the adjective does the whole job and takes the endings the article would have had: "guter Wein" (-er), "gutem Wein" (Dat. -em), "gutes Bier" (-es). One quirk: masculine/neuter Genitiv is -en, not -es, because the noun already shows the -s ("guten Weines").' },
+      { heading: 'How to choose', body: 'Look left of the adjective: a der-word → weak; an ein-word → mixed; nothing → strong. That single check picks the pattern every time.' },
+    ],
+  },
+  {
+    id: 'relative-clauses',
+    tier: 'B1',
+    title: 'Relative clauses (Relativpronomen)',
+    intro: 'A relative clause describes a noun in more detail - "the man WHO lives here", "the book THAT I read". German builds them with a relative pronoun (der/die/das) and a very reliable word-order rule.',
+    rules: [
+      { heading: 'Two inputs decide the form', body: 'GENDER (and singular/plural) comes from the noun the clause describes. CASE comes from the pronoun\'s role INSIDE the relative clause - is it the subject (Nom), the object (Akk), the receiver (Dat), or a possessor (Gen)? Combine the two to pick the form.' },
+      { heading: 'Mostly like the definite article - with 3 exceptions', body: 'The forms match der/die/das EXCEPT: Dativ plural is "denen" (not den), and every Genitiv is "dessen" (masc/neut) or "deren" (fem/plural). Those three are the only ones to memorize specially.' },
+      { heading: 'The verb goes to the end', body: 'In the relative clause, the conjugated verb moves to the very end: "Der Mann, der dort wohnt, ..." / "Das Buch, das ich gestern gekauft habe, ...". Commas fence the clause off on both sides.' },
+      { heading: 'The preposition comes first', body: 'If the pronoun follows a preposition, the preposition sits in front of it and fixes the case: "die Stadt, in der ich wohne" (in + Dativ), "der Freund, mit dem ich spiele" (mit + Dativ).' },
     ],
   },
 ];

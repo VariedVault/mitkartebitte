@@ -5,7 +5,7 @@
 // second reload) compounds this. Network-first fixes that for anyone online, while still
 // falling back to the cache so the app keeps working offline.
 // Bump CACHE_NAME whenever the precache list itself changes (files added/removed).
-const CACHE_NAME = 'mitkartebitte-v12';
+const CACHE_NAME = 'mitkartebitte-v13';
 
 const PRECACHE_URLS = [
   './',

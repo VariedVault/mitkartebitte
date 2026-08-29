@@ -48,8 +48,8 @@ export const CASES_TIERS = [
   },
 ];
 
-// Tiers with a real build. B1 remains a "Coming soon" stub until authored.
-const BUILT_TIERS = new Set(['a1', 'a2']);
+// Tiers with a real build. All three are now authored.
+const BUILT_TIERS = new Set(['a1', 'a2', 'b1']);
 
 /** The grammar analogue of the verb "cards due today" - additive, only for built tiers, only
  *  once that tier's checkpoint is passed (so it counts real review debt, not new material).

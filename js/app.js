@@ -203,8 +203,35 @@ route('/cases/a2/checkpoint', async () => {
   renderGrammarCheckpoint(els.view, { profileId, tier: 'A2', setBreadcrumb });
 });
 
-// Cases & Grammar placeholder stub (B1) - distinct /cases/ namespace so it never
-// overlaps the /grammar/:tense route above. Additive only.
+// B1 Cases & Grammar - real built tier (same generic tier home + shared renderers as A2).
+// Registered before /cases/:tier so /cases/b1 is the real home.
+route('/cases/b1', async () => {
+  const profileId = requireProfile();
+  setActiveNav('learn');
+  refreshProfilePill();
+  renderGrammarTierHome(els.view, { profileId, tier: 'B1', setBreadcrumb });
+});
+route('/cases/b1/point/:pointId', async ({ pointId }) => {
+  requireProfile();
+  setActiveNav('learn');
+  refreshProfilePill();
+  renderGrammarPoint(els.view, { pointId, setBreadcrumb });
+});
+route('/cases/b1/lesson/:lessonId', async ({ lessonId }) => {
+  requireProfile();
+  setActiveNav('learn');
+  refreshProfilePill();
+  renderGrammarLesson(els.view, { lessonId, setBreadcrumb });
+});
+route('/cases/b1/checkpoint', async () => {
+  const profileId = requireProfile();
+  setActiveNav('learn');
+  refreshProfilePill();
+  renderGrammarCheckpoint(els.view, { profileId, tier: 'B1', setBreadcrumb });
+});
+
+// Cases & Grammar generic fallback (all tiers now built; kept for any future tier) -
+// distinct /cases/ namespace so it never overlaps the /grammar/:tense route above.
 route('/cases/:tier', async ({ tier }) => {
   requireProfile();
   setActiveNav('learn');
