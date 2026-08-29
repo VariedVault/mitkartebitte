@@ -4,8 +4,11 @@
 // file so wiring it in only needs a one-line import + one appended section on the Learn
 // screen and one new /cases/:tier route, changing no existing behavior.
 
+import * as store from '../store.js';
+import * as srs from '../srs.js';
 import { el, backLink } from '../ui/components.js';
 import { navigate } from '../router.js';
+import { drillFactsForTier } from '../data/grammarPoints.js';
 
 export const CASES_TIERS = [
   {
@@ -45,20 +48,35 @@ export const CASES_TIERS = [
   },
 ];
 
-/** The Learn-screen "Cases & Grammar" section - a heading plus three tappable tier cards,
- *  each a "Coming soon" placeholder. Reuses the existing .card/.track-card classes so it
- *  looks native with no new CSS. Returned as one wrapper node so the Learn screen only has
- *  to append a single element. */
-export function casesSection() {
+// Tiers with a real build. A2/B1 remain "Coming soon" stubs until authored.
+const BUILT_TIERS = new Set(['a1']);
+
+/** The grammar analogue of the verb "cards due today" - additive, only for built tiers, only
+ *  once that tier's checkpoint is passed (so it counts real review debt, not new material).
+ *  Kept here rather than resurrecting the removed Learn-home return-hook card. */
+function grammarDueTag(profileId, tierId) {
+  if (tierId !== 'a1' || !store.isGrammarCheckpointPassed(profileId, 'A1')) return null;
+  const keys = drillFactsForTier('A1').map((f) => f.key);
+  const due = srs.dueCount(store.getGrammarDeck(profileId), keys);
+  if (due <= 0) return null;
+  return el('span', { class: 'track-card-tag track-card-tag--done' }, `${due} due`);
+}
+
+/** The Learn-screen "Cases & Grammar" section - a heading plus three tappable tier cards.
+ *  A1 is built (no "Coming soon"); A2/B1 stay placeholders. Reuses existing .card/.track-card
+ *  classes so it looks native with no new CSS. Returned as one wrapper node so the Learn
+ *  screen only has to append a single element. */
+export function casesSection(profileId) {
   const wrap = el('div');
   wrap.appendChild(el('h2', { style: 'margin:16px 0 10px;font-size:15px;letter-spacing:0.04em;text-transform:uppercase;color:var(--cream-dim)' }, 'Cases & Grammar'));
   const grid = el('div', { style: 'display:flex;flex-direction:column;gap:12px' });
   for (const tier of CASES_TIERS) {
+    const built = BUILT_TIERS.has(tier.id);
     const card = el('button', { class: 'card track-card', style: 'text-align:left' });
     card.appendChild(
       el('div', { class: 'track-card-title' }, [
         `${tier.level} · ${tier.title}`,
-        el('span', { class: 'track-card-tag' }, 'Coming soon'),
+        built ? grammarDueTag(profileId, tier.id) : el('span', { class: 'track-card-tag' }, 'Coming soon'),
       ])
     );
     card.appendChild(el('p', { style: 'color:var(--ink-soft);margin:0' }, tier.blurb));

@@ -14,6 +14,10 @@ import { renderFoundationsHome } from './views/foundationsHome.js';
 import { renderFoundationsGroup } from './views/foundationsGroup.js';
 import { renderFoundationsCard } from './views/foundationsCard.js';
 import { renderCasesStub } from './views/casesGrammar.js';
+import { renderGrammarA1Home } from './views/grammarA1.js';
+import { renderGrammarPoint } from './views/grammarPoint.js';
+import { renderGrammarLesson } from './views/grammarLesson.js';
+import { renderGrammarCheckpoint } from './views/grammarCheckpoint.js';
 
 store.migrateIfNeeded(); // must run before anything else reads profile-scoped storage
 initTTS();
@@ -143,8 +147,36 @@ route('/grammar/:tense', async ({ tense }) => {
   await renderGrammarRules(els.view, { tense, setBreadcrumb });
 });
 
-// Cases & Grammar placeholder stubs - distinct /cases/ namespace so it never overlaps the
-// /grammar/:tense route above. Additive only.
+// A1 Cases & Grammar - the real built tier. These specific routes are registered BEFORE the
+// generic /cases/:tier stub below so /cases/a1 resolves to the real home; /cases/a2 and
+// /cases/b1 still fall through to the "Coming soon" stub. All additive, distinct namespace.
+route('/cases/a1', async () => {
+  const profileId = requireProfile();
+  setActiveNav('learn');
+  refreshProfilePill();
+  renderGrammarA1Home(els.view, { profileId, setBreadcrumb });
+});
+route('/cases/a1/point/:pointId', async ({ pointId }) => {
+  requireProfile();
+  setActiveNav('learn');
+  refreshProfilePill();
+  renderGrammarPoint(els.view, { pointId, setBreadcrumb });
+});
+route('/cases/a1/lesson/:lessonId', async ({ lessonId }) => {
+  requireProfile();
+  setActiveNav('learn');
+  refreshProfilePill();
+  renderGrammarLesson(els.view, { lessonId, setBreadcrumb });
+});
+route('/cases/a1/checkpoint', async () => {
+  const profileId = requireProfile();
+  setActiveNav('learn');
+  refreshProfilePill();
+  renderGrammarCheckpoint(els.view, { profileId, setBreadcrumb });
+});
+
+// Cases & Grammar placeholder stubs (A2/B1) - distinct /cases/ namespace so it never
+// overlaps the /grammar/:tense route above. Additive only.
 route('/cases/:tier', async ({ tier }) => {
   requireProfile();
   setActiveNav('learn');

@@ -72,5 +72,5 @@ export async function renderLearnHome(container, { profileId }) {
   for (const level of LEVELS) trackGrid.appendChild(levelCard(profileId, level));
   container.appendChild(trackGrid);
 
-  container.appendChild(casesSection());
+  container.appendChild(casesSection(profileId));
 }

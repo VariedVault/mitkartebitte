@@ -107,16 +107,19 @@ export function renameProfile(id, name) {
 export function deleteProfile(id) {
   const profiles = listProfiles().filter((p) => p.id !== id);
   write(PROFILES_KEY, profiles);
-  for (const part of ['progress', 'srs', 'position', 'activity', 'settings']) {
+  // 'grammar-srs'/'grammar-progress' are the separate Cases & Grammar deck + checkpoint
+  // state - listed here so deleting a profile cleans them up like every other part.
+  for (const part of ['progress', 'srs', 'position', 'activity', 'settings', 'grammar-srs', 'grammar-progress']) {
     try { localStorage.removeItem(keyFor(id, part)); } catch { /* ignore */ }
   }
   if (getActiveProfileId() === id) write(ACTIVE_KEY, null);
 }
 
 /** Everyday reset: wipes ONE profile's progress/deck/position. Keeps the profile (name,
- *  settings, activity heatmap) and every other profile untouched. */
+ *  settings, activity heatmap) and every other profile untouched. Grammar deck + checkpoint
+ *  state are course progress too, so they reset here alongside the verb progress/deck. */
 export function clearProfileData(id) {
-  for (const part of ['progress', 'srs', 'position']) {
+  for (const part of ['progress', 'srs', 'position', 'grammar-srs', 'grammar-progress']) {
     try { localStorage.removeItem(keyFor(id, part)); } catch { /* ignore */ }
   }
 }
@@ -202,6 +205,37 @@ export function getSRSDeck(profileId) {
 
 export function saveSRSDeck(profileId, deck) {
   write(keyFor(profileId, 'srs'), deck);
+}
+
+// ---------------------------------------------------------------- Cases & Grammar deck (SEPARATE from the verb SRS deck above)
+// Same Leitner shape as the verb deck, same srs.js logic operates on it - but a distinct
+// storage key, so the two decks have completely independent box/due state and never mix.
+
+export function getGrammarDeck(profileId) {
+  return read(keyFor(profileId, 'grammar-srs'), { facts: {} });
+}
+
+export function saveGrammarDeck(profileId, deck) {
+  write(keyFor(profileId, 'grammar-srs'), deck);
+}
+
+/** Separate per-tier grammar checkpoint state, mirroring the verb progress' checkpointPassed
+ *  but stored under its own key so it never touches Conjugation progress. */
+function getGrammarProgress(profileId) {
+  const raw = read(keyFor(profileId, 'grammar-progress'), null);
+  if (!raw || typeof raw !== 'object' || !raw.tiers) return { tiers: {} };
+  return raw;
+}
+
+export function setGrammarCheckpointPassed(profileId, tier, passed) {
+  const progress = getGrammarProgress(profileId);
+  progress.tiers[tier] = { ...(progress.tiers[tier] || {}), checkpointPassed: passed };
+  write(keyFor(profileId, 'grammar-progress'), progress);
+  return progress;
+}
+
+export function isGrammarCheckpointPassed(profileId, tier) {
+  return !!getGrammarProgress(profileId).tiers[tier]?.checkpointPassed;
 }
 
 // ---------------------------------------------------------------- position (resume)
