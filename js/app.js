@@ -13,6 +13,7 @@ import { renderImpressum, renderDatenschutz, renderContact } from './views/legal
 import { renderFoundationsHome } from './views/foundationsHome.js';
 import { renderFoundationsGroup } from './views/foundationsGroup.js';
 import { renderFoundationsCard } from './views/foundationsCard.js';
+import { renderCasesStub } from './views/casesGrammar.js';
 
 store.migrateIfNeeded(); // must run before anything else reads profile-scoped storage
 initTTS();
@@ -140,6 +141,15 @@ route('/grammar/:tense', async ({ tense }) => {
   setActiveNav('learn');
   refreshProfilePill();
   await renderGrammarRules(els.view, { tense, setBreadcrumb });
+});
+
+// Cases & Grammar placeholder stubs - distinct /cases/ namespace so it never overlaps the
+// /grammar/:tense route above. Additive only.
+route('/cases/:tier', async ({ tier }) => {
+  requireProfile();
+  setActiveNav('learn');
+  refreshProfilePill();
+  await renderCasesStub(els.view, { tier, setBreadcrumb });
 });
 
 route('/checkpoint/:level', async ({ level }) => {
