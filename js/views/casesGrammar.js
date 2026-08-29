@@ -48,15 +48,17 @@ export const CASES_TIERS = [
   },
 ];
 
-// Tiers with a real build. A2/B1 remain "Coming soon" stubs until authored.
-const BUILT_TIERS = new Set(['a1']);
+// Tiers with a real build. B1 remains a "Coming soon" stub until authored.
+const BUILT_TIERS = new Set(['a1', 'a2']);
 
 /** The grammar analogue of the verb "cards due today" - additive, only for built tiers, only
  *  once that tier's checkpoint is passed (so it counts real review debt, not new material).
  *  Kept here rather than resurrecting the removed Learn-home return-hook card. */
 function grammarDueTag(profileId, tierId) {
-  if (tierId !== 'a1' || !store.isGrammarCheckpointPassed(profileId, 'A1')) return null;
-  const keys = drillFactsForTier('A1').map((f) => f.key);
+  if (!BUILT_TIERS.has(tierId)) return null;
+  const TIER = tierId.toUpperCase();
+  if (!store.isGrammarCheckpointPassed(profileId, TIER)) return null;
+  const keys = drillFactsForTier(TIER).map((f) => f.key);
   const due = srs.dueCount(store.getGrammarDeck(profileId), keys);
   if (due <= 0) return null;
   return el('span', { class: 'track-card-tag track-card-tag--done' }, `${due} due`);

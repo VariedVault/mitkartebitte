@@ -7,7 +7,8 @@ import { navigate } from '../router.js';
 export function renderGrammarLesson(container, { lessonId, setBreadcrumb }) {
   const lesson = lessonById(lessonId);
   container.innerHTML = '';
-  container.appendChild(backLink('A1 Cases & Grammar', () => navigate('/cases/a1')));
+  const tier = lesson ? lesson.tier : 'A1';
+  container.appendChild(backLink(`${tier} Cases & Grammar`, () => navigate(`/cases/${tier.toLowerCase()}`)));
 
   if (!lesson) {
     setBreadcrumb('Cases & Grammar');

@@ -15,6 +15,7 @@ import { renderFoundationsGroup } from './views/foundationsGroup.js';
 import { renderFoundationsCard } from './views/foundationsCard.js';
 import { renderCasesStub } from './views/casesGrammar.js';
 import { renderGrammarA1Home } from './views/grammarA1.js';
+import { renderGrammarTierHome } from './views/grammarTierHome.js';
 import { renderGrammarPoint } from './views/grammarPoint.js';
 import { renderGrammarLesson } from './views/grammarLesson.js';
 import { renderGrammarCheckpoint } from './views/grammarCheckpoint.js';
@@ -175,7 +176,34 @@ route('/cases/a1/checkpoint', async () => {
   renderGrammarCheckpoint(els.view, { profileId, setBreadcrumb });
 });
 
-// Cases & Grammar placeholder stubs (A2/B1) - distinct /cases/ namespace so it never
+// A2 Cases & Grammar - real built tier (generic tier home + shared point/lesson/checkpoint
+// renderers). Registered before /cases/:tier so /cases/a2 is the real home; B1 still stubs.
+route('/cases/a2', async () => {
+  const profileId = requireProfile();
+  setActiveNav('learn');
+  refreshProfilePill();
+  renderGrammarTierHome(els.view, { profileId, tier: 'A2', setBreadcrumb });
+});
+route('/cases/a2/point/:pointId', async ({ pointId }) => {
+  requireProfile();
+  setActiveNav('learn');
+  refreshProfilePill();
+  renderGrammarPoint(els.view, { pointId, setBreadcrumb });
+});
+route('/cases/a2/lesson/:lessonId', async ({ lessonId }) => {
+  requireProfile();
+  setActiveNav('learn');
+  refreshProfilePill();
+  renderGrammarLesson(els.view, { lessonId, setBreadcrumb });
+});
+route('/cases/a2/checkpoint', async () => {
+  const profileId = requireProfile();
+  setActiveNav('learn');
+  refreshProfilePill();
+  renderGrammarCheckpoint(els.view, { profileId, tier: 'A2', setBreadcrumb });
+});
+
+// Cases & Grammar placeholder stub (B1) - distinct /cases/ namespace so it never
 // overlaps the /grammar/:tense route above. Additive only.
 route('/cases/:tier', async ({ tier }) => {
   requireProfile();

@@ -266,6 +266,116 @@ export const GRAMMAR_POINTS = [
       { id: 'prep-dat-fill-bei', type: 'article-fill', prompt: 'Complete: "Ich wohne bei ___ Frau." (feminine, definite)', answer: 'der', why: '"bei" → Dativ; fem. Dat. definite article = der.' },
     ],
   },
+
+  // ================================================================ A2 TIER ================================================================
+  // Two-way prepositions + weak adjective declension. Depends on the A1 case tables above
+  // (der/die/das, Akkusativ vs Dativ) - reused, never redefined.
+
+  // ---------------------------------------------------------------- Wechselpräpositionen
+  {
+    id: 'a2-wechsel',
+    tier: 'A2',
+    topic: 'preposition',
+    title: 'Two-way prepositions (Wechselpräpositionen)',
+    explanation:
+      'Nine prepositions can take EITHER Akkusativ or Dativ - the case tells you whether there is movement into a place or a fixed position. Motion / a change of location (answers "Wohin?" - where to?) → Akkusativ. Static location / position (answers "Wo?" - where?) → Dativ. Same preposition, two meanings: "in den Park" (into the park, motion) vs "in dem Park" (in the park, location). The nine are: in, an, auf, über, unter, vor, hinter, neben, zwischen.',
+    table: {
+      caption: 'Motion (Wohin? → Akkusativ) vs location (Wo? → Dativ)',
+      columns: ['Prep', 'Wohin? → Akkusativ (motion)', 'Wo? → Dativ (location)'],
+      rows: [
+        { cells: ['in (in/into)', 'Ich gehe in den Park.', 'Ich bin in dem Park. (im Park)'] },
+        { cells: ['an (at/on)', 'Ich hänge das Bild an die Wand.', 'Das Bild hängt an der Wand.'] },
+        { cells: ['auf (on)', 'Ich lege das Buch auf den Tisch.', 'Das Buch liegt auf dem Tisch.'] },
+        { cells: ['über (over)', 'Ich hänge die Lampe über den Tisch.', 'Die Lampe hängt über dem Tisch.'] },
+        { cells: ['unter (under)', 'Die Katze geht unter den Tisch.', 'Die Katze schläft unter dem Tisch.'] },
+        { cells: ['vor (in front of)', 'Ich stelle das Auto vor das Haus.', 'Das Auto steht vor dem Haus.'] },
+        { cells: ['hinter (behind)', 'Ich stelle den Stuhl hinter den Tisch.', 'Der Stuhl steht hinter dem Tisch.'] },
+        { cells: ['neben (next to)', 'Ich setze mich neben den Mann.', 'Ich sitze neben dem Mann.'] },
+        { cells: ['zwischen (between)', 'Ich stelle die Lampe zwischen die Bücher.', 'Die Lampe steht zwischen den Büchern.'] },
+      ],
+    },
+    examples: [
+      { de: 'Ich gehe in den Park.', en: 'I go into the park.', note: 'Motion (Wohin?) → Akkusativ; "den Park" (masc. Akk.).' },
+      { de: 'Ich sitze in dem Park.', en: 'I sit in the park.', note: 'Location (Wo?) → Dativ; "dem Park" (masc. Dat.), usually contracted "im Park".' },
+      { de: 'Ich hänge das Bild an die Wand.', en: 'I hang the picture on the wall.', note: 'Motion → Akkusativ; "die Wand" (fem. Akk.).' },
+      { de: 'Das Bild hängt an der Wand.', en: 'The picture hangs on the wall.', note: 'Location → Dativ; "der Wand" (fem. Dat.).' },
+      { de: 'Das Auto steht vor dem Haus.', en: 'The car is parked in front of the house.', note: 'Location → Dativ; "dem Haus" (neut. Dat.).' },
+    ],
+    note: 'Contractions are normal and expected: in dem → im, in das → ins, an dem → am, an das → ans.',
+    drillFacts: [
+      // Wohin / Wo case-choice drill (the highest-value drill of this tier).
+      { id: 'wechsel-in-wohin', type: 'wechsel-case', prompt: 'Wohin gehst du? — "Ich gehe in ___ Park." (masculine)', answer: 'den (Akkusativ)', why: '"Wohin?" = motion → Akkusativ; masc. Akk. = den.' },
+      { id: 'wechsel-in-wo', type: 'wechsel-case', prompt: 'Wo bist du? — "Ich bin in ___ Park." (masculine)', answer: 'dem (Dativ)', why: '"Wo?" = location → Dativ; masc. Dat. = dem.' },
+      { id: 'wechsel-an-wohin', type: 'wechsel-case', prompt: 'Wohin hängst du das Bild? — "an ___ Wand" (feminine)', answer: 'die (Akkusativ)', why: 'Motion → Akkusativ; fem. Akk. = die.' },
+      { id: 'wechsel-an-wo', type: 'wechsel-case', prompt: 'Wo hängt das Bild? — "an ___ Wand" (feminine)', answer: 'der (Dativ)', why: 'Location → Dativ; fem. Dat. = der.' },
+      { id: 'wechsel-auf-wohin', type: 'wechsel-case', prompt: 'Wohin legst du das Buch? — "auf ___ Tisch" (masculine)', answer: 'den (Akkusativ)', why: 'Motion → Akkusativ; masc. Akk. = den.' },
+      { id: 'wechsel-auf-wo', type: 'wechsel-case', prompt: 'Wo liegt das Buch? — "auf ___ Tisch" (masculine)', answer: 'dem (Dativ)', why: 'Location → Dativ; masc. Dat. = dem.' },
+      { id: 'wechsel-vor-wo', type: 'wechsel-case', prompt: 'Wo steht das Auto? — "vor ___ Haus" (neuter)', answer: 'dem (Dativ)', why: 'Location → Dativ; neut. Dat. = dem.' },
+      { id: 'wechsel-unter-wohin', type: 'wechsel-case', prompt: 'Wohin geht die Katze? — "unter ___ Tisch" (masculine)', answer: 'den (Akkusativ)', why: 'Motion → Akkusativ; masc. Akk. = den.' },
+      // Which case does the meaning call for?
+      { id: 'wechsel-case-motion', type: 'wechsel-case', prompt: 'A Wechselpräposition with MOTION (Wohin?) takes which case?', answer: 'Akkusativ', why: 'Movement / change of place → Akkusativ.' },
+      { id: 'wechsel-case-location', type: 'wechsel-case', prompt: 'A Wechselpräposition with LOCATION (Wo?) takes which case?', answer: 'Dativ', why: 'Fixed position / no movement → Dativ.' },
+    ],
+  },
+
+  // ---------------------------------------------------------------- weak adjective declension
+  {
+    id: 'a2-adj-weak',
+    tier: 'A2',
+    topic: 'declension',
+    title: 'Adjective endings after der-words (weak)',
+    explanation:
+      'When an adjective sits between a der-word (der/die/das, dieser, jeder…) and its noun, it takes a "weak" ending - and weak endings are the easy ones: only -e or -en. The rule of thumb: the five Nominativ/Akkusativ singular spots that are not masculine-accusative take -e; everything else takes -en. The der-word already shows the case, so the adjective barely has to.',
+    tables: [
+      {
+        caption: 'Weak endings (adjective after a definite article)',
+        columns: ['', 'Maskulin', 'Feminin', 'Neutrum', 'Plural'],
+        colAccent: [null, 'm', 'f', 'n', 'pl'],
+        rowAccent: ['nom', 'akk', 'dat', 'gen'],
+        rows: [
+          { label: 'Nominativ', cells: ['-e', '-e', '-e', '-en'] },
+          { label: 'Akkusativ', cells: ['-en', '-e', '-e', '-en'] },
+          { label: 'Dativ', cells: ['-en', '-en', '-en', '-en'] },
+          { label: 'Genitiv', cells: ['-en', '-en', '-en', '-en'] },
+        ],
+      },
+      {
+        caption: 'Adjective core (base form → sample "der …e")',
+        columns: ['Adjective', 'Meaning', 'In context'],
+        rows: [
+          { cells: ['gut', 'good', 'der gute Wein'] },
+          { cells: ['groß', 'big / tall', 'der große Mann'] },
+          { cells: ['klein', 'small', 'das kleine Kind'] },
+          { cells: ['neu', 'new', 'das neue Auto'] },
+          { cells: ['alt', 'old', 'die alte Stadt'] },
+          { cells: ['schön', 'beautiful', 'die schöne Frau'] },
+          { cells: ['jung', 'young', 'der junge Mann'] },
+          { cells: ['teuer', 'expensive', 'der teure Mantel'] },
+          { cells: ['billig', 'cheap', 'das billige Buch'] },
+          { cells: ['kalt', 'cold', 'das kalte Wasser'] },
+          { cells: ['warm', 'warm', 'die warme Suppe'] },
+          { cells: ['schnell', 'fast', 'das schnelle Auto'] },
+        ],
+      },
+    ],
+    examples: [
+      { de: 'Der große Mann liest ein Buch.', en: 'The tall man reads a book.', note: 'Nom. masc. → -e: "der große Mann".' },
+      { de: 'Ich sehe den großen Mann.', en: 'I see the tall man.', note: 'Akk. masc. → -en: "den großen Mann".' },
+      { de: 'Ich helfe dem großen Mann.', en: 'I help the tall man.', note: 'Dat. masc. → -en: "dem großen Mann".' },
+      { de: 'Die schöne Frau singt.', en: 'The beautiful woman sings.', note: 'Nom. fem. → -e: "die schöne Frau".' },
+      { de: 'Das ist der teure Mantel.', en: 'That is the expensive coat.', note: '"teuer" drops its -e- before an ending → "teure".' },
+    ],
+    note: 'This is only the WEAK declension (after der-words). Adjectives after "ein/kein" (mixed) and with no article (strong) come in the B1 tier.',
+    drillFacts: [
+      { id: 'adj-weak-nom-m', type: 'weak-adj', prompt: 'Complete: "der ___ Mann" (groß, Nominativ)', answer: 'große', why: 'Weak Nom. masc. ending = -e → große.' },
+      { id: 'adj-weak-akk-m', type: 'weak-adj', prompt: 'Complete: "den ___ Mann" (groß, Akkusativ)', answer: 'großen', why: 'Weak Akk. masc. ending = -en → großen.' },
+      { id: 'adj-weak-dat-m', type: 'weak-adj', prompt: 'Complete: "dem ___ Mann" (gut, Dativ)', answer: 'guten', why: 'Weak Dativ ending is always -en → guten.' },
+      { id: 'adj-weak-nom-f', type: 'weak-adj', prompt: 'Complete: "die ___ Frau" (schön, Nominativ)', answer: 'schöne', why: 'Weak Nom. fem. ending = -e → schöne.' },
+      { id: 'adj-weak-akk-n', type: 'weak-adj', prompt: 'Complete: "das ___ Kind" (klein, Akkusativ)', answer: 'kleine', why: 'Weak Akk. neut. ending = -e → kleine.' },
+      { id: 'adj-weak-nom-pl', type: 'weak-adj', prompt: 'Complete: "die ___ Kinder" (jung, Nominativ plural)', answer: 'jungen', why: 'Weak plural ending is always -en → jungen.' },
+      { id: 'adj-weak-teuer', type: 'weak-adj', prompt: 'Complete: "der ___ Mantel" (teuer, Nominativ)', answer: 'teure', why: '"teuer" drops its -e- → teur- + Nom. masc. -e = teure.' },
+    ],
+  },
 ];
 
 // ---------------------------------------------------------------- reference lessons (read-only, not drilled)
@@ -302,6 +412,32 @@ export const GRAMMAR_LESSONS = [
       { heading: 'Always Accusative: für, durch, gegen, ohne, um', body: 'These five never change case. Memory aid "FUDGO". Whatever follows goes into the Accusative: "für dich", "durch den Park", "gegen ihn", "ohne einen Mantel", "um den Tisch".' },
       { heading: 'Always Dative: mit, nach, bei, seit, von, zu, aus', body: 'These seven always take the Dative. Chant them: "aus, bei, mit, nach, seit, von, zu". Examples: "mit dem Bus", "nach der Arbeit", "bei der Frau", "aus der Schweiz", "zum Arzt".' },
       { heading: 'Watch for contractions', body: 'Dative "zu dem" → "zum", "zu der" → "zur", "von dem" → "vom", "bei dem" → "beim". Accusative "für das" → "fürs", "um das" → "ums", "durch das" → "durchs". These are normal and expected - not separate rules to memorize, just squished-together versions.' },
+    ],
+  },
+
+  // -------------------------------------------------------------- A2 lessons
+  {
+    id: 'wechsel-wohin-wo',
+    tier: 'A2',
+    title: 'Wechselpräpositionen: Wohin vs Wo',
+    intro: 'Nine prepositions - in, an, auf, über, unter, vor, hinter, neben, zwischen - can take Akkusativ OR Dativ. Which one depends entirely on meaning: is something MOVING to a new place, or is it simply THERE?',
+    rules: [
+      { heading: 'Motion → Akkusativ (Wohin?)', body: 'If the phrase answers "Wohin?" (where TO?) - there is movement or a change of location into/onto/under something - use Akkusativ. "Ich gehe in den Park" (I go into the park), "Ich lege das Buch auf den Tisch" (I put the book onto the table).' },
+      { heading: 'Location → Dativ (Wo?)', body: 'If the phrase answers "Wo?" (where?) - a fixed position, no movement into a new place - use Dativ. "Ich bin in dem Park" (I am in the park), "Das Buch liegt auf dem Tisch" (the book lies on the table).' },
+      { heading: 'The verb is a big clue', body: 'Motion verbs (gehen, legen, stellen, hängen [put], sich setzen) usually pair with Akkusativ; position verbs (sein, liegen, stehen, hängen [be hanging], sitzen) usually pair with Dativ. Same preposition, the verb tells you the direction.' },
+      { heading: 'Contractions', body: 'in dem → im, in das → ins, an dem → am, an das → ans. "Ich gehe ins Kino" (motion, Akk.), "Ich bin im Kino" (location, Dat.).' },
+    ],
+  },
+  {
+    id: 'adj-weak-intro',
+    tier: 'A2',
+    title: 'Adjective endings after der-words (weak)',
+    intro: 'German adjectives take an ending when they stand in front of a noun. After a der-word (der/die/das, dieser, jeder…) those endings are the simplest set in the language - only -e or -en.',
+    rules: [
+      { heading: 'Only two endings: -e and -en', body: 'After a definite article, an adjective ends in either -e or -en. There is no third option to worry about in this pattern.' },
+      { heading: 'Where -e goes', body: 'Use -e in the singular Nominativ (all three genders) and in the singular Akkusativ for feminine and neuter: "der gute Wein", "die schöne Frau", "das kleine Kind". Five spots, all -e.' },
+      { heading: 'Where -en goes', body: 'Everything else takes -en: masculine Akkusativ ("den guten Wein"), the entire Dativ ("dem guten Wein"), the entire Genitiv, and the entire plural ("die guten Weine").' },
+      { heading: 'This is only the start', body: 'This weak pattern is for adjectives after der-words. After "ein/kein" (mixed endings) and with no article at all (strong endings), the endings differ - those two patterns come in the B1 tier.' },
     ],
   },
 ];

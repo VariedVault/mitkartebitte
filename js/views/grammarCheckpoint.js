@@ -4,7 +4,6 @@ import { el, backLink } from '../ui/components.js';
 import { drillFactsForTier } from '../data/grammarPoints.js';
 import { navigate } from '../router.js';
 
-const TIER = 'A1';
 const QUESTION_COUNT = 8;
 const PASS_THRESHOLD = 0.8;
 
@@ -17,17 +16,19 @@ function shuffle(arr) {
   return a;
 }
 
-/** A1 Cases & Grammar checkpoint - the grammar analogue of the verb checkpoint, on the
- *  SEPARATE grammar deck + grammar checkpoint state. Passing unlocks A1 grammar in Grammar
- *  Practice; it never touches Conjugation progress or the verb deck. */
-export function renderGrammarCheckpoint(container, { profileId, setBreadcrumb }) {
-  setBreadcrumb('A1 Cases & Grammar Checkpoint');
-  const facts = drillFactsForTier(TIER);
+/** Cases & Grammar checkpoint - the grammar analogue of the verb checkpoint, on the
+ *  SEPARATE grammar deck + grammar checkpoint state. Passing unlocks that tier's grammar in
+ *  Grammar Practice; it never touches Conjugation progress or the verb deck. `tier` defaults
+ *  to 'A1' so the A1 route's existing call is behaviourally identical. */
+export function renderGrammarCheckpoint(container, { profileId, tier = 'A1', setBreadcrumb }) {
+  const tierPath = `/cases/${tier.toLowerCase()}`;
+  setBreadcrumb(`${tier} Cases & Grammar Checkpoint`);
+  const facts = drillFactsForTier(tier);
   const pool = shuffle(facts).slice(0, QUESTION_COUNT);
 
   container.innerHTML = '';
-  container.appendChild(backLink('A1 Cases & Grammar', () => navigate('/cases/a1')));
-  container.appendChild(el('h1', {}, 'A1 Grammar Checkpoint'));
+  container.appendChild(backLink(`${tier} Cases & Grammar`, () => navigate(tierPath)));
+  container.appendChild(el('h1', {}, `${tier} Grammar Checkpoint`));
 
   if (pool.length === 0) {
     container.appendChild(el('div', { class: 'card' }, 'No grammar facts to test yet.'));
@@ -95,15 +96,15 @@ export function renderGrammarCheckpoint(container, { profileId, setBreadcrumb })
     store.recordActivity(profileId);
     const pct = Math.round((correctCount / pool.length) * 100);
     const passed = pct >= Math.round(PASS_THRESHOLD * 100);
-    const alreadyPassed = store.isGrammarCheckpointPassed(profileId, TIER);
-    if (passed || alreadyPassed) store.setGrammarCheckpointPassed(profileId, TIER, true);
+    const alreadyPassed = store.isGrammarCheckpointPassed(profileId, tier);
+    if (passed || alreadyPassed) store.setGrammarCheckpointPassed(profileId, tier, true);
 
     stage.innerHTML = '';
     const card = el('div', { class: 'card celebrate' });
     if (passed) {
       card.appendChild(el('span', { class: 'big-emoji' }, '✨'));
       card.appendChild(el('div', { class: 'unlock-banner' }, `Grammar Practice unlocked - ${pct}%`));
-      card.appendChild(el('p', { style: 'margin-top:14px;color:var(--ink-soft)' }, 'A1 grammar is now in your Grammar Practice deck - keep practicing to actually retain it.'));
+      card.appendChild(el('p', { style: 'margin-top:14px;color:var(--ink-soft)' }, `${tier} grammar is now in your Grammar Practice deck - keep practicing to actually retain it.`));
     } else {
       card.appendChild(el('span', { class: 'big-emoji' }, '🃏'));
       card.appendChild(el('h2', {}, `${pct}% this time`));
@@ -113,11 +114,11 @@ export function renderGrammarCheckpoint(container, { profileId, setBreadcrumb })
       el('div', { class: 'toolbar', style: 'justify-content:center;margin-top:14px' }, passed
         ? [
             (() => { const b = el('button', { class: 'btn btn-primary' }, 'Go to Grammar Practice →'); b.addEventListener('click', () => { store.setSetting(profileId, 'practiceDeck', 'grammar'); navigate('/practice'); }); return b; })(),
-            (() => { const b = el('button', { class: 'btn' }, 'Back'); b.addEventListener('click', () => navigate('/cases/a1')); return b; })(),
+            (() => { const b = el('button', { class: 'btn' }, 'Back'); b.addEventListener('click', () => navigate(tierPath)); return b; })(),
           ]
         : [
-            (() => { const b = el('button', { class: 'btn btn-primary' }, 'Retake'); b.addEventListener('click', () => navigate('/cases/a1/checkpoint')); return b; })(),
-            (() => { const b = el('button', { class: 'btn' }, 'Back'); b.addEventListener('click', () => navigate('/cases/a1')); return b; })(),
+            (() => { const b = el('button', { class: 'btn btn-primary' }, 'Retake'); b.addEventListener('click', () => navigate(`${tierPath}/checkpoint`)); return b; })(),
+            (() => { const b = el('button', { class: 'btn' }, 'Back'); b.addEventListener('click', () => navigate(tierPath)); return b; })(),
           ]
       )
     );

@@ -47,7 +47,10 @@ function renderTable(table) {
 export function renderGrammarPoint(container, { pointId, setBreadcrumb }) {
   const point = pointById(pointId);
   container.innerHTML = '';
-  container.appendChild(backLink('A1 Cases & Grammar', () => navigate('/cases/a1')));
+  // Back-link derives from the point's own tier, so A2/B1 points return to their own tier
+  // home (A1 points still go to /cases/a1 exactly as before).
+  const tier = point ? point.tier : 'A1';
+  container.appendChild(backLink(`${tier} Cases & Grammar`, () => navigate(`/cases/${tier.toLowerCase()}`)));
 
   if (!point) {
     setBreadcrumb('Cases & Grammar');
