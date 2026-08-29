@@ -71,7 +71,10 @@ export function renderGrammarA1Home(container, { profileId, setBreadcrumb }) {
   container.appendChild(el('h2', { style: 'margin:24px 0 10px;font-size:15px;letter-spacing:0.04em;text-transform:uppercase;color:var(--cream-dim)' }, `Grammar points (${points.length})`));
   const grid = el('div', { style: 'display:grid;grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));gap:10px' });
   for (const point of points) {
-    const card = el('button', { class: 'card', style: 'text-align:left;padding:14px' }, [
+    // margin-top:0 cancels the global `.card + .card` stacked-list spacing, which in a grid
+    // row otherwise pushes every card except the first 14px lower than its row-mates (the
+    // same fix as the verb grid / Foundations tiles). Inline so it beats the stylesheet.
+    const card = el('button', { class: 'card', style: 'text-align:left;padding:14px;margin-top:0' }, [
       el('div', { style: 'font-weight:700;color:var(--ink)' }, point.title),
       el('div', { style: 'color:var(--ink-soft);font-size:12px;margin-top:3px;text-transform:capitalize' }, point.topic),
     ]);
