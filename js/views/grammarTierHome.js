@@ -72,8 +72,11 @@ export function renderGrammarTierHome(container, { profileId, tier, setBreadcrum
   for (const point of points) {
     // margin-top:0 cancels the global `.card + .card` stacked-list spacing that would
     // otherwise push every card except the first 14px lower in the grid row.
+    // overflow-wrap:anywhere lets a long single word (e.g. "(Wechselpräpositionen)") wrap
+    // inside the tile instead of overflowing/clipping; grid rows stretch to equal height so
+    // the tiles in a row stay the same size.
     const card = el('button', { class: 'card', style: 'text-align:left;padding:14px;margin-top:0' }, [
-      el('div', { style: 'font-weight:700;color:var(--ink)' }, point.title),
+      el('div', { style: 'font-weight:700;color:var(--ink);overflow-wrap:anywhere' }, point.title),
       el('div', { style: 'color:var(--ink-soft);font-size:12px;margin-top:3px;text-transform:capitalize' }, point.topic),
     ]);
     card.addEventListener('click', () => navigate(`${tierPath}/point/${point.id}`));

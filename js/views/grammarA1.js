@@ -75,7 +75,7 @@ export function renderGrammarA1Home(container, { profileId, setBreadcrumb }) {
     // row otherwise pushes every card except the first 14px lower than its row-mates (the
     // same fix as the verb grid / Foundations tiles). Inline so it beats the stylesheet.
     const card = el('button', { class: 'card', style: 'text-align:left;padding:14px;margin-top:0' }, [
-      el('div', { style: 'font-weight:700;color:var(--ink)' }, point.title),
+      el('div', { style: 'font-weight:700;color:var(--ink);overflow-wrap:anywhere' }, point.title),
       el('div', { style: 'color:var(--ink-soft);font-size:12px;margin-top:3px;text-transform:capitalize' }, point.topic),
     ]);
     card.addEventListener('click', () => navigate(`/cases/a1/point/${point.id}`));
