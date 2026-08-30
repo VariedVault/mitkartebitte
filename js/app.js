@@ -19,6 +19,8 @@ import { renderGrammarTierHome } from './views/grammarTierHome.js';
 import { renderGrammarPoint } from './views/grammarPoint.js';
 import { renderGrammarLesson } from './views/grammarLesson.js';
 import { renderGrammarCheckpoint } from './views/grammarCheckpoint.js';
+import { renderVocabTierHome, renderVocabTheme } from './views/vocabSection.js';
+import { renderVocabCheckpoint } from './views/vocabCheckpoint.js';
 
 store.migrateIfNeeded(); // must run before anything else reads profile-scoped storage
 initTTS();
@@ -237,6 +239,26 @@ route('/cases/:tier', async ({ tier }) => {
   setActiveNav('learn');
   refreshProfilePill();
   await renderCasesStub(els.view, { tier, setBreadcrumb });
+});
+
+// Vocabulary track (A1/A2/B1). Distinct /vocab/ namespace; all additive.
+route('/vocab/:tier', async ({ tier }) => {
+  const profileId = requireProfile();
+  setActiveNav('learn');
+  refreshProfilePill();
+  renderVocabTierHome(els.view, { profileId, tier: tier.toUpperCase(), setBreadcrumb });
+});
+route('/vocab/:tier/checkpoint', async ({ tier }) => {
+  const profileId = requireProfile();
+  setActiveNav('learn');
+  refreshProfilePill();
+  renderVocabCheckpoint(els.view, { profileId, tier: tier.toUpperCase(), setBreadcrumb });
+});
+route('/vocab/:tier/theme/:slug', async ({ tier, slug }) => {
+  const profileId = requireProfile();
+  setActiveNav('learn');
+  refreshProfilePill();
+  renderVocabTheme(els.view, { profileId, tier: tier.toUpperCase(), slug, setBreadcrumb });
 });
 
 route('/checkpoint/:level', async ({ level }) => {

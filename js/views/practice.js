@@ -5,7 +5,8 @@ import { VERBS, PRONOUN_COLORS } from '../data/verbs-a1.js';
 import { practicePoolKeys } from '../data/practicePool.js';
 import { TENSE_LABELS, pronounLabel, spokenPronoun, factLabel } from '../ui/verbUtils.js';
 import { navigate } from '../router.js';
-import { deckToggle, renderGrammarPractice } from './grammarPractice.js';
+import { renderGrammarPractice } from './grammarPractice.js';
+import { deckToggle3, renderVocabPractice } from './vocabPractice.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -73,10 +74,13 @@ export async function renderPractice(container, { profileId }) {
   const keys = practicePoolKeys(profileId);
 
   container.innerHTML = '';
-  // Verbs / Grammar deck toggle (additive). Grammar mode delegates to the separate grammar
-  // deck renderer and returns; everything below is the unchanged verb Practice.
-  container.appendChild(deckToggle(profileId));
-  if (store.getSettings(profileId).practiceDeck === 'grammar') { renderGrammarPractice(container, { profileId }); return; }
+  // Verbs / Grammar / Vocabulary deck toggle (additive). Grammar and Vocabulary modes each
+  // delegate to their own separate deck renderer and return; everything below is the
+  // unchanged verb Practice.
+  container.appendChild(deckToggle3(profileId));
+  const _deck = store.getSettings(profileId).practiceDeck;
+  if (_deck === 'grammar') { renderGrammarPractice(container, { profileId }); return; }
+  if (_deck === 'vocab') { renderVocabPractice(container, { profileId }); return; }
   container.appendChild(el('h1', {}, 'Practice'));
   container.appendChild(el('p', { style: 'color:var(--cream-dim)' }, 'Flip each card, grade yourself honestly - that’s what makes the schedule work.'));
 

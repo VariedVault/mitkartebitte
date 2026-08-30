@@ -4,6 +4,7 @@ import { VERBS } from '../data/verbs-a1.js';
 import { LEVELS } from '../data/practicePool.js';
 import { navigate } from '../router.js';
 import { casesSection } from './casesGrammar.js';
+import { vocabSection } from './vocabSection.js';
 
 function restructureNotice(profileId) {
   const banner = el('div', { class: 'banner', style: 'margin-bottom:16px' }, [
@@ -73,4 +74,6 @@ export async function renderLearnHome(container, { profileId }) {
   container.appendChild(trackGrid);
 
   container.appendChild(casesSection(profileId));
+
+  container.appendChild(vocabSection(profileId));
 }

@@ -109,7 +109,7 @@ export function deleteProfile(id) {
   write(PROFILES_KEY, profiles);
   // 'grammar-srs'/'grammar-progress' are the separate Cases & Grammar deck + checkpoint
   // state - listed here so deleting a profile cleans them up like every other part.
-  for (const part of ['progress', 'srs', 'position', 'activity', 'settings', 'grammar-srs', 'grammar-progress']) {
+  for (const part of ['progress', 'srs', 'position', 'activity', 'settings', 'grammar-srs', 'grammar-progress', 'vocab-srs', 'vocab-progress']) {
     try { localStorage.removeItem(keyFor(id, part)); } catch { /* ignore */ }
   }
   if (getActiveProfileId() === id) write(ACTIVE_KEY, null);
@@ -119,7 +119,7 @@ export function deleteProfile(id) {
  *  settings, activity heatmap) and every other profile untouched. Grammar deck + checkpoint
  *  state are course progress too, so they reset here alongside the verb progress/deck. */
 export function clearProfileData(id) {
-  for (const part of ['progress', 'srs', 'position', 'grammar-srs', 'grammar-progress']) {
+  for (const part of ['progress', 'srs', 'position', 'grammar-srs', 'grammar-progress', 'vocab-srs', 'vocab-progress']) {
     try { localStorage.removeItem(keyFor(id, part)); } catch { /* ignore */ }
   }
 }
@@ -236,6 +236,56 @@ export function setGrammarCheckpointPassed(profileId, tier, passed) {
 
 export function isGrammarCheckpointPassed(profileId, tier) {
   return !!getGrammarProgress(profileId).tiers[tier]?.checkpointPassed;
+}
+
+// ---------------------------------------------------------------- Vocabulary deck (SEPARATE, third deck)
+// Same Leitner shape and srs.js logic as the verb and grammar decks, on its own storage key -
+// completely independent box/due state; never mixes with the other two.
+
+export function getVocabDeck(profileId) {
+  return read(keyFor(profileId, 'vocab-srs'), { facts: {} });
+}
+
+export function saveVocabDeck(profileId, deck) {
+  write(keyFor(profileId, 'vocab-srs'), deck);
+}
+
+function getVocabProgress(profileId) {
+  const raw = read(keyFor(profileId, 'vocab-progress'), null);
+  if (!raw || typeof raw !== 'object' || !raw.tiers) return { tiers: {}, pinned: [] };
+  if (!Array.isArray(raw.pinned)) raw.pinned = [];
+  return raw;
+}
+
+export function setVocabCheckpointPassed(profileId, tier, passed) {
+  const progress = getVocabProgress(profileId);
+  progress.tiers[tier] = { ...(progress.tiers[tier] || {}), checkpointPassed: passed };
+  write(keyFor(profileId, 'vocab-progress'), progress);
+  return progress;
+}
+
+export function isVocabCheckpointPassed(profileId, tier) {
+  return !!getVocabProgress(profileId).tiers[tier]?.checkpointPassed;
+}
+
+/** Words explicitly added to Vocabulary Practice via a word card's "Add to practice",
+ *  independent of the tier checkpoint - the vocab analogue of pinnedVerbs. */
+export function togglePinnedVocab(profileId, wordId) {
+  const progress = getVocabProgress(profileId);
+  const set = new Set(progress.pinned);
+  if (set.has(wordId)) set.delete(wordId);
+  else set.add(wordId);
+  progress.pinned = [...set];
+  write(keyFor(profileId, 'vocab-progress'), progress);
+  return set.has(wordId);
+}
+
+export function isPinnedVocab(profileId, wordId) {
+  return getVocabProgress(profileId).pinned.includes(wordId);
+}
+
+export function getPinnedVocab(profileId) {
+  return getVocabProgress(profileId).pinned;
 }
 
 // ---------------------------------------------------------------- position (resume)
