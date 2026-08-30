@@ -1,6 +1,6 @@
 import * as store from '../store.js';
 import * as srs from '../srs.js';
-import { el, speakerButton, progressRing, backLink } from '../ui/components.js';
+import { el, speakerButton, progressRing, backLink, tierCard } from '../ui/components.js';
 import { VOCAB_TIERS, wordsForTier, themesForTier, wordsForTheme, drillFactsForTier, drillFactsForWord, displayWord, ARTICLE_COLORS } from '../data/vocabulary.js';
 import { navigate } from '../router.js';
 
@@ -36,27 +36,19 @@ export function wordCardBody(v) {
 }
 
 // ---------------------------------------------------------------- Learn-screen "Vocabulary" section
-const BUILT = new Set(['A1', 'A2', 'B1']);
-
-function vocabDueTag(profileId, tier) {
-  if (!store.isVocabCheckpointPassed(profileId, tier)) return null;
-  const keys = drillFactsForTier(tier).map((f) => f.key);
-  const due = srs.dueCount(store.getVocabDeck(profileId), keys);
-  return due > 0 ? el('span', { class: 'track-card-tag track-card-tag--done' }, `${due} due`) : null;
-}
-
-/** The Learn-screen "Vocabulary" section - three tier tiles, native .card/.track-card style. */
+/** The Learn-screen "Vocabulary" section - compact, colour-coded A1/A2/B1 tiles matching the
+ *  Conjugation and Cases & Grammar tracks (shared tierCard). */
 export function vocabSection(profileId) {
   const wrap = el('div');
   wrap.appendChild(el('h2', { style: 'margin:16px 0 10px;font-size:15px;letter-spacing:0.04em;text-transform:uppercase;color:var(--cream-dim)' }, 'Vocabulary'));
-  const grid = el('div', { style: 'display:flex;flex-direction:column;gap:12px' });
+  const grid = el('div', { class: 'level-grid' });
   for (const tier of VOCAB_TIERS) {
-    const count = wordsForTier(tier).length;
-    const card = el('button', { class: 'card track-card', style: 'text-align:left' });
-    card.appendChild(el('div', { class: 'track-card-title' }, [`${tier} · ${TIER_SUBTITLE[tier]}`, BUILT.has(tier) ? vocabDueTag(profileId, tier) : el('span', { class: 'track-card-tag' }, 'Coming soon')]));
-    card.appendChild(el('p', { style: 'color:var(--ink-soft);margin:0' }, `${count} words across ${themesForTier(tier).length} themes`));
-    card.addEventListener('click', () => navigate(`/vocab/${tier.toLowerCase()}`));
-    grid.appendChild(card);
+    grid.appendChild(tierCard({
+      tier,
+      caption: `${wordsForTier(tier).length} words`,
+      done: store.isVocabCheckpointPassed(profileId, tier),
+      onClick: () => navigate(`/vocab/${tier.toLowerCase()}`),
+    }));
   }
   wrap.appendChild(grid);
   return wrap;

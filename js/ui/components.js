@@ -99,6 +99,24 @@ export function backLink(label, onClick) {
   return link;
 }
 
+// One consistent accent colour per CEFR tier, used on every Learn-screen tier tile
+// (Conjugation, Cases & Grammar, Vocabulary) so "this colour = this level" reads the same
+// across the whole Learn screen.
+export const TIER_COLORS = { A1: 'var(--tier1)', A2: 'var(--tier2)', B1: 'var(--tier3)' };
+
+/** A compact, centered Learn-screen tier tile (the Conjugation look): a status badge, the
+ *  colour-coded level name (A1/A2/B1), and a short caption. Shared by all three tracks so
+ *  their tiles are visually identical. Wrap a row of these in a `.level-grid`. */
+export function tierCard({ tier, caption, done = false, locked = false, onClick }) {
+  const card = el('button', { class: `card level-card${locked ? ' track-card--locked' : ''}` });
+  card.appendChild(el('div', { class: 'level-card-badge' }, done ? '✓' : locked ? '🔒' : ' '));
+  card.appendChild(el('div', { class: 'level-card-name', style: `color:${TIER_COLORS[tier] || 'var(--ink)'}` }, tier));
+  card.appendChild(el('div', { class: 'level-card-count' }, caption));
+  if (locked) card.disabled = true;
+  else if (onClick) card.addEventListener('click', onClick);
+  return card;
+}
+
 export function toast(container, message) {
   let node = container.querySelector('.status-msg');
   if (!node) {

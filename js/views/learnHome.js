@@ -1,5 +1,5 @@
 import * as store from '../store.js';
-import { el } from '../ui/components.js';
+import { el, tierCard } from '../ui/components.js';
 import { VERBS } from '../data/verbs-a1.js';
 import { LEVELS } from '../data/practicePool.js';
 import { navigate } from '../router.js';
@@ -44,16 +44,13 @@ function levelCard(profileId, level) {
   const passed = store.isCheckpointPassed(profileId, level);
   const active = levelVerbs.length > 0; // this level has verb data authored, whichever level it is
 
-  const card = el('button', { class: `card level-card${!active ? ' track-card--locked' : ''}` });
-  card.appendChild(el('div', { class: 'level-card-badge' }, passed ? '✓' : active ? ' ' : '🔒'));
-  card.appendChild(el('div', { class: 'level-card-name' }, level));
-  card.appendChild(el('div', { class: 'level-card-count' }, active ? `${levelVerbs.length} verbs` : 'Later phase'));
-  if (active) {
-    card.addEventListener('click', () => navigate(`/level/${level}`));
-  } else {
-    card.disabled = true;
-  }
-  return card;
+  return tierCard({
+    tier: level,
+    caption: active ? `${levelVerbs.length} verbs` : 'Later phase',
+    done: passed,
+    locked: !active,
+    onClick: () => navigate(`/level/${level}`),
+  });
 }
 
 export async function renderLearnHome(container, { profileId }) {
